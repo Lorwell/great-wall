@@ -21,6 +21,11 @@ data class OsfipinProperties(
     /**
      * 账户名。注册的邮箱或者手机号。
      */
-    val user: String
+    val user: String,
+
+    /**
+     * 证书的自动申请id
+     */
+    val autoId: String
 
 )

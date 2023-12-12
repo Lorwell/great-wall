@@ -2,6 +2,8 @@ package cc.shacocloud.greatwall.service.client.impl
 
 import cc.shacocloud.greatwall.config.OsfipinProperties
 import cc.shacocloud.greatwall.service.client.OsfipinClient
+import cc.shacocloud.greatwall.utils.Slf4j
+import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -12,6 +14,7 @@ import org.springframework.web.client.RestTemplate
 import java.io.File
 import java.io.InputStream
 import java.net.URI
+import java.util.zip.ZipFile
 import kotlin.io.path.createTempFile
 
 /**
@@ -30,9 +33,10 @@ class OsfipinClientImpl(
      * 下载证书《为一个zip文件
      *
      * [文档](https://www.yuque.com/osfipin/letsencrypt/xv6h1y)
-     * @param autoId 自动验证id
      */
-    override fun download(autoId: String): File {
+    override fun download(): ZipFile {
+        val autoId = osfipinProperties.autoId
+
         val requestEntity = RequestEntity<Void>(
             getHttpHeaders(),
             HttpMethod.GET,
@@ -53,7 +57,7 @@ class OsfipinClientImpl(
             }
         }
 
-        return tempFile
+        return OsfipinCertificateZipFile(tempFile)
     }
 
     /**
@@ -90,6 +94,28 @@ class OsfipinClientImpl(
      */
     fun getAuthorizationHeader(): String {
         return "Bearer ${osfipinProperties.token}:${osfipinProperties.user}"
+    }
+
+    /**
+     * 证书文件，关闭时自动删除
+     */
+    @Slf4j
+    class OsfipinCertificateZipFile(private val file: File) : ZipFile(file) {
+
+        override fun close() {
+            try {
+                super.close()
+            } finally {
+                try {
+                    file.delete()
+                } catch (e: Exception) {
+                    if (log.isWarnEnabled) {
+                        log.warn("关闭证书文件时，删除证书文件发生例外！", e)
+                    }
+                    file.deleteOnExit()
+                }
+            }
+        }
     }
 
 }
