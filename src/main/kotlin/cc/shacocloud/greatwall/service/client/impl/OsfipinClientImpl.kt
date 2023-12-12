@@ -42,13 +42,23 @@ class OsfipinClientImpl(
         val responseEntity = restTemplate.exchange(requestEntity, InputStream::class.java)
         assertResponseSuccess(requestEntity, responseEntity)
 
+        val body = responseEntity.body
+            ?: throw IllegalStateException("证书文件主体为空！")
 
-        responseEntity.body.use {
-            val tempFile = createTempFile(prefix = autoId)
-            TODO()
+        // 写入临时文件
+        val tempFile = createTempFile(prefix = autoId).toFile()
+        body.use { inputStream ->
+            tempFile.outputStream().use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
         }
+
+        return tempFile
     }
 
+    /**
+     * 断言响应为成功状态
+     */
     fun <T> assertResponseSuccess(requestEntity: RequestEntity<*>, responseEntity: ResponseEntity<T>) {
         val statusCode = responseEntity.statusCode
         when {

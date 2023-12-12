@@ -25,6 +25,6 @@ class LetsencryptTLSServiceImpl(
         val certificatePathFile = ResourceUtils.getFile(certificatePath)
         val privateKeyPathFile = ResourceUtils.getFile(privateKeyPath)
 
-        osfipinClient.download()
+//        osfipinClient.download()
     }
 }
