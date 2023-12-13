@@ -1,11 +1,8 @@
 package cc.shacocloud.greatwall.config
 
-import org.springframework.boot.context.properties.ConfigurationProperties
-
 /**
  * @author 思追(shaco)
  */
-@ConfigurationProperties("osfipin")
 data class OsfipinProperties(
 
     /**

@@ -4,12 +4,10 @@ import cc.shacocloud.greatwall.config.OsfipinProperties
 import cc.shacocloud.greatwall.service.client.OsfipinClient
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.RequestEntity
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import java.io.File
 import java.io.InputStream
@@ -21,13 +19,11 @@ import kotlin.io.path.createTempFile
  * [文档](https://www.yuque.com/osfipin/letsencrypt/tzwt07)
  * @author 思追(shaco)
  */
-@Service
-@Import(OsfipinProperties::class)
 class OsfipinClientImpl(
     val osfipinProperties: OsfipinProperties,
 ) : OsfipinClient {
 
-    val restTemplate = RestTemplate()
+    private val restTemplate = RestTemplate()
 
     /**
      * 下载证书《为一个zip文件

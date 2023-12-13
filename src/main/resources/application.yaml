@@ -1,15 +1,4 @@
 server:
   port: 8443
   ssl:
-    bundle: letsencrypt
-
-spring:
-  ssl:
-    bundle:
-      pem:
-        letsencrypt:
-          reload-on-update: true
-          keystore:
-            certificate: ${CERTIFICATE_PATH:tls/fullchain.crt}
-            private-key: ${PRIVATE_KEY_PATH:tls/private.pem}
-
+    enabled: false
