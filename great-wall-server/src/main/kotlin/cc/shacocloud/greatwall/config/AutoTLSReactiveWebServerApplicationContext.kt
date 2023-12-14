@@ -66,15 +66,21 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
     /**
      * 刷新证书
      */
-    fun refreshSslBundle(sslBundleProperties: SslBundleProperties) {
+    fun refreshSslBundle(sslBundleProperties: SslBundleProperties?) {
 
         // 将证书更新到 SslBundles
         val customSslBundleRegistry = getBean(CustomSslBundleRegistry::class.java)
 
+        // 如果为空则删除该证书凭证
+        if (sslBundleProperties == null) {
+            customSslBundleRegistry.removeBundle(builtSslBundleName)
+            return
+        }
+
         // 加载证书
         val sslBundle = when (sslBundleProperties) {
-            JksSslBundleProperties::class -> PropertiesSslBundle.get(sslBundleProperties as JksSslBundleProperties)
-            PemSslBundleProperties::class -> PropertiesSslBundle.get(sslBundleProperties as PemSslBundleProperties)
+            is JksSslBundleProperties -> PropertiesSslBundle.get(sslBundleProperties)
+            is PemSslBundleProperties -> PropertiesSslBundle.get(sslBundleProperties)
             else -> throw IllegalArgumentException("未知的 SslBundleProperties 实现类：${sslBundleProperties::class.java}")
         }
 

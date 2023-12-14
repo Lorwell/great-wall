@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.service.client.impl
 
+import cc.shacocloud.greatwall.config.InputStreamHttpMessageConverter
 import cc.shacocloud.greatwall.config.OsfipinProperties
 import cc.shacocloud.greatwall.service.client.OsfipinClient
 import cc.shacocloud.greatwall.utils.Slf4j
@@ -23,7 +24,14 @@ class OsfipinClientImpl(
     val osfipinProperties: OsfipinProperties,
 ) : OsfipinClient {
 
-    private val restTemplate = RestTemplate()
+    companion object {
+        private val restTemplate = RestTemplate()
+
+        init {
+            // 新增支持 InputStream 的消息转换器
+            restTemplate.messageConverters.add(InputStreamHttpMessageConverter())
+        }
+    }
 
     /**
      * 下载证书《为一个zip文件

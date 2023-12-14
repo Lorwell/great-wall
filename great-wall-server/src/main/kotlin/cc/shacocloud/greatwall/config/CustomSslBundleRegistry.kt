@@ -2,6 +2,8 @@ package cc.shacocloud.greatwall.config
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.springframework.beans.factory.ObjectProvider
+import org.springframework.boot.autoconfigure.ssl.SslBundleRegistrar
 import org.springframework.boot.ssl.*
 import org.springframework.core.log.LogMessage
 import org.springframework.stereotype.Component
@@ -15,7 +17,9 @@ import kotlin.concurrent.Volatile
  * 自定义 ssl Bundle 注册表，支持删除用于[AutoTLSReactiveWebServerApplicationContext]，参考：[DefaultSslBundleRegistry]
  */
 @Component
-class CustomSslBundleRegistry : SslBundleRegistry, SslBundles {
+class CustomSslBundleRegistry(
+    sslBundleRegistrars: ObjectProvider<SslBundleRegistrar>
+) : SslBundleRegistry, SslBundles {
 
     private val registeredBundles: MutableMap<String, RegisteredSslBundle> = ConcurrentHashMap()
 
@@ -23,7 +27,14 @@ class CustomSslBundleRegistry : SslBundleRegistry, SslBundles {
         private val logger: Log = LogFactory.getLog(CustomSslBundleRegistry::class.java)
     }
 
-    override fun registerBundle(name: String, bundle: SslBundle) {
+    init {
+        sslBundleRegistrars.orderedStream().forEach { registrar ->
+            registrar.registerBundles(this)
+        }
+    }
+
+
+    final override fun registerBundle(name: String, bundle: SslBundle) {
         Assert.notNull(name, "Name must not be null")
         Assert.notNull(bundle, "Bundle must not be null")
         val previous = registeredBundles.putIfAbsent(name, RegisteredSslBundle(name, bundle))
@@ -61,8 +72,10 @@ class CustomSslBundleRegistry : SslBundleRegistry, SslBundles {
     @Throws(NoSuchSslBundleException::class)
     private fun getRegistered(name: String): RegisteredSslBundle {
         Assert.notNull(name, "Name must not be null")
-        val registered = registeredBundles[name]
-            ?: throw NoSuchSslBundleException(name, "SSL bundle name '%s' cannot be found".formatted(name))
+        val registered = registeredBundles[name] ?: throw NoSuchSslBundleException(
+            name,
+            "SSL bundle name '%s' cannot be found".formatted(name)
+        )
         return registered
     }
 

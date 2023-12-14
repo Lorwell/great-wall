@@ -1,0 +1,11 @@
+server:
+  port: 443
+  http2:
+    enabled: false
+  ssl:
+    enabled: false
+
+logging:
+  level:
+    root: info
+    "reactor.netty.http.server.AccessLog": info
