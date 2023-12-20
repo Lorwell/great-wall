@@ -22,7 +22,14 @@ configurations {
 }
 
 repositories {
+    // 改为阿里云的镜像地址
+    maven { setUrl("https://maven.aliyun.com/repository/central") }
+    maven { setUrl("https://maven.aliyun.com/repository/jcenter") }
+    maven { setUrl("https://maven.aliyun.com/repository/google") }
+    maven { setUrl("https://maven.aliyun.com/repository/public") }
+    maven { setUrl("https://jitpack.io") }
     mavenCentral()
+    google()
 }
 
 extra["springCloudVersion"] = "2023.0.0"
