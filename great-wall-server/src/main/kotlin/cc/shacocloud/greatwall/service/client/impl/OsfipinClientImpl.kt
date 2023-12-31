@@ -2,34 +2,70 @@ package cc.shacocloud.greatwall.service.client.impl
 
 import cc.shacocloud.greatwall.config.InputStreamHttpMessageConverter
 import cc.shacocloud.greatwall.config.OsfipinProperties
+import cc.shacocloud.greatwall.service.client.LogLevel
 import cc.shacocloud.greatwall.service.client.OsfipinClient
+import cc.shacocloud.greatwall.service.client.RestTemplateLogRequestInterceptor
+import cc.shacocloud.greatwall.service.client.dto.output.CertificateDetailOutput
+import cc.shacocloud.greatwall.utils.Json
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import org.slf4j.event.Level
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.RequestEntity
 import org.springframework.http.ResponseEntity
+import org.springframework.http.client.BufferingClientHttpRequestFactory
+import org.springframework.http.client.ClientHttpRequestInterceptor
+import org.springframework.http.client.SimpleClientHttpRequestFactory
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.client.RestTemplate
 import java.io.File
 import java.io.InputStream
 import java.net.URI
+import java.time.Duration
 import java.util.zip.ZipFile
 import kotlin.io.path.createTempFile
+
 
 /**
  * [文档](https://www.yuque.com/osfipin/letsencrypt/tzwt07)
  * @author 思追(shaco)
  */
 class OsfipinClientImpl(
-    val osfipinProperties: OsfipinProperties,
+    private val osfipinProperties: OsfipinProperties,
 ) : OsfipinClient {
 
     companion object {
         private val restTemplate = RestTemplate()
 
         init {
+            val clientHttpRequestFactory = SimpleClientHttpRequestFactory()
+            // 连接超时
+            clientHttpRequestFactory.setConnectTimeout(Duration.ofSeconds(3))
+            // 读取超市
+            clientHttpRequestFactory.setReadTimeout(Duration.ofSeconds(30))
+
+            // 提供对传出/传入流的缓冲,可以让响应body多次读取(如果不配置,拦截器读取了Response流,再响应数据时会返回body=null)
+            restTemplate.setRequestFactory(BufferingClientHttpRequestFactory(clientHttpRequestFactory));
+            // 拦截器
+            restTemplate.interceptors = arrayListOf<ClientHttpRequestInterceptor>(
+                RestTemplateLogRequestInterceptor(
+                    logLevel = LogLevel.BODY,
+                    printLevel = Level.INFO
+                )
+            )
+
+            val messageConverters = restTemplate.messageConverters.toMutableList()
+
+            // 使用自定义的json转换器
+            messageConverters.removeIf { it is AbstractJackson2HttpMessageConverter }
+            messageConverters.add(MappingJackson2HttpMessageConverter(Json.mapper))
+
             // 新增支持 InputStream 的消息转换器
-            restTemplate.messageConverters.add(InputStreamHttpMessageConverter())
+            messageConverters.add(InputStreamHttpMessageConverter())
+
+            restTemplate.messageConverters = messageConverters
         }
     }
 
@@ -62,6 +98,27 @@ class OsfipinClientImpl(
         }
 
         return OsfipinCertificateZipFile(tempFile)
+    }
+
+    /**
+     * 证书详情
+     */
+    override fun certificateDetail(): CertificateDetailOutput {
+        val id = osfipinProperties.id
+
+        val requestEntity = RequestEntity<Void>(
+            getHttpHeaders(),
+            HttpMethod.GET,
+            URI("${osfipinProperties.baseUrl.removeSuffix("/")}/order/detail?id=$id")
+        )
+
+        val responseEntity = restTemplate.exchange(requestEntity, CertificateDetailOutput::class.java)
+        assertResponseSuccess(requestEntity, responseEntity)
+
+        val body = responseEntity.body
+            ?: throw IllegalStateException("证书文件主体为空！")
+
+        return body
     }
 
     /**

@@ -1,7 +1,10 @@
 pluginManagement {
     repositories {
         // 改为阿里云的镜像地址
-        maven { setUrl("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven {
+            isAllowInsecureProtocol = true
+            setUrl("https://maven.aliyun.com/repository/gradle-plugin")
+        }
         gradlePluginPortal()
     }
 }

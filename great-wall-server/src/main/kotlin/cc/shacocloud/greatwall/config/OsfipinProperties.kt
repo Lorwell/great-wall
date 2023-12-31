@@ -1,8 +1,11 @@
 package cc.shacocloud.greatwall.config
 
+import org.springframework.boot.context.properties.ConfigurationProperties
+
 /**
  * @author 思追(shaco)
  */
+@ConfigurationProperties("site.tls.provider.osfipin")
 data class OsfipinProperties(
 
     /**
@@ -19,6 +22,11 @@ data class OsfipinProperties(
      * 账户名。注册的邮箱或者手机号。
      */
     val user: String,
+
+    /**
+     * 证书的id
+     */
+    val id: String,
 
     /**
      * 证书的自动申请id

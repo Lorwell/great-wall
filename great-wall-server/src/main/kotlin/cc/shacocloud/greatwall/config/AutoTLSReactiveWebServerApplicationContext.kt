@@ -5,10 +5,12 @@ import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PropertiesSslBundle
 import org.springframework.boot.autoconfigure.ssl.SslBundleProperties
+import org.springframework.boot.ssl.SslBundle
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext
 import org.springframework.boot.web.server.Ssl
 import org.springframework.context.SmartLifecycle
+
 
 /**
  * 基于 [ReactiveWebServerApplicationContext] 的自定义tls证书刷新上下文，支持重新指定证书后，重启启动web服务
@@ -60,22 +62,25 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
 
         // 启动服务
         val webServerStartStop = beanFactory.getBean("webServerStartStop") as SmartLifecycle
-        webServerStartStop.start();
+        webServerStartStop.start()
     }
 
     /**
-     * 刷新证书
+     * 删除证书，执行后如需生效请调用 refreshWebserver 方法重启 web 服务
      */
-    fun refreshSslBundle(sslBundleProperties: SslBundleProperties?) {
+    fun deleteSslBundle() {
+        // 删除该证书凭证
+        val customSslBundleRegistry = getBean(CustomSslBundleRegistry::class.java)
+        customSslBundleRegistry.removeBundle(builtSslBundleName)
+    }
+
+    /**
+     * 刷新证书，执行后如需生效请调用 refreshWebserver 方法重启 web 服务
+     */
+    fun refreshSslBundle(sslBundleProperties: SslBundleProperties): SslBundle {
 
         // 将证书更新到 SslBundles
         val customSslBundleRegistry = getBean(CustomSslBundleRegistry::class.java)
-
-        // 如果为空则删除该证书凭证
-        if (sslBundleProperties == null) {
-            customSslBundleRegistry.removeBundle(builtSslBundleName)
-            return
-        }
 
         // 加载证书
         val sslBundle = when (sslBundleProperties) {
@@ -92,7 +97,8 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         else {
             customSslBundleRegistry.registerBundle(builtSslBundleName, sslBundle)
         }
-    }
 
+        return sslBundle
+    }
 
 }

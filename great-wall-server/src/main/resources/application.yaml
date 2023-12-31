@@ -5,6 +5,36 @@ server:
   ssl:
     enabled: false
 
+spring:
+  threads:
+    virtual:
+      # 开启虚拟线程
+      enabled: true
+  cloud:
+    gateway:
+      # 路由配置
+      routes:
+        - id: true-nas
+          uri: http://192.168.1.145:79
+          predicates:
+            - Host=true-nas.shacocloud.cc
+        - id: qilin-pavilion
+          uri: http://192.168.1.145:9546
+          predicates:
+            - Host=qilin-pavilion.shacocloud.cc
+
+site:
+  tls:
+    provider:
+      # 基于来此加密的tls证书提供着
+      osfipin:
+        base-url: https://api.osfipin.com/letsencrypt/api
+        token: f9c22e612cc15056fdc3c7c902b5882e
+        user: 1679924785@qq.com
+        id: 63m7jd
+        auto-id: 5r8r9e
+
+
 logging:
   level:
     root: info

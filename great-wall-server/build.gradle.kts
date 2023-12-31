@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.2.0"
+    id("java")
+    id("org.springframework.boot") version "3.2.1"
     id("io.spring.dependency-management") version "1.1.4"
     id("org.graalvm.buildtools.native") version "0.9.28"
     kotlin("jvm") version "1.9.20"
@@ -9,7 +10,7 @@ plugins {
 }
 
 group = "cc.shacocloud"
-version = "0.0.1-SNAPSHOT"
+version = "1.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -23,11 +24,26 @@ configurations {
 
 repositories {
     // 改为阿里云的镜像地址
-    maven { setUrl("https://maven.aliyun.com/repository/central") }
-    maven { setUrl("https://maven.aliyun.com/repository/jcenter") }
-    maven { setUrl("https://maven.aliyun.com/repository/google") }
-    maven { setUrl("https://maven.aliyun.com/repository/public") }
-    maven { setUrl("https://jitpack.io") }
+    maven {
+        isAllowInsecureProtocol = true
+        setUrl("https://maven.aliyun.com/repository/central")
+    }
+    maven {
+        isAllowInsecureProtocol = true
+        setUrl("https://maven.aliyun.com/repository/jcenter")
+    }
+    maven {
+        isAllowInsecureProtocol = true
+        setUrl("https://maven.aliyun.com/repository/google")
+    }
+    maven {
+        isAllowInsecureProtocol = true
+        setUrl("https://maven.aliyun.com/repository/public")
+    }
+    maven {
+        isAllowInsecureProtocol = true
+        setUrl("https://jitpack.io")
+    }
     mavenCentral()
     google()
 }
@@ -42,6 +58,7 @@ dependencyManagement {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")

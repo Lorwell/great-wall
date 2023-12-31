@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 class ApplicationContextHolder : ApplicationContextAware {
 
     companion object {
-        var applicationContext: AutoTLSReactiveWebServerApplicationContext? = null
+        private var applicationContext: AutoTLSReactiveWebServerApplicationContext? = null
 
         /**
          * 获取实例
@@ -23,6 +23,12 @@ class ApplicationContextHolder : ApplicationContextAware {
             return applicationContext!!
         }
 
+        /**
+         * 是否是可用的
+         */
+        fun available(): Boolean {
+            return applicationContext != null
+        }
 
         private fun check() {
             if (applicationContext == null) {
