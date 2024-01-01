@@ -19,6 +19,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.io.File
 import java.io.InputStream
@@ -32,8 +33,9 @@ import kotlin.io.path.createTempFile
  * [文档](https://www.yuque.com/osfipin/letsencrypt/tzwt07)
  * @author 思追(shaco)
  */
+@Component
 class OsfipinClientImpl(
-    private val osfipinProperties: OsfipinProperties,
+    val osfipinProperties: OsfipinProperties,
 ) : OsfipinClient {
 
     companion object {

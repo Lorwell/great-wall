@@ -8,18 +8,18 @@ server:
 spring:
   threads:
     virtual:
-      # 开启虚拟线程
+      # 虚拟线程开启后将导致web server重启后关闭
       enabled: true
   cloud:
     gateway:
       # 路由配置
       routes:
         - id: true-nas
-          uri: http://192.168.1.145:79
+          uri: ${TRUE_NAS_ADDRESS:http://192.168.1.145:79}
           predicates:
             - Host=true-nas.shacocloud.cc
         - id: qilin-pavilion
-          uri: http://192.168.1.145:9546
+          uri: ${QILIN_PAVILION_ADDRESS:http://192.168.1.145:9546}
           predicates:
             - Host=qilin-pavilion.shacocloud.cc
 

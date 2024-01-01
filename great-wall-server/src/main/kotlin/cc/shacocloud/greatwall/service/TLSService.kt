@@ -1,6 +1,5 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.config.OsfipinProperties
 import cc.shacocloud.greatwall.model.TlsLoadMo
 
 /**
@@ -13,6 +12,6 @@ interface TLSService {
     /**
      * 加载证书并且返回配置信息
      */
-    fun load(properties: OsfipinProperties): TlsLoadMo
+    fun load(): TlsLoadMo
 
 }

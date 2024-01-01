@@ -1,12 +1,10 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.config.OsfipinProperties
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.util.Date
+import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
 
 /**
  * @author 思追(shaco)
@@ -19,7 +17,7 @@ class AutoRefreshTLSService {
     /**
      * 每隔一小时刷新一次证书
      */
-    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
+    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
     fun refreshTls() {
         if (!ApplicationContextHolder.available()) return
 
@@ -40,14 +38,7 @@ class AutoRefreshTLSService {
         // 加载证书文件
         val applicationContext = ApplicationContextHolder.getInstance()
         val tlsService = applicationContext.getBean(TLSService::class.java)
-        val properties = OsfipinProperties(
-            baseUrl = "https://api.osfipin.com/letsencrypt/api",
-            token = "f9c22e612cc15056fdc3c7c902b5882e",
-            user = "1679924785@qq.com",
-            id = "63m7jd",
-            autoId = "5r8r9e"
-        )
-        val (sslBundleProperties, expirationTime) = tlsService.load(properties)
+        val (sslBundleProperties, expirationTime) = tlsService.load()
 
         // 刷新证书配置，重新启动web服务
         applicationContext.refreshSslBundle(sslBundleProperties)
