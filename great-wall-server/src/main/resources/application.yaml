@@ -9,7 +9,7 @@ spring:
   threads:
     virtual:
       # 虚拟线程开启后将导致web server重启后关闭
-      enabled: true
+      enabled: false
   cloud:
     gateway:
       # 路由配置
