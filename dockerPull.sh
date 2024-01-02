@@ -1,4 +1,4 @@
-version=1.1
+version=1.2
 
 # 构建
 docker build -t great-wall:"$version" . || exit

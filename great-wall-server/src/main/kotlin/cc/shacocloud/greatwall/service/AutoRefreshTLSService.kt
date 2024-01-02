@@ -22,13 +22,15 @@ class AutoRefreshTLSService {
         if (!ApplicationContextHolder.available()) return
 
         // 获取当前证书的过期时间
-        val currentExpirationTime = this.expirationTime ?: reload()
+        var currentExpirationTime = this.expirationTime ?: reload()
 
         // 证书到期前一天更新证书
         val before1Day = Date(Date().time + 24 * 60 * 60 * 1000)
         if (currentExpirationTime.before(before1Day)) {
-            this.expirationTime = reload()
+            currentExpirationTime = reload()
         }
+
+        this.expirationTime = currentExpirationTime
     }
 
     /**
