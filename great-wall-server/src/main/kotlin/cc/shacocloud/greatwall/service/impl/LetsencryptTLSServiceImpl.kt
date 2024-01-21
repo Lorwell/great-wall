@@ -54,8 +54,9 @@ class LetsencryptTLSServiceImpl(
             }
         }
 
+
         // 获取当前证书的过期时间
-        val certificateDetail = osfipinClient.certificateDetail()
+        val certificateDetail = osfipinClient.currentDomainCertificateDetail()
         val expirationTime = certificateDetail.v.timeEnd
 
         return TlsLoadMo(

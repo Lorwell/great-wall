@@ -24,9 +24,9 @@ data class OsfipinProperties(
     val user: String,
 
     /**
-     * 证书的id
+     * 证书的域名
      */
-    val id: String,
+    val domain: String,
 
     /**
      * 证书的自动申请id

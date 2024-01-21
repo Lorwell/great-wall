@@ -6,6 +6,7 @@ import cc.shacocloud.greatwall.service.client.LogLevel
 import cc.shacocloud.greatwall.service.client.OsfipinClient
 import cc.shacocloud.greatwall.service.client.RestTemplateLogRequestInterceptor
 import cc.shacocloud.greatwall.service.client.dto.output.CertificateDetailOutput
+import cc.shacocloud.greatwall.service.client.dto.output.CertificateListOutput
 import cc.shacocloud.greatwall.utils.Json
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
@@ -105,9 +106,7 @@ class OsfipinClientImpl(
     /**
      * 证书详情
      */
-    override fun certificateDetail(): CertificateDetailOutput {
-        val id = osfipinProperties.id
-
+    override fun certificateDetail(id: String): CertificateDetailOutput {
         val requestEntity = RequestEntity<Void>(
             getHttpHeaders(),
             HttpMethod.GET,
@@ -117,10 +116,50 @@ class OsfipinClientImpl(
         val responseEntity = restTemplate.exchange(requestEntity, CertificateDetailOutput::class.java)
         assertResponseSuccess(requestEntity, responseEntity)
 
-        val body = responseEntity.body
-            ?: throw IllegalStateException("证书文件主体为空！")
+        return responseEntity.body ?: throw IllegalStateException("证书详情主体为空！")
+    }
 
-        return body
+    /**
+     * 当前域名的证书详情
+     * @param
+     */
+    override fun currentDomainCertificateDetail(): CertificateDetailOutput {
+        val domain = osfipinProperties.domain
+
+        var page = 1
+        while (true) {
+            val certificateList = certificateList(page)
+            val (_, mpage, _, _, list) = certificateList.v
+
+            // 域名可以匹配则返回其证书详情
+            val dataOutput = list.firstOrNull { domain in it.domains }
+            if (dataOutput != null) {
+                return certificateDetail(dataOutput.id)
+            }
+
+            if (page >= mpage) {
+                throw IllegalArgumentException("未能匹配到域名 $domain 对应的证书！")
+            }
+
+            page++
+        }
+
+    }
+
+    /**
+     * 证书列表
+     */
+    override fun certificateList(page: Int): CertificateListOutput {
+        val requestEntity = RequestEntity<Void>(
+            getHttpHeaders(),
+            HttpMethod.GET,
+            URI("${osfipinProperties.baseUrl.removeSuffix("/")}/order/list?page=${page}")
+        )
+
+        val responseEntity = restTemplate.exchange(requestEntity, CertificateListOutput::class.java)
+        assertResponseSuccess(requestEntity, responseEntity)
+
+        return responseEntity.body ?: throw IllegalStateException("证书列表第${page}页主体为空！")
     }
 
     /**

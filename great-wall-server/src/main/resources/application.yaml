@@ -38,8 +38,8 @@ site:
         base-url: https://api.osfipin.com/letsencrypt/api
         token: f9c22e612cc15056fdc3c7c902b5882e
         user: 1679924785@qq.com
-        id: 63m7jd
         auto-id: 5r8r9e
+        domain: "*.shacocloud.cc"
 
 
 logging:
