@@ -24,11 +24,14 @@ spring:
           uri: ${QILIN_PAVILION_ADDRESS:http://192.168.1.145:9546}
           predicates:
             - Host=qilin-pavilion.shacocloud.cc
+        - id: ddns
+          uri: ${DDNS_ADDRESS:http://192.168.1.145:9876}
+          predicates:
+            - Host=ddns.shacocloud.cc
       httpclient:
         websocket:
           # 设置 ws 最大帧数字节长度
           max-frame-payload-length: 6553500
-
 
 site:
   tls:
