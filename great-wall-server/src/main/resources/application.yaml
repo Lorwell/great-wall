@@ -32,6 +32,13 @@ spring:
         websocket:
           # 设置 ws 最大帧数字节长度
           max-frame-payload-length: 6553500
+        connect-timeout: 3000
+        response-timeout: 10S
+        pool:
+          type: fixed
+          max-idle-time: 5000
+          max-connections: 200
+          acquire-timeout: 45000
 
 site:
   tls:
