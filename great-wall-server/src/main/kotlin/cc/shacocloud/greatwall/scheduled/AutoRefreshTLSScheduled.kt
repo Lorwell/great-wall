@@ -1,5 +1,6 @@
-package cc.shacocloud.greatwall.service
+package cc.shacocloud.greatwall.scheduled
 
+import cc.shacocloud.greatwall.service.TLSService
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -7,17 +8,19 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 /**
+ * 自动刷新 tls证书调度
+ *
  * @author 思追(shaco)
  */
 @Service
-class AutoRefreshTLSService {
+class AutoRefreshTLSScheduled {
 
     private var expirationTime: Date? = null
 
     /**
      * 每隔一小时刷新一次证书
      */
-    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
+//    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
     fun refreshTls() {
         if (!ApplicationContextHolder.available()) return
 
