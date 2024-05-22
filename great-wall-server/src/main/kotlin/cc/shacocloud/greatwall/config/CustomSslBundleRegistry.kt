@@ -5,9 +5,7 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.ssl.SslBundleRegistrar
 import org.springframework.boot.ssl.*
-import org.springframework.core.log.LogMessage
 import org.springframework.stereotype.Component
-import org.springframework.util.Assert
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
@@ -35,10 +33,8 @@ class CustomSslBundleRegistry(
 
 
     final override fun registerBundle(name: String, bundle: SslBundle) {
-        Assert.notNull(name, "Name must not be null")
-        Assert.notNull(bundle, "Bundle must not be null")
         val previous = registeredBundles.putIfAbsent(name, RegisteredSslBundle(name, bundle))
-        Assert.state(previous == null) { "Cannot replace existing SSL bundle '%s'".formatted(name) }
+        require(previous == null) { "Cannot replace existing SSL bundle '${name}'" }
     }
 
     override fun updateBundle(name: String, updatedBundle: SslBundle) {
@@ -71,10 +67,9 @@ class CustomSslBundleRegistry(
 
     @Throws(NoSuchSslBundleException::class)
     private fun getRegistered(name: String): RegisteredSslBundle {
-        Assert.notNull(name, "Name must not be null")
         val registered = registeredBundles[name] ?: throw NoSuchSslBundleException(
             name,
-            "SSL bundle name '%s' cannot be found".formatted(name)
+            "SSL bundle name '${name}' cannot be found"
         )
         return registered
     }
@@ -83,21 +78,16 @@ class CustomSslBundleRegistry(
         private val updateHandlers: MutableList<Consumer<SslBundle>> = CopyOnWriteArrayList()
 
         fun update(updatedBundle: SslBundle) {
-            Assert.notNull(updatedBundle, "UpdatedBundle must not be null")
             this.bundle = updatedBundle
             if (updateHandlers.isEmpty()) {
                 logger.warn(
-                    LogMessage.format(
-                        "SSL bundle '%s' has been updated but may be in use by a technology that doesn't support SSL reloading",
-                        this.name
-                    )
+                    "SSL bundle '${this.name}' has been updated but may be in use by a technology that doesn't support SSL reloading"
                 )
             }
             updateHandlers.forEach(Consumer { handler: Consumer<SslBundle> -> handler.accept(updatedBundle) })
         }
 
         fun addUpdateHandler(updateHandler: Consumer<SslBundle>) {
-            Assert.notNull(updateHandler, "UpdateHandler must not be null")
             updateHandlers.add(updateHandler)
         }
     }

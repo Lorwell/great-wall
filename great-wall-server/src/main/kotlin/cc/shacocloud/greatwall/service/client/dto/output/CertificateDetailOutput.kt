@@ -2,7 +2,6 @@ package cc.shacocloud.greatwall.service.client.dto.output
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonFormat
-import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 
 /**
@@ -31,31 +30,31 @@ data class CertificateDetailVOutput(
      * 自动状态
      */
     @JsonAlias("auto_status")
-    val autoStatus: String,
+    val autoStatus: String? = null,
 
     /**
      * 是否可以设置自动模式
      */
     @JsonAlias("can_auto")
-    val canAuto: Boolean,
+    val canAuto: Boolean? = null,
 
     /**
      * 是否可以清除秘钥
      */
     @JsonAlias("can_clean")
-    val canClean: Boolean,
+    val canClean: Boolean? = null,
 
     /**
      * 是否可以删除
      */
     @JsonAlias("can_delete")
-    val canDelete: Boolean,
+    val canDelete: Boolean? = null,
 
     /**
      * 删除是否扣除积分
      */
     @JsonAlias("can_delete_coin")
-    val canDeleteCoin: Boolean,
+    val canDeleteCoin: Boolean? = null,
 
     /**
      * 是否可以下载
@@ -67,24 +66,29 @@ data class CertificateDetailVOutput(
      * 是否可以重新申请
      */
     @JsonAlias("can_renew")
-    val canRenew: Boolean,
+    val canRenew: Boolean? = null,
 
     /**
      * 域名清单,数组
      */
     val domains: List<String>,
+
     val id: String,
+
+    /**
+     * 名称
+     */
     val mark: String,
 
     /**
      * 是否使用独立通道,bool
      */
-    val quicker: Boolean,
+    val quicker: Boolean? = null,
 
     /**
      * 证书状态
      */
-    val status: String,
+    val status: String? = null,
 
     /**
      * 创建时间
