@@ -59,12 +59,14 @@ dependencyManagement {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-json")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    implementation("org.springframework.data:spring-data-r2dbc")
     implementation("io.r2dbc:r2dbc-h2")
+
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 

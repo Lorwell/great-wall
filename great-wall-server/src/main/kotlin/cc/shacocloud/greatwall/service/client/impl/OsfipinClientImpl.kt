@@ -7,9 +7,9 @@ import cc.shacocloud.greatwall.service.client.OsfipinClient
 import cc.shacocloud.greatwall.service.client.RestTemplateLogRequestInterceptor
 import cc.shacocloud.greatwall.service.client.dto.output.CertificateDetailOutput
 import cc.shacocloud.greatwall.service.client.dto.output.CertificateListOutput
-import cc.shacocloud.greatwall.utils.Json
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import cc.shacocloud.greatwall.utils.json.Json
 import org.slf4j.event.Level
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -63,7 +63,7 @@ class OsfipinClientImpl(
 
             // 使用自定义的json转换器
             messageConverters.removeIf { it is AbstractJackson2HttpMessageConverter }
-            messageConverters.add(MappingJackson2HttpMessageConverter(Json.mapper))
+            messageConverters.add(MappingJackson2HttpMessageConverter(Json.mapper()))
 
             // 新增支持 InputStream 的消息转换器
             messageConverters.add(InputStreamHttpMessageConverter())

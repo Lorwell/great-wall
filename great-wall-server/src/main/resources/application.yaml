@@ -5,7 +5,6 @@ server:
   ssl:
     enabled: false
 
-
 spring:
   threads:
     virtual:
@@ -32,16 +31,34 @@ spring:
       httpclient:
         websocket:
           # 设置 ws 最大帧数字节长度
-          max-frame-payload-length: 6553500
-        connect-timeout: 3000
-        response-timeout: 10S
+          max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
+        connect-timeout: ${HTTPCLIENT_CONNECT_TIMEOUT:3000}
+        response-timeout: ${HTTPCLIENT_RESPONSE_TIMEOUT:10S}
+        # 代理请求连接池
         pool:
-          type: fixed
-          max-idle-time: 5000
-          max-connections: 200
-          acquire-timeout: 45000
-      loadbalancer:
-        use404: true
+          type: ELASTIC
+          name: great-wall-proxy
+          max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:60S}
+          max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
+          eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
+  # r2dbc 配置
+  r2dbc:
+    url: file:${H2_FILE_DIR:./data/db}/db;MODE=MYSQL
+    username: ${H2_USER:faLhBysh}
+    password: ${H2_PASS:aclmUe6#!aq1tb0VL}
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 10
+      validation-query: select 1
+  # 初始化sql
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath*:sql/schema.sql
+      encoding: UTF-8
+
 
 site:
   tls:
@@ -59,3 +76,5 @@ logging:
   level:
     root: info
     "reactor.netty.http.server.AccessLog": info
+    "org.springframework.r2dbc": debug
+    "org.springframework.data.r2dbc": debug

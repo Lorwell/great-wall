@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.model.MonitorMetricsRecordMo
+import cc.shacocloud.greatwall.model.po.MonitorMetricsRecordPo
 
 /**
  * 监控指标服务
@@ -11,6 +11,6 @@ interface MonitorMetricsService {
     /**
      * 添加监控记录
      */
-    fun addRecord(record: MonitorMetricsRecordMo)
+    suspend fun addRecord(record: MonitorMetricsRecordPo)
 
 }

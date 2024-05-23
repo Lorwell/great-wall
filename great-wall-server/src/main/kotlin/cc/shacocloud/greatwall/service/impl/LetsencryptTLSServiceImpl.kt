@@ -19,7 +19,7 @@ class LetsencryptTLSServiceImpl(
 
     companion object {
         // 证书文件存储的父文件夹
-        private val filesParent = "${System.getProperty("user.dir")}/.runtimeData/tls/letsencrypt/osfipin"
+        private val filesParent = "${System.getProperty("user.dir")}/data/tls/letsencrypt/osfipin"
     }
 
     /**
