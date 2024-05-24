@@ -15,4 +15,9 @@ interface AppRouteRepository : CoroutineCrudRepository<AppRoutePo, Long> {
      */
     suspend fun findByStatus(status: AppRouteStatusEnum): List<AppRoutePo>
 
+    /**
+     *  根据应用id 查询模型
+     */
+    suspend fun findByAppId(appId: String): AppRoutePo?
+
 }

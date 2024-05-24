@@ -1,7 +1,7 @@
 package cc.shacocloud.greatwall.model.po
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
-import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum
+import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -33,8 +33,8 @@ data class AppRoutePo(
     /**
      * 优先级，值越高优先级越低，反之优先级越高
      */
-    @Column("`order`")
-    var order: Int,
+    @Column("app_order")
+    var appOrder: Int,
 
     /**
      * 路由条件
@@ -60,24 +60,4 @@ data class AppRoutePo(
     @Column("last_update_time")
     var lastUpdateTime: Date
 
-) {
-
-    class RoutePredicates : ArrayList<RoutePredicateOperator>()
-
-    /**
-     * 路由条件
-     */
-    data class RoutePredicateOperator(
-        val operator: RoutePredicateOperatorEnum,
-        val predicate: RoutePredicate
-    )
-
-    /**
-     * 路由条件
-     */
-    data class RoutePredicate(
-        val name: String,
-        val args: Map<String, Any>
-    )
-
-}
+)

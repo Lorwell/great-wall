@@ -1,13 +1,10 @@
 package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
-import cc.shacocloud.greatwall.model.po.AppRoutePo.RoutePredicates
+import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
 import cc.shacocloud.greatwall.model.po.QueryParamsMetrics
-import cc.shacocloud.greatwall.model.po.converter.BeanToJsonStringConverter
-import cc.shacocloud.greatwall.model.po.converter.EnumToStringConverter
-import cc.shacocloud.greatwall.model.po.converter.JsonStringToBeanConverter
-import cc.shacocloud.greatwall.model.po.converter.StringToEnumConverter
+import cc.shacocloud.greatwall.model.po.converter.*
 import io.r2dbc.h2.H2ConnectionConfiguration
 import io.r2dbc.h2.H2ConnectionFactory
 import io.r2dbc.pool.ConnectionPool
@@ -73,6 +70,8 @@ class R2dbcConfiguration(
      */
     override fun getCustomConverters(): MutableList<Any> {
         return mutableListOf(
+            DateToLongConverter(),
+            LongToDateConverter(),
             object : BeanToJsonStringConverter<QueryParamsMetrics>() {},
             object : JsonStringToBeanConverter<QueryParamsMetrics>() {},
             object : BeanToJsonStringConverter<CookiesParamsMetrics>() {},
@@ -80,7 +79,7 @@ class R2dbcConfiguration(
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
-            object : StringToEnumConverter<AppRouteStatusEnum>() {},
+            object : StringToEnumConverter<AppRouteStatusEnum>() {}
         )
     }
 

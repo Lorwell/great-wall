@@ -3,17 +3,21 @@ package cc.shacocloud.greatwall.service.impl
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.AND
 import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.OR
+import cc.shacocloud.greatwall.model.mo.BaseRouteInfo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
 import cc.shacocloud.greatwall.service.AppRouteService
 import cc.shacocloud.greatwall.service.RoutePredicateFactory
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import cc.shacocloud.greatwall.utils.Slf4j
+import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.reactor.flux
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import java.net.URI
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -24,7 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Service
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
-    val routePredicateFactory: RoutePredicateFactory
+    val routePredicateFactory: RoutePredicateFactory,
+    val routeLocatorBuilder: RouteLocatorBuilder
 ) : AppRouteService, RouteLocator {
 
     /**
@@ -35,17 +40,21 @@ class AppRouteServiceImpl(
             appRouteRepository.findByStatus(AppRouteStatusEnum.ONLINE)
                 .forEach { appRoute ->
 
+                    val uri = URI.create(appRoute.uri)
+
                     val routeBuilder = Route.async()
                         .id(appRoute.appId)
-                        .uri(appRoute.uri)
-                        .order(appRoute.order)
+                        .uri(uri)
+                        .order(appRoute.appOrder)
 
                     val first = AtomicBoolean(true)
+
+                    val baseInfo = BaseRouteInfo(appRoute.appId, uri, appRoute.appOrder)
 
                     // 条件
                     appRoute.predicates
                         .map {
-                            it.operator to routePredicateFactory.asyncPredicate(it.predicate)
+                            it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
                         }
                         .forEach { (operator, predicate) ->
                             if (first.getAndSet(false)) {
@@ -67,6 +76,10 @@ class AppRouteServiceImpl(
      * 刷新路由
      */
     override fun refreshRoutes() {
+        if (log.isInfoEnabled) {
+            log.info("刷新路由...")
+        }
+
         ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
     }
 

@@ -10,6 +10,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Service
@@ -36,14 +37,19 @@ class MonitorMetricsServiceImpl(
             @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch {
                 launch(dispatcher) {
-                    val record = channel.receive()
-
                     try {
-                        monitorMetricsRepository.save(record)
-                    } catch (e: Exception) {
-                        if (log.isErrorEnabled) {
-                            log.error("保存监控指标记录发生例外！", e)
+                        while (!channel.isClosedForReceive) {
+                            val record = channel.receive()
+
+                            try {
+                                monitorMetricsRepository.save(record)
+                            } catch (e: Exception) {
+                                if (log.isErrorEnabled) {
+                                    log.error("保存监控指标记录发生例外！", e)
+                                }
+                            }
                         }
+                    } catch (_: ClosedReceiveChannelException) {
                     }
                 }
             }

@@ -12,7 +12,7 @@ fun ServerHttpRequest.getRealIp(): String {
     var ip = headers.getFirst("X-Real-IP")
 
     if (ip.isNullOrBlank() || UNKNOWN.equals(ip, true)) {
-        ip = headers.getFirst("x-forwarded-for")
+        ip = headers.getFirst("X-Forwarded-For")
     }
     if (ip.isNullOrBlank() || UNKNOWN.equals(ip, true)) {
         ip = headers.getFirst("Proxy-Client-IP")

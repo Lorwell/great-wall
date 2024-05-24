@@ -18,9 +18,11 @@ CREATE TABLE IF NOT EXISTS app_route
     id               BIGINT PRIMARY KEY AUTO_INCREMENT,
     app_id           VARCHAR(50),
     uri              VARCHAR(255),
-    `order`          INT,
+    app_order        INT,
     predicates       LONGTEXT,
     status           VARCHAR(20),
     create_time      BIGINT,
-    last_update_time BIGINT
+    last_update_time BIGINT,
+
+    UNIQUE (app_id)
 );
