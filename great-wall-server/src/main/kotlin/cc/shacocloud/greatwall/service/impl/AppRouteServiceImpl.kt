@@ -28,8 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Service
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
-    val routePredicateFactory: RoutePredicateFactory,
-    val routeLocatorBuilder: RouteLocatorBuilder
+    val routePredicateFactory: RoutePredicateFactory
 ) : AppRouteService, RouteLocator {
 
     /**
@@ -39,35 +38,36 @@ class AppRouteServiceImpl(
         return flux {
             appRouteRepository.findByStatus(AppRouteStatusEnum.ONLINE)
                 .forEach { appRoute ->
+                    appRoute.uris.forEach { uriStr ->
+                        val uri = URI.create(uriStr)
 
-                    val uri = URI.create(appRoute.uri)
+                        val routeBuilder = Route.async()
+                            .id(appRoute.appId)
+                            .uri(uri)
+                            .order(appRoute.priority)
 
-                    val routeBuilder = Route.async()
-                        .id(appRoute.appId)
-                        .uri(uri)
-                        .order(appRoute.appOrder)
+                        val first = AtomicBoolean(true)
 
-                    val first = AtomicBoolean(true)
+                        val baseInfo = BaseRouteInfo(appRoute.appId, uri, appRoute.priority)
 
-                    val baseInfo = BaseRouteInfo(appRoute.appId, uri, appRoute.appOrder)
-
-                    // 条件
-                    appRoute.predicates
-                        .map {
-                            it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
-                        }
-                        .forEach { (operator, predicate) ->
-                            if (first.getAndSet(false)) {
-                                routeBuilder.asyncPredicate(predicate)
-                            } else {
-                                when (operator) {
-                                    AND -> routeBuilder.and(predicate)
-                                    OR -> routeBuilder.or(predicate)
+                        // 条件
+                        appRoute.predicates
+                            .map {
+                                it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
+                            }
+                            .forEach { (operator, predicate) ->
+                                if (first.getAndSet(false)) {
+                                    routeBuilder.asyncPredicate(predicate)
+                                } else {
+                                    when (operator) {
+                                        AND -> routeBuilder.and(predicate)
+                                        OR -> routeBuilder.or(predicate)
+                                    }
                                 }
                             }
-                        }
 
-                    send(routeBuilder.build())
+                        send(routeBuilder.build())
+                    }
                 }
         }
     }

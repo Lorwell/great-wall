@@ -32,7 +32,6 @@ export const getDomain = (): string => {
     return `${protocol}//${host}`
 }
 
-
 /**
  * 删除前缀
  * @param str
@@ -46,9 +45,21 @@ export const removePrefix = (str: string, prefix: string) => {
     return str.substring(prefix.length)
 }
 
+/**
+ * 添加前缀，如果不存在
+ * @param str
+ * @param prefix
+ */
+export const addPrefix = (str: string, prefix: string) => {
+    if (str.startsWith(prefix)) {
+        return str
+    }
+
+    return prefix + str
+}
 
 /**
- * 添加后缀
+ * 添加后缀，如果不存在
  * @param str
  * @param suffix
  */
@@ -59,6 +70,20 @@ export const addSuffix = (str: string, suffix: string) => {
 
     return str + suffix
 }
+
+/**
+ * 删除后缀，如果存在
+ * @param str
+ * @param suffix
+ */
+export const removeSuffix = (str: string, suffix: string) => {
+    if (!str.endsWith(suffix)) {
+        return str
+    }
+
+    return str.substring(0, str.length - suffix.length)
+}
+
 
 /**
  * 数字字符

@@ -1,0 +1,63 @@
+import {DataTable} from "@/components/data-table/data-table.tsx";
+import {columns} from "@/pages/app-routes/list/columns.tsx";
+import {data} from "@/pages/app-routes/list/data.ts";
+import {RowContext} from "@/pages/app-routes/list/RowActions.tsx";
+
+
+/**
+ * 应用路由列表
+ * @constructor
+ */
+const AppRoutesList = () => {
+
+    /**
+     * 查看事件
+     * @param ctx
+     */
+    function handleView(ctx: RowContext) {
+
+    }
+
+    /**
+     * 编辑事件
+     * @param ctx
+     */
+    function handleEdit(ctx: RowContext) {
+
+    }
+
+    /**
+     * 查看事件
+     * @param ctx
+     */
+    function handleOffline(ctx: RowContext) {
+
+    }
+
+    /**
+     * 查看事件
+     * @param ctx
+     */
+    function handleOnline(ctx: RowContext) {
+
+    }
+
+    return (
+        <div>
+            <DataTable data={data}
+                       searchColumnId={"name"}
+                       manual={false}
+                       columns={columns({
+                           event: {
+                               onView: handleView,
+                               onEdit: handleEdit,
+                               onOffline: handleOffline,
+                               onOnline: handleOnline,
+                           }
+                       })}
+            />
+        </div>
+    )
+}
+
+export default AppRoutesList

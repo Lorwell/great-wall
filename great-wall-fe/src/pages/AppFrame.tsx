@@ -63,7 +63,7 @@ const AppFrame = () => {
                             <ModeToggle/>
                         </div>
 
-                        <div>
+                        <div className={"flex-auto"}>
                             <Outlet/>
                         </div>
                     </div>

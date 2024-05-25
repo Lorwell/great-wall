@@ -1,17 +1,18 @@
 import {ThemeProvider} from "@/components/theme-provider"
 import './App.less'
 import {Outlet, Route, Routes, useLocation, useNavigate} from "react-router-dom"
-import {lazy} from "react";
+import {lazy, useEffect} from "react";
 import {useAsyncEffect} from "ahooks";
-import {isBlank} from "@/utils/Utils.ts";
+import {isBlank, removePrefix, removeSuffix} from "@/utils/Utils.ts";
 import Error404 from "@/pages/Error404.tsx";
 
 const AppFrame = lazy(() => import("@/pages/AppFrame"));
+const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
 
 const App = () => {
 
     return (
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
             {/* 路由管理 */}
             <Routes>
                 {/* 登录页面 */}
@@ -19,12 +20,36 @@ const App = () => {
                 {/* 应用登录守卫 */}
                 <Route path="" element={<LoginStatusGuard/>}>
                     <Route path="manage" element={<AppFrame/>}>
+                        <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
+                            <Route path="list" element={<AppRouteList/>}/>
+                            <Route path="*" element={<Error404/>}/>
+                        </Route>
                         <Route path="*" element={<Error404/>}/>
                     </Route>
                 </Route>
             </Routes>
         </ThemeProvider>
     )
+}
+
+/**
+ * 空路由，只用来重定向
+ * @param base 匹配的基础路由地址
+ * @param to 目标路由地址
+ * @constructor
+ */
+const EmptyRoute = ({base, to}: { base: string, to: string }) => {
+    const navigate = useNavigate();
+    const {pathname} = useLocation();
+
+    useEffect(() => {
+        const baseRoute = removeSuffix(base, "/");
+        if (baseRoute === removeSuffix(pathname, "/")) {
+            navigate(`${baseRoute}/${removePrefix(to, "/")}`);
+        }
+    }, [pathname])
+
+    return <Outlet/>;
 }
 
 /**

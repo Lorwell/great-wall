@@ -1,0 +1,20 @@
+/* 设置滚动条的样式 */
+::-webkit-scrollbar {
+
+  width: 5px;
+  height: 5px;
+
+  &-track {
+    border-radius: 5px;
+    background: transparent;
+  }
+
+  &-thumb {
+    background-color: #d4d5d6;
+    border-radius: 5px;
+
+    &:hover {
+      transition: background-color 0.2s;
+    }
+  }
+}

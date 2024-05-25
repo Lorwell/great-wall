@@ -42,15 +42,16 @@ class TestController(
 
         val appId = "test1"
         val appRoutePo = appRouteRepository.findByAppId(appId)?.apply {
-            uri = "https://mirage.shacocloud.cc"
-            appOrder = 0
+            uris = listOf("https://mirage.shacocloud.cc")
+            priority = 0
             predicates = routePredicates
             status = AppRouteStatusEnum.ONLINE
             lastUpdateTime = Date()
         } ?: AppRoutePo(
+            name = "测试",
             appId = "test1",
-            uri = "https://mirage.shacocloud.cc",
-            appOrder = 0,
+            uris = listOf("https://mirage.shacocloud.cc"),
+            priority = 0,
             predicates = routePredicates,
             status = AppRouteStatusEnum.ONLINE,
             createTime = Date(),

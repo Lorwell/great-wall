@@ -19,6 +19,18 @@ data class AppRoutePo(
     val id: Long? = null,
 
     /**
+     * 名称
+     */
+    @Column("name")
+    var name: String,
+
+    /**
+     * 描述
+     */
+    @Column("describe")
+    var describe: String? = null,
+
+    /**
      * 应用唯一id
      */
     @Column("app_id")
@@ -27,14 +39,14 @@ data class AppRoutePo(
     /**
      * 请求地址
      */
-    @Column("uri")
-    var uri: String,
+    @Column("uris")
+    var uris: List<String>,
 
     /**
      * 优先级，值越高优先级越低，反之优先级越高
      */
-    @Column("app_order")
-    var appOrder: Int,
+    @Column("priority")
+    var priority: Int,
 
     /**
      * 路由条件

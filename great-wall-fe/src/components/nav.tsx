@@ -1,9 +1,9 @@
-import {LucideIcon} from "lucide-react"
 import {cn} from "@/utils/shadcnUtils"
 import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip"
 import {Link, useLocation} from "react-router-dom";
 import {buttonVariants} from "@/components/ui/button.tsx";
 import {isNull} from "@/utils/Utils.ts";
+import {IconType} from "@/components/types.tsx";
 
 export interface Path {
     pathname: string;
@@ -14,7 +14,7 @@ export interface Path {
 export interface NavLink {
     title: string
     badge?: string
-    icon: LucideIcon
+    icon: IconType
     to?: string | Partial<Path>
 }
 
@@ -54,55 +54,58 @@ export function Nav({links, isCollapsed}: NavProps) {
             <nav
                 className="grid gap-1 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
                 {
-                    links.map((link, index) =>
-                        isCollapsed
-                            ? (
-                                <Tooltip key={index} delayDuration={0}>
-                                    <TooltipTrigger asChild>
-                                        <Link to={link.to || "#"}
-                                              className={cn(
-                                                  buttonVariants({variant: "ghost", size: "icon"}),
-                                                  "h-9 w-9",
-                                                  isActive(link.to) &&
-                                                  "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
-                                              )}
-                                        >
-                                            <link.icon className="h-4 w-4"/>
-                                            <span className="sr-only">{link.title}</span>
-                                        </Link>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="right" className="flex items-center gap-4">
+                    links.map((link, index) => {
+                            let active = isActive(link.to);
+                            return isCollapsed
+                                ? (
+                                    <Tooltip key={index} delayDuration={0}>
+                                        <TooltipTrigger asChild>
+                                            <Link to={link.to || "#"}
+                                                  className={cn(
+                                                      buttonVariants({variant: active ? "default" : "ghost", size: "icon"}),
+                                                      "h-9 w-9",
+                                                      active &&
+                                                      "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
+                                                  )}
+                                            >
+                                                <link.icon className="h-4 w-4"/>
+                                                <span className="sr-only">{link.title}</span>
+                                            </Link>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" className="flex items-center gap-4">
+                                            {link.title}
+                                            {link.badge && (
+                                                <span className="ml-auto text-muted-foreground">{link.badge}</span>
+                                            )}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )
+                                : (
+                                    <Link key={index}
+                                          to={link.to || "#"}
+                                          className={cn(
+                                              buttonVariants({variant: active ? "default" : "ghost", size: "sm"}),
+                                              active && "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
+                                              "justify-start"
+                                          )}
+                                    >
+                                        <link.icon className="mr-2 h-4 w-4"/>
                                         {link.title}
                                         {link.badge && (
-                                            <span className="ml-auto text-muted-foreground">{link.badge}</span>
-                                        )}
-                                    </TooltipContent>
-                                </Tooltip>
-                            )
-                            : (
-                                <Link key={index}
-                                      to={link.to || "#"}
-                                      className={cn(
-                                          buttonVariants({variant: "ghost", size: "sm"}),
-                                          isActive(link.to) && "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                                          "justify-start"
-                                      )}
-                                >
-                                    <link.icon className="mr-2 h-4 w-4"/>
-                                    {link.title}
-                                    {link.badge && (
-                                        <span className={
-                                            cn(
-                                                "ml-auto",
-                                                isActive(link.to) && "text-background dark:text-white"
-                                            )}
-                                        >
+                                            <span className={
+                                                cn(
+                                                    "ml-auto",
+                                                    active && "text-background dark:text-white"
+                                                )}
+                                            >
                                         {link.badge}
                                     </span>
-                                    )}
-                                </Link>
-                            )
-                    )}
+                                        )}
+                                    </Link>
+                                )
+                        }
+                    )
+                }
             </nav>
         </div>
     )

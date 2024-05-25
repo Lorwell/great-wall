@@ -11,6 +11,6 @@ export const navConfig: NavLink[] = [
         title: "应用路由",
         badge: "128",
         icon: LayoutPanelLeft,
-        to: "/manage/ab"
+        to: "/manage/app-routes/list"
     },
 ]
