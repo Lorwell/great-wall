@@ -5,7 +5,6 @@ import {Button} from "@/components/ui/button"
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>
-    isSupportSelect: boolean
 }
 
 /**
@@ -13,20 +12,10 @@ interface DataTablePaginationProps<TData> {
  * @constructor
  */
 export function DataTablePagination<TData>(props: DataTablePaginationProps<TData>) {
-    const {table, isSupportSelect} = props
+    const {table} = props
 
     return (
-        <div className="flex items-center justify-between px-2">
-            <div className="flex-1 text-sm text-muted-foreground">
-                {
-                    isSupportSelect && (
-                        <span>
-                            在 {table.getFilteredRowModel().rows.length} 行中选中 {table.getFilteredSelectedRowModel().rows.length} 行
-                        </span>
-                    )
-                }
-            </div>
-
+        <div className="flex items-center justify-end px-2">
             <div className="flex items-center space-x-3 lg:space-x-6">
                 <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                     共计 {table.getRowCount()} 条数据

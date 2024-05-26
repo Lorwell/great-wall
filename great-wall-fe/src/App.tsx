@@ -1,33 +1,41 @@
 import {ThemeProvider} from "@/components/theme-provider"
 import './App.less'
-import {Outlet, Route, Routes, useLocation, useNavigate} from "react-router-dom"
-import {lazy, useEffect} from "react";
+import {Navigate, Outlet, Route, Routes, useLocation, useNavigate} from "react-router-dom"
+import {lazy, Suspense, useEffect} from "react";
 import {useAsyncEffect} from "ahooks";
 import {isBlank, removePrefix, removeSuffix} from "@/utils/Utils.ts";
 import Error404 from "@/pages/Error404.tsx";
+import SuspenseFallback from "@/pages/SuspenseFallback.tsx";
+import getAddAppRoutesRoutes from "@/pages/app-routes/add/route.tsx";
 
 const AppFrame = lazy(() => import("@/pages/AppFrame"));
 const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
-
+const AddAppRoutes = lazy(() => import("@/pages/app-routes/add"));
 const App = () => {
 
     return (
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            {/* 路由管理 */}
-            <Routes>
-                {/* 登录页面 */}
-                {/*<Route path="login" element={<Login/>}/>*/}
-                {/* 应用登录守卫 */}
-                <Route path="" element={<LoginStatusGuard/>}>
-                    <Route path="manage" element={<AppFrame/>}>
-                        <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
-                            <Route path="list" element={<AppRouteList/>}/>
+            <Suspense fallback={<SuspenseFallback/>}>
+                {/* 路由管理 */}
+                <Routes>
+                    {/* 登录页面 */}
+                    {/*<Route path="login" element={<Login/>}/>*/}
+                    {/* 应用登录守卫 */}
+                    <Route path="" element={<LoginStatusGuard/>}>
+                        <Route path="manage" element={<AppFrame/>}>
+                            <Route path="" element={<Navigate to={"app-routes"}/>}/>
+                            <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
+                                <Route path="list" element={<AppRouteList/>}/>
+                                <Route path="add" element={<AddAppRoutes/>}>
+                                    {getAddAppRoutesRoutes()}
+                                </Route>
+
+                            </Route>
                             <Route path="*" element={<Error404/>}/>
                         </Route>
-                        <Route path="*" element={<Error404/>}/>
                     </Route>
-                </Route>
-            </Routes>
+                </Routes>
+            </Suspense>
         </ThemeProvider>
     )
 }

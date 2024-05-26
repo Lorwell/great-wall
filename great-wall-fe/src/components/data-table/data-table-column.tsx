@@ -12,29 +12,33 @@ export const checkboxSelectId = "_checkbox_select"
  *
  * 用于表格中选择行
  */
-export const dataTableCheckboxColumn: ColumnDef<any> = {
-    id: checkboxSelectId,
-    header: ({table}) => (
-        <Checkbox
-            checked={
-                table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="选择所有"
-            className="translate-y-[2px]"
-        />
-    ),
-    cell: ({row}) => (
-        <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="选择行"
-            className="translate-y-[2px]"
-        />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-}
+export const dataTableCheckboxColumn = <TData extends RowData>(): ColumnDef<TData> => (
+    {
+        id: checkboxSelectId,
+        header: ({table}) => (
+            <Checkbox
+                checked={
+                    table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+                }
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="选择所有"
+                className="translate-y-[2px]"
+            />
+        ),
+        cell: ({row}) => (
+            <Checkbox
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => row.toggleSelected(!!value)}
+                aria-label="选择行"
+                className="translate-y-[2px]"
+            />
+        ),
+        size: 30,
+        enableSorting: false,
+        enableHiding: false,
+        enableResizing: false
+    }
+)
 
 export interface ColumnCellDef<TData extends RowData, TValue = any> extends Omit<ColumnDef<TData, TValue>, "accessorKey" | "label" | "header"> {
 

@@ -2,7 +2,7 @@ import {z} from "zod";
 import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 
 export const schema = z.object({
-    id: z.string(),
+    id: z.number(),
     name: z.string(),
     describe: z.string().optional(),
     uris: z.array(z.string()),

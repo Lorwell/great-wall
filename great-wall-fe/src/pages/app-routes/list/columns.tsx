@@ -1,6 +1,6 @@
 import {ColumnDef} from "@tanstack/react-table";
 import {AppRoute} from "@/pages/app-routes/list/schema.ts";
-import {columnCell} from "@/components/data-table/data-table-column.tsx";
+import {columnCell, dataTableCheckboxColumn} from "@/components/data-table/data-table-column.tsx";
 import dayjs from "dayjs";
 import {Badge} from "@/components/ui/badge";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
@@ -18,6 +18,7 @@ export interface ColumnsProps {
 export const columns = ({event}: ColumnsProps): ColumnDef<AppRoute>[] => {
 
     return [
+        dataTableCheckboxColumn( ),
         columnCell({
                 columnId: "name",
                 label: "名称",
@@ -83,7 +84,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRoute>[] => {
             {
                 columnId: "createTime",
                 label: "创建时间",
-                size: 140,
+                size: 120,
                 cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
             }
         ),
@@ -91,7 +92,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRoute>[] => {
             {
                 columnId: "lastUpdateTime",
                 label: "最后修改时间",
-                size: 140,
+                size: 120,
                 cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
             }
         ),

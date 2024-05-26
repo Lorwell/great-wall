@@ -3,7 +3,7 @@ import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 
 export const data: AppRoute[] = [
     {
-        id: "1",
+        id: 1,
         name: "测试",
         describe: "xxx",
         uris: ["https://mirage.shacocloud.cc", "https://mirage.shacocloud.cc", "https://mirage.shacocloud.cc"],

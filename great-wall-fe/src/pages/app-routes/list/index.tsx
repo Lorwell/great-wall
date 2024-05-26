@@ -2,13 +2,17 @@ import {DataTable} from "@/components/data-table/data-table.tsx";
 import {columns} from "@/pages/app-routes/list/columns.tsx";
 import {data} from "@/pages/app-routes/list/data.ts";
 import {RowContext} from "@/pages/app-routes/list/RowActions.tsx";
+import {useNavigate} from "react-router-dom";
+import {LayoutPanelLeft} from "lucide-react";
 
 
 /**
  * 应用路由列表
  * @constructor
  */
-const AppRoutesList = () => {
+function AppRoutesList() {
+
+    const navigate = useNavigate();
 
     /**
      * 查看事件
@@ -43,7 +47,7 @@ const AppRoutesList = () => {
     }
 
     return (
-        <div>
+        <div className={"w-full h-full"}>
             <DataTable data={data}
                        searchColumnId={"name"}
                        manual={false}
@@ -55,6 +59,13 @@ const AppRoutesList = () => {
                                onOnline: handleOnline,
                            }
                        })}
+                       plusOptions={[
+                           {
+                               label: "新建应用路由",
+                               icon: LayoutPanelLeft,
+                               onClick: () => navigate("/manage/app-routes/add"),
+                           }
+                       ]}
             />
         </div>
     )

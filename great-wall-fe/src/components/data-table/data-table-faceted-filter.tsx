@@ -1,4 +1,3 @@
-import * as React from "react"
 import {CheckIcon, PlusCircledIcon} from "@radix-ui/react-icons"
 import {Column} from "@tanstack/react-table"
 
@@ -14,17 +13,14 @@ import {
     CommandList,
     CommandSeparator,
 } from "@/components/ui/command"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+import {Popover, PopoverContent, PopoverTrigger,} from "@/components/ui/popover"
 import {Separator} from "@/components/ui/separator"
+import {IconType} from "@/components/types.tsx";
 
 export interface DataTableFacetedFilterOptions {
     label: string
     value: string
-    icon?: React.ComponentType<{ className?: string }>
+    icon?: IconType
 }
 
 interface DataTableFacetedFilterProps<TData, TValue> {

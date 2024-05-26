@@ -16,12 +16,14 @@ import {
 } from "@tanstack/react-table"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
 import {DataTablePagination} from "./data-table-pagination"
-import {DataTableToolbar, DataTableToolbarFilterOptions} from "./data-table-toolbar"
+import {DataTableToolbar} from "./data-table-toolbar"
 import {isNull} from "@/utils/Utils.ts";
 import {checkboxSelectId} from "@/components/data-table/data-table-column.tsx";
+import {cn} from "@/utils/shadcnUtils.ts";
+import {DataTableToolbarFilterOptions} from "@/components/data-table/data-table-filter-options.tsx";
+import {DataTablePlusItemOptions} from "@/components/data-table/data-table-plus-options.tsx";
 
 import styles from "./styles.module.less"
-import {cn} from "@/utils/shadcnUtils.ts";
 
 interface DataTableProps<TData, TValue> {
 
@@ -43,7 +45,12 @@ interface DataTableProps<TData, TValue> {
     /**
      * 过滤器选项
      */
-    toolbarFilterOptions?: DataTableToolbarFilterOptions[]
+    filterOptions?: DataTableToolbarFilterOptions[]
+
+    /**
+     * 新增条目
+     */
+    plusOptions?: DataTablePlusItemOptions<TData>[]
 
     /**
      * 搜索列的id
@@ -79,7 +86,8 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
         rowCount,
         columns,
         searchColumnId,
-        toolbarFilterOptions = [],
+        filterOptions = [],
+        plusOptions = [],
         manual = false,
         onChange
     } = props
@@ -134,7 +142,11 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
 
     return (
         <div className="space-y-4">
-            <DataTableToolbar table={table} searchColumnId={searchColumnId} filter={toolbarFilterOptions}/>
+            <DataTableToolbar table={table}
+                              searchColumnId={searchColumnId}
+                              filterOptions={filterOptions}
+                              plusOptions={plusOptions}
+            />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -183,9 +195,9 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
                                                        style={{width: cell.column.getSize()}}
                                             >
                                                 <div className={cn("truncate", {
-                                                    "px-3": cell.column.getCanSort()
+                                                    "pl-3": cell.column.getCanSort()
                                                 })}
-                                                     style={{width: cell.column.getSize()}}
+                                                     style={{width: "calc(100% - 0.725rem)"}}
                                                 >
                                                     {flexRender(
                                                         cell.column.columnDef.cell,
@@ -211,7 +223,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
                     </TableBody>
                 </Table>
             </div>
-            <DataTablePagination table={table} isSupportSelect={isSupportSelect}/>
+            <DataTablePagination table={table}/>
         </div>
     )
 }

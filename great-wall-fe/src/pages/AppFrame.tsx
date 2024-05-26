@@ -54,9 +54,9 @@ const AppFrame = () => {
                     />
                 </ResizablePanel>
                 <ResizableHandle withHandle/>
-                <ResizablePanel defaultSize={80}>
+                <ResizablePanel defaultSize={85}>
 
-                    <div className={"flex flex-col gap-4 px-4 sm:py-3"}>
+                    <div className={"flex flex-col gap-4 px-4 sm:py-3 h-full w-full"}>
 
                         <div className={"flex flex-row justify-between"}>
                             <AppFrameBreadcrumb/>
