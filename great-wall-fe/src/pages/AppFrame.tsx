@@ -21,57 +21,57 @@ import {ModeToggle} from "@/components/mode-toggle.tsx";
  * @constructor
  */
 const AppFrame = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
-    return (
-        <TooltipProvider delayDuration={0}>
-            <ResizablePanelGroup direction="horizontal"
-                                 style={{height: "100vh", width: "100vw"}}
-            >
-                <ResizablePanel defaultSize={15}
-                                minSize={10}
-                                maxSize={20}
-                                collapsedSize={4}
-                                collapsible={true}
-                                onCollapse={() => setIsCollapsed(true)}
-                                onExpand={() => setIsCollapsed(false)}
-                                className={cn(
-                                    isCollapsed &&
-                                    "min-w-[50px] transition-all duration-300 ease-in-out"
-                                )}
-                >
-                    <div
+  return (
+    <TooltipProvider delayDuration={0}>
+      <ResizablePanelGroup direction="horizontal"
+                           style={{height: "100vh", width: "100vw"}}
+      >
+        <ResizablePanel defaultSize={15}
+                        minSize={10}
+                        maxSize={20}
+                        collapsedSize={4}
+                        collapsible={true}
+                        onCollapse={() => setIsCollapsed(true)}
+                        onExpand={() => setIsCollapsed(false)}
                         className={cn(
-                            "flex h-[52px] items-center justify-center",
-                            isCollapsed ? "h-[52px]" : "px-2"
+                          isCollapsed &&
+                          "min-w-[50px] transition-all duration-300 ease-in-out"
                         )}
-                    >
-                        Great Wall
-                    </div>
-                    <Separator/>
-                    <Nav isCollapsed={isCollapsed}
-                         links={navConfig}
-                    />
-                </ResizablePanel>
-                <ResizableHandle withHandle/>
-                <ResizablePanel defaultSize={85}>
+        >
+          <div
+            className={cn(
+              "flex h-[52px] items-center justify-center",
+              isCollapsed ? "h-[52px]" : "px-2"
+            )}
+          >
+            Great Wall
+          </div>
+          <Separator/>
+          <Nav isCollapsed={isCollapsed}
+               links={navConfig}
+          />
+        </ResizablePanel>
+        <ResizableHandle withHandle/>
+        <ResizablePanel defaultSize={85}>
 
-                    <div className={"flex flex-col gap-4 px-4 sm:py-3 h-full w-full"}>
+          <div className={"flex flex-col gap-4 px-4 sm:py-3 h-full w-full"}>
 
-                        <div className={"flex flex-row justify-between"}>
-                            <AppFrameBreadcrumb/>
-                            <ModeToggle/>
-                        </div>
+            <div className={"flex flex-row justify-between"}>
+              <AppFrameBreadcrumb/>
+              <ModeToggle/>
+            </div>
 
-                        <div className={"flex-auto"}>
-                            <Outlet/>
-                        </div>
-                    </div>
+            <div className={"flex-auto"}>
+              <Outlet/>
+            </div>
+          </div>
 
-                </ResizablePanel>
-            </ResizablePanelGroup>
-        </TooltipProvider>
-    )
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </TooltipProvider>
+  )
 }
 
 /**
@@ -79,27 +79,27 @@ const AppFrame = () => {
  * @constructor
  */
 const AppFrameBreadcrumb = () => {
-    return (
-        <Breadcrumb className="hidden md:flex">
-            <BreadcrumbList>
-                <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                        <Link to="#">Dashboard</Link>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator/>
-                <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                        <Link to="#">Products</Link>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator/>
-                <BreadcrumbItem>
-                    <BreadcrumbPage>All Products</BreadcrumbPage>
-                </BreadcrumbItem>
-            </BreadcrumbList>
-        </Breadcrumb>
-    )
+  return (
+    <Breadcrumb className="hidden md:flex">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link to="#">Dashboard</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator/>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link to="#">Products</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator/>
+        <BreadcrumbItem>
+          <BreadcrumbPage>All Products</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
 }
 
 export default AppFrame

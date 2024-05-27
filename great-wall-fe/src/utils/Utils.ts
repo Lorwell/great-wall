@@ -5,7 +5,7 @@ import _ from "lodash";
  * @param value
  */
 export const isBlank = (value: string | undefined | null): boolean => {
-    return _.isUndefined(value) || _.isNull(value) || _.isEmpty(value) || _.isEmpty(value?.trim());
+  return _.isUndefined(value) || _.isNull(value) || _.isEmpty(value) || _.isEmpty(value?.trim());
 }
 
 /**
@@ -13,7 +13,7 @@ export const isBlank = (value: string | undefined | null): boolean => {
  * @param value
  */
 export const isNull = (value: any | undefined | null): boolean => {
-    return _.isUndefined(value) || _.isNull(value);
+  return _.isUndefined(value) || _.isNull(value);
 }
 
 /**
@@ -21,15 +21,15 @@ export const isNull = (value: any | undefined | null): boolean => {
  * @param value
  */
 export const isEmpty = (value: Array<any> | Map<any, any> | Set<any> | undefined | null): boolean => {
-    return _.isEmpty(value);
+  return _.isEmpty(value);
 }
 
 /**
  * 获取当前的域
  */
 export const getDomain = (): string => {
-    const {protocol, host} = window.location;
-    return `${protocol}//${host}`
+  const {protocol, host} = window.location;
+  return `${protocol}//${host}`
 }
 
 /**
@@ -38,11 +38,11 @@ export const getDomain = (): string => {
  * @param prefix
  */
 export const removePrefix = (str: string, prefix: string) => {
-    if (!str.startsWith(prefix)) {
-        return str
-    }
+  if (!str.startsWith(prefix)) {
+    return str
+  }
 
-    return str.substring(prefix.length)
+  return str.substring(prefix.length)
 }
 
 /**
@@ -51,11 +51,11 @@ export const removePrefix = (str: string, prefix: string) => {
  * @param prefix
  */
 export const addPrefix = (str: string, prefix: string) => {
-    if (str.startsWith(prefix)) {
-        return str
-    }
+  if (str.startsWith(prefix)) {
+    return str
+  }
 
-    return prefix + str
+  return prefix + str
 }
 
 /**
@@ -64,11 +64,11 @@ export const addPrefix = (str: string, prefix: string) => {
  * @param suffix
  */
 export const addSuffix = (str: string, suffix: string) => {
-    if (str.endsWith(suffix)) {
-        return str
-    }
+  if (str.endsWith(suffix)) {
+    return str
+  }
 
-    return str + suffix
+  return str + suffix
 }
 
 /**
@@ -77,11 +77,11 @@ export const addSuffix = (str: string, suffix: string) => {
  * @param suffix
  */
 export const removeSuffix = (str: string, suffix: string) => {
-    if (!str.endsWith(suffix)) {
-        return str
-    }
+  if (!str.endsWith(suffix)) {
+    return str
+  }
 
-    return str.substring(0, str.length - suffix.length)
+  return str.substring(0, str.length - suffix.length)
 }
 
 
@@ -105,13 +105,13 @@ const NORMAL_CHARACTERS = [...NUMBER_CHAR, ...CHARACTER]
  * @param size
  */
 export const randomStr = (size: number): string => {
-    let str = ""
-    for (let i = 0; i < size; i++) {
-        const index = _.random(0, NORMAL_CHARACTERS.length - 1, false);
-        str += NORMAL_CHARACTERS[index];
-    }
+  let str = ""
+  for (let i = 0; i < size; i++) {
+    const index = _.random(0, NORMAL_CHARACTERS.length - 1, false);
+    str += NORMAL_CHARACTERS[index];
+  }
 
-    return str
+  return str
 }
 
 /**
@@ -121,24 +121,24 @@ export const randomStr = (size: number): string => {
  */
 export const randomImgSrcQueryParams = (src: string,
                                         paramsKey: string = "_randomKey"): string => {
-    const params = new Array<string>();
+  const params = new Array<string>();
 
-    // 如果 src 上带了查询参数
-    const i = src.indexOf("?");
-    if (i > 0) {
-        const param = src.substring(i + 1, src.length);
-        for (let str of _.split(param, "&")) {
-            params.push(str);
-        }
-        src = src.substring(0, i);
+  // 如果 src 上带了查询参数
+  const i = src.indexOf("?");
+  if (i > 0) {
+    const param = src.substring(i + 1, src.length);
+    for (let str of _.split(param, "&")) {
+      params.push(str);
     }
+    src = src.substring(0, i);
+  }
 
-    params.push(`${encodeURIComponent(paramsKey)}=${encodeURIComponent(randomStr(6))}`)
+  params.push(`${encodeURIComponent(paramsKey)}=${encodeURIComponent(randomStr(6))}`)
 
-    if (params.length > 0) {
-        src = src + "?" + params.join("&");
-    }
+  if (params.length > 0) {
+    src = src + "?" + params.join("&");
+  }
 
-    return src;
+  return src;
 
 }

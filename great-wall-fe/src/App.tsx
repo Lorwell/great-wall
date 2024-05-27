@@ -13,31 +13,31 @@ const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
 const AddAppRoutes = lazy(() => import("@/pages/app-routes/add"));
 const App = () => {
 
-    return (
-        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            <Suspense fallback={<SuspenseFallback/>}>
-                {/* 路由管理 */}
-                <Routes>
-                    {/* 登录页面 */}
-                    {/*<Route path="login" element={<Login/>}/>*/}
-                    {/* 应用登录守卫 */}
-                    <Route path="" element={<LoginStatusGuard/>}>
-                        <Route path="manage" element={<AppFrame/>}>
-                            <Route path="" element={<Navigate to={"app-routes"}/>}/>
-                            <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
-                                <Route path="list" element={<AppRouteList/>}/>
-                                <Route path="add" element={<AddAppRoutes/>}>
-                                    {getAddAppRoutesRoutes()}
-                                </Route>
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <Suspense fallback={<SuspenseFallback/>}>
+        {/* 路由管理 */}
+        <Routes>
+          {/* 登录页面 */}
+          {/*<Route path="login" element={<Login/>}/>*/}
+          {/* 应用登录守卫 */}
+          <Route path="" element={<LoginStatusGuard/>}>
+            <Route path="manage" element={<AppFrame/>}>
+              <Route path="" element={<Navigate to={"app-routes"}/>}/>
+              <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
+                <Route path="list" element={<AppRouteList/>}/>
+                <Route path="add" element={<AddAppRoutes/>}>
+                  {getAddAppRoutesRoutes()}
+                </Route>
 
-                            </Route>
-                            <Route path="*" element={<Error404/>}/>
-                        </Route>
-                    </Route>
-                </Routes>
-            </Suspense>
-        </ThemeProvider>
-    )
+              </Route>
+              <Route path="*" element={<Error404/>}/>
+            </Route>
+          </Route>
+        </Routes>
+      </Suspense>
+    </ThemeProvider>
+  )
 }
 
 /**
@@ -47,17 +47,17 @@ const App = () => {
  * @constructor
  */
 const EmptyRoute = ({base, to}: { base: string, to: string }) => {
-    const navigate = useNavigate();
-    const {pathname} = useLocation();
+  const navigate = useNavigate();
+  const {pathname} = useLocation();
 
-    useEffect(() => {
-        const baseRoute = removeSuffix(base, "/");
-        if (baseRoute === removeSuffix(pathname, "/")) {
-            navigate(`${baseRoute}/${removePrefix(to, "/")}`);
-        }
-    }, [pathname])
+  useEffect(() => {
+    const baseRoute = removeSuffix(base, "/");
+    if (baseRoute === removeSuffix(pathname, "/")) {
+      navigate(`${baseRoute}/${removePrefix(to, "/")}`);
+    }
+  }, [pathname])
 
-    return <Outlet/>;
+  return <Outlet/>;
 }
 
 /**
@@ -65,17 +65,17 @@ const EmptyRoute = ({base, to}: { base: string, to: string }) => {
  * @constructor
  */
 const LoginStatusGuard = () => {
-    const navigate = useNavigate();
-    const {pathname} = useLocation();
+  const navigate = useNavigate();
+  const {pathname} = useLocation();
 
-    useAsyncEffect(async () => {
-        if (isBlank(pathname) || pathname === "/") {
-            navigate(`/manage`);
-        }
+  useAsyncEffect(async () => {
+    if (isBlank(pathname) || pathname === "/") {
+      navigate(`/manage`);
+    }
 
-    }, [pathname])
+  }, [pathname])
 
-    return <Outlet/>;
+  return <Outlet/>;
 }
 
 export default App
