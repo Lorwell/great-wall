@@ -1,6 +1,7 @@
 import {Route} from "react-router-dom";
 import {SidebarNavItem} from "@/pages/app-routes/components/app-routes/sidebar-nav.tsx";
-import BaseInfo from "@/pages/app-routes/components/app-routes/base-info.tsx";
+import BaseInfoConfPage from "@/pages/app-routes/components/app-routes/base-info-conf-page.tsx";
+import PredicatesConfPage from "@/pages/app-routes/components/app-routes/predicates-conf-page.tsx";
 
 /**
  * 侧边导航
@@ -28,8 +29,8 @@ export const sidebarNavItems: SidebarNavItem[] = [
 export default function getAddAppRoutesRoutes() {
   return (
     <>
-      <Route path="base-info" element={<BaseInfo/>}/>
-      <Route path="predicates" element={<div>1</div>}/>
+      <Route path="base-info" element={<BaseInfoConfPage/>}/>
+      <Route path="predicates" element={<PredicatesConfPage/>}/>
       <Route path="filter" element={<div>1</div>}/>
     </>
   )

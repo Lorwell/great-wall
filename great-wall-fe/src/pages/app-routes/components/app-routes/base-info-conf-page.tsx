@@ -20,20 +20,22 @@ import {
 } from "@/pages/app-routes/components/app-routes/schema.ts";
 import {useContext} from "react";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 
 
 /**
  *  应用路由的基础信息
  * @constructor
  */
-function BaseInfo() {
+function BaseInfoConfPage() {
 
   const ctx = useContext(AppRoutesContext);
   const outletContext = useLayoutOutletContext();
 
   const form = useForm<BaseInfoFormValues>({
     resolver: zodResolver(baseInfoFormSchema),
-    defaultValues: ctx?.baseInfo
+    defaultValues: {priority: 0, status: AppRouteStatusEnum.DRAFT, ...ctx?.baseInfo}
   });
 
   /**
@@ -91,7 +93,7 @@ function BaseInfo() {
                          <FormItem>
                            <FormLabel>应用匹配优先级</FormLabel>
                            <FormControl>
-                             <Textarea {...field} />
+                             <Input {...field} type={"number"}/>
                            </FormControl>
                            <FormDescription>
                              优先级数值越低，优先级越高
@@ -100,7 +102,28 @@ function BaseInfo() {
                          </FormItem>
                        )}
             />
-
+            <FormField control={form.control}
+                       name="status"
+                       render={({field}) => (
+                         <FormItem>
+                           <FormLabel>应用状态</FormLabel>
+                           <Select onValueChange={field.onChange}
+                                   defaultValue={field.value}>
+                             <FormControl>
+                               <SelectTrigger>
+                                 <SelectValue placeholder="请选择当前应用路由状态"/>
+                               </SelectTrigger>
+                             </FormControl>
+                             <SelectContent>
+                               <SelectItem value={AppRouteStatusEnum.ONLINE}>上线</SelectItem>
+                               <SelectItem value={AppRouteStatusEnum.OFFLINE}>下线</SelectItem>
+                               <SelectItem value={AppRouteStatusEnum.DRAFT}>草稿</SelectItem>
+                             </SelectContent>
+                           </Select>
+                           <FormMessage/>
+                         </FormItem>
+                       )}
+            />
             <Button type="submit">下一项</Button>
           </form>
         </Form>
@@ -109,4 +132,4 @@ function BaseInfo() {
   )
 }
 
-export default BaseInfo
+export default BaseInfoConfPage

@@ -16,3 +16,54 @@ export enum AppRouteStatusEnum {
   DRAFT = "DRAFT"
 
 }
+
+export enum RoutePredicateOperatorEnum {
+
+  AND = "AND", OR = "OR"
+
+}
+
+export enum PredicateTypeEnum {
+
+  /**
+   * Cookie
+   */
+  Cookie = "Cookie",
+
+  /**
+   * Header
+   */
+  Header = "Header",
+
+  /**
+   * Host
+   */
+  Host = "Host",
+
+  /**
+   * Method
+   */
+  Method = "Method",
+
+  /**
+   * Path
+   */
+  Path = "Path",
+
+  /**
+   * Query
+   */
+  Query = "Query",
+
+  /**
+   * RemoteAddr
+   */
+  RemoteAddr = "RemoteAddr",
+
+  /**
+   * Weight
+   */
+  Weight = "Weight"
+
+
+}

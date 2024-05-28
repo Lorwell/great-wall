@@ -5,7 +5,8 @@ import {useEffect, useState} from "react";
 import {
   AppRoutesContext,
   AppRoutesDataOptions,
-  BaseInfoFormValues
+  BaseInfoFormValues,
+  PredicatesFormValues
 } from "@/pages/app-routes/components/app-routes/schema.ts";
 
 /**
@@ -32,9 +33,17 @@ function AddAppRoutes() {
     setData({...data, baseInfo: newData})
   }
 
+  /**
+   * 更新路由条件
+   * @param newData
+   */
+  function setPredicates(newData: Partial<PredicatesFormValues>) {
+    setData({...data, predicates: newData})
+  }
+
   return (
     <div className={"w-full h-full"}>
-      <AppRoutesContext.Provider value={{...data, setBaseInfo}}>
+      <AppRoutesContext.Provider value={{...data, setBaseInfo, setPredicates}}>
         <Layout title={"新建应用路由"}
                 items={sidebarNavItems}
         />
