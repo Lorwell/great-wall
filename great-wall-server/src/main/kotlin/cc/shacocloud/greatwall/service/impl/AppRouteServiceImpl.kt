@@ -66,6 +66,8 @@ class AppRouteServiceImpl(
                                 }
                             }
 
+                        routeBuilder.filters()
+
                         send(routeBuilder.build())
                     }
                 }

@@ -1,36 +1,72 @@
-import {forwardRef, useContext} from "react";
+import {useContext} from "react";
 import {
   AppRoutesContext,
   predicatesFormSchema,
   PredicatesFormValues
 } from "@/pages/app-routes/components/app-routes/schema.ts";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
-import {Controller, useFieldArray, useForm} from "react-hook-form";
+import {Control, FieldPath, FieldValues, useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {Separator} from "@/components/ui/separator.tsx";
-import {Form} from "@/components/ui/form.tsx";
+import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import RoutePredicatesPlusOptions from "@/pages/app-routes/components/app-routes/route-predicates-plus-options.tsx";
 import {PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
 import HostPredicate from "@/pages/app-routes/components/app-routes/predicates/host-predicate.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {cn} from "@/utils/shadcnUtils.ts";
+import {CirclePlus, MoveDown, MoveUp, Trash2} from "lucide-react";
+import {Card, CardContent, CardDescription, CardTitle} from "@/components/ui/card";
+import {CardHeader} from "@/components/ui/card.tsx";
+import MethodPredicate from "@/pages/app-routes/components/app-routes/predicates/method-predicate.tsx";
+import KVPredicate from "@/pages/app-routes/components/app-routes/predicates/kv-predicate.tsx";
+import PathsPredicate from "@/pages/app-routes/components/app-routes/predicates/paths-predicate.tsx";
+import RemoteAddrPredicate from "@/pages/app-routes/components/app-routes/predicates/remote-addr-predicate.tsx";
 
 /**
  * 路由条件
  * @constructor
  */
-const PredicatesConfPage = forwardRef(() => {
+function PredicatesConfPage() {
   const ctx = useContext(AppRoutesContext);
   const outletContext = useLayoutOutletContext();
 
   const form = useForm<PredicatesFormValues>({
     resolver: zodResolver(predicatesFormSchema),
-    defaultValues: {...ctx?.predicates}
+    defaultValues: {
+      ...{
+        predicates: [{
+          operator: RoutePredicateOperatorEnum.AND,
+          predicate: {
+            type: PredicateTypeEnum.Host,
+            patterns: []
+          }
+        }],
+        urls: [{
+          url: "",
+          weight: 1
+        }]
+      }, ...ctx?.predicates
+    }
   });
 
-  const {fields, append, prepend, remove, swap, move, insert} = useFieldArray({
+  const {
+    fields: predicatesFields,
+    append: predicatesAppend,
+    swap: predicatesSwap,
+    remove: predicatesRemove,
+  } = useFieldArray({
     control: form.control,
     name: "predicates",
+  });
+
+  const {
+    fields: urlsFields,
+    append: urlsAppend,
+    remove: urlsRemove
+  } = useFieldArray({
+    control: form.control,
+    name: "urls",
   });
 
   /**
@@ -38,91 +74,285 @@ const PredicatesConfPage = forwardRef(() => {
    * @param data
    */
   function onSubmit(data: PredicatesFormValues) {
-    console.log(data)
     ctx?.setPredicates?.(data);
     outletContext.nextPage()
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">路由条件</h3>
-        <p className="text-sm text-muted-foreground mt-2">
-          匹配请求的路由条件，只有满足条件的才会进行路由请求转发
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          需要注意的是：路由匹配条件自上而下进行匹配
-        </p>
-      </div>
-      <Separator/>
+    <div>
 
-      <div className={"flex flex-col space-y-4"}>
-        <RoutePredicatesPlusOptions onAddHostPredicate={() => {
-          append({
-            operator: RoutePredicateOperatorEnum.AND,
-            predicate: {
-              type: PredicateTypeEnum.Host,
-              value: ""
-            }
-          })
-        }}
-        />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className={"flex flex-row space-x-2 items-center text-xl"}>
+                <span>匹配条件</span>
+                <RoutePredicatesPlusOptions
+                  onAddPredicate={(predicate) => {
+                    predicatesAppend({
+                      operator: RoutePredicateOperatorEnum.AND,
+                      predicate: predicate
+                    })
+                  }}
+                />
+              </CardTitle>
+              <CardDescription>
+                匹配请求的路由条件，只有满足条件的才会进行路由请求转发 <br/>
+                需要注意的是：路由匹配条件自上而下进行匹配
+              </CardDescription>
+            </CardHeader>
+            <CardContent className={"space-y-2"}>
+              {
+                predicatesFields.map((predicatesField, index) => {
+                  const type = predicatesField.predicate.type;
 
-            {
-              fields.map((fieldValue, index) => {
-                return (
-                  <div key={fieldValue.id} className={"flex flex-row space-x-2"}>
-                    <Select defaultValue={RoutePredicateOperatorEnum.AND}
-                            {...form.register(`predicates.${index}.operator`, {required: true})}
-                    >
-                      <SelectTrigger className={"w-20"}>
-                        <SelectValue placeholder="1"/>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={RoutePredicateOperatorEnum.AND}>与</SelectItem>
-                        <SelectItem value={RoutePredicateOperatorEnum.OR}>或</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  return (
+                    <div key={predicatesField.id} className={"flex flex-row space-x-2 items-start"}>
+                      <OperatorFormField control={form.control}
+                                         name={`predicates.${index}.operator`}
+                      />
 
-                    <Controller key={fieldValue.id}
-                                name={`predicates.${index}.predicate`}
-                                render={({field}) => {
-                                  const type = fieldValue.predicate.type;
-                                  switch (type) {
-                                    case PredicateTypeEnum.Cookie:
-                                      break;
-                                    case PredicateTypeEnum.Header:
-                                      break;
-                                    case PredicateTypeEnum.Host:
-                                      // @ts-ignore
-                                      return (<HostPredicate {...field}/>)
-                                    case PredicateTypeEnum.Method:
-                                      break;
-                                    case PredicateTypeEnum.Path:
-                                      break;
-                                    case PredicateTypeEnum.Query:
-                                      break;
-                                    case PredicateTypeEnum.RemoteAddr:
-                                      break;
-                                  }
-                                  return (<></>)
-                                }}
-                                control={form.control}
-                    />
-                  </div>
-                )
-              })
-            }
+                      {
+                        PredicateTypeEnum.Host === type && (
+                          <HostPredicate control={form.control}
+                                         name={`predicates.${index}.predicate.patterns`}
+                                         className={"flex-auto"}
+                          />
+                        )
+                      }
 
-            <Button type="submit">下一项</Button>
-          </form>
-        </Form>
-      </div>
+                      {
+                        PredicateTypeEnum.Method === type && (
+                          <MethodPredicate control={form.control}
+                                           name={`predicates.${index}.predicate.patterns`}
+                                           className={"flex-auto"}
+                          />
+                        )
+                      }
+
+                      {
+                        PredicateTypeEnum.Cookie === type && (
+                          <KVPredicate control={form.control}
+                                       kvType={"Cookie"}
+                                       keyName={`predicates.${index}.predicate.name`}
+                                       valueName={`predicates.${index}.predicate.regexp`}
+                                       className={"flex-auto"}
+                          />
+                        )
+                      }
+
+                      {
+                        PredicateTypeEnum.Query === type && (
+                          <KVPredicate control={form.control}
+                                       kvType={"Query"}
+                                       keyName={`predicates.${index}.predicate.name`}
+                                       valueName={`predicates.${index}.predicate.regexp`}
+                                       className={"flex-auto"}
+                          />
+                        )
+                      }
+
+                      {
+                        PredicateTypeEnum.Header === type && (
+                          <KVPredicate control={form.control}
+                                       kvType={"Header"}
+                                       keyName={`predicates.${index}.predicate.name`}
+                                       valueName={`predicates.${index}.predicate.regexp`}
+                                       className={"flex-auto"}
+                          />
+                        )
+                      }
+
+                      {
+                        PredicateTypeEnum.Path === type && (
+                          <PathsPredicate control={form.control}
+                                          name={`predicates.${index}.predicate.patterns`}
+                                          className={"flex-auto"}
+                          />
+                        )
+                      }
+
+                      {
+                        PredicateTypeEnum.RemoteAddr === type && (
+                          <RemoteAddrPredicate control={form.control}
+                                               name={`predicates.${index}.predicate.sources`}
+                                               className={"flex-auto"}
+                          />
+                        )
+                      }
+
+                      <div className={"flex flex-row space-x-2 items-center mt-1"}>
+                        <Button variant="outline"
+                                size={"icon"}
+                                className={"h-8 w-8"}
+                                type={"button"}
+                                disabled={index === 0}
+                                onClick={() => predicatesSwap(index, index - 1)}
+                        >
+                          <MoveUp className={"h-5 w-5"}/>
+                        </Button>
+                        <Button variant="outline"
+                                size={"icon"}
+                                className={"h-8 w-8"}
+                                type={"button"}
+                                disabled={index === (predicatesFields.length - 1)}
+                                onClick={() => predicatesSwap(index, index + 1)}
+                        >
+                          <MoveDown className={"h-5 w-5"}/>
+                        </Button>
+                        <Button variant="outline"
+                                size={"icon"}
+                                className={"h-8 w-8"}
+                                type={"button"}
+                                disabled={predicatesFields.length <= 1}
+                                onClick={() => predicatesRemove(index)}
+                        >
+                          <Trash2 className={"h-5 w-5"}/>
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })
+              }
+            </CardContent>
+          </Card>
+
+
+          <Card>
+            <CardHeader>
+              <CardTitle className={"flex flex-row space-x-2 items-center text-xl"}>
+                <span>目标服务</span>
+                <Button variant={"outline"} size={"icon"} asChild
+                        onClick={() => urlsAppend({url: "", weight: 1})}
+                >
+                  <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
+                </Button>
+              </CardTitle>
+              <CardDescription>
+                路由条件匹配成功，将把请求转发到以下目标服务上 <br/>
+                每个 URL 都会设置一个权重值，权重计算方式为：当前权重值 / 所有权重值之和 = 当前 URL 的权重的百分比
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {
+                urlsFields.map((uriField, index) => {
+
+                  return (
+                    <div key={uriField.id} className={"flex flex-row space-x-2 items-start"}>
+
+                      <UrlFormField control={form.control}
+                                    name={`urls.${index}.url`}
+                                    className={"flex-auto"}
+                      />
+
+                      <WeightFormField control={form.control}
+                                       name={`urls.${index}.weight`}
+                                       className={"w-20"}
+                      />
+
+                      <div className={"flex flex-row space-x-2 items-center mt-1"}>
+                        <Button variant="outline"
+                                size={"icon"}
+                                className={"h-8 w-8"}
+                                type={"button"}
+                                disabled={urlsFields.length <= 1}
+                                onClick={() => urlsRemove(index)}
+                        >
+                          <Trash2 className={"h-5 w-5"}/>
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })
+              }
+            </CardContent>
+          </Card>
+
+          <Button type="submit">下一项</Button>
+        </form>
+      </Form>
     </div>
   )
-})
+}
+
+/**
+ * url表单字段
+ * @constructor
+ */
+function UrlFormField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({control, name, className}: { control: Control<TFieldValues>, name: TName, className?: string }) {
+  return (
+    <FormField control={control}
+               name={name}
+               render={({field}) => (
+                 <FormItem className={className}>
+                   <FormControl>
+                     <Input {...field} placeholder={"目标服务 URL"}/>
+                   </FormControl>
+                   <FormMessage/>
+                 </FormItem>
+               )}
+    />
+  )
+}
+
+/**
+ * weight表单字段
+ * @constructor
+ */
+function WeightFormField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({control, name, className}: { control: Control<TFieldValues>, name: TName, className?: string }) {
+  return (
+    <FormField control={control}
+               name={name}
+               render={({field}) => (
+                 <FormItem className={className}>
+                   <FormControl>
+                     <Input {...field} type={"number"} min={1} max={100} placeholder={"权重"}/>
+                   </FormControl>
+                   <FormMessage/>
+                 </FormItem>
+               )}
+    />
+  )
+}
+
+/**
+ * 操作符表单字段
+ * @constructor
+ */
+function OperatorFormField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({control, name, className}: { control: Control<TFieldValues>, name: TName, className?: string }) {
+  return (
+    <FormField control={control}
+               name={name}
+               render={({field}) => (
+                 <FormItem>
+                   <Select onValueChange={field.onChange}
+                           defaultValue={field.value || RoutePredicateOperatorEnum.AND}
+                   >
+                     <FormControl>
+                       <SelectTrigger className={cn("w-20", className)}>
+                         <SelectValue placeholder="1"/>
+                       </SelectTrigger>
+                     </FormControl>
+                     <SelectContent>
+                       <SelectItem value={RoutePredicateOperatorEnum.AND}>与</SelectItem>
+                       <SelectItem value={RoutePredicateOperatorEnum.OR}>或</SelectItem>
+                     </SelectContent>
+                   </Select>
+                   <FormMessage/>
+                 </FormItem>
+               )}
+    />
+  )
+}
 
 export default PredicatesConfPage

@@ -2,23 +2,51 @@ import {Control, FieldPath, FieldValues} from "react-hook-form";
 import {FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
 import {CircleHelp} from "lucide-react";
-import MultipleSelector from "@/components/custom-ui/multiple-selector.tsx";
+import MultipleSelector, {Option} from "@/components/custom-ui/multiple-selector.tsx";
 
 
-export interface HostPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
+export interface MethodPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
   control?: Control<TFieldValues>;
   name: TName;
   className?: string
 }
 
+const options: Option[] = [
+  {
+    label: "OPTIONS",
+    value: "OPTIONS",
+  },
+  {
+    label: "GET",
+    value: "GET",
+  },
+  {
+    label: "POST",
+    value: "POST",
+  },
+  {
+    label: "PATCH",
+    value: "PATCH",
+  },
+  {
+    label: "PUT",
+    value: "PUT",
+  },
+  {
+    label: "DELETE",
+    value: "DELETE",
+  },
+]
+
 /**
- * host 路由条件
+ * 请求方式路由条件
+ * @param props
  * @constructor
  */
-export default function HostPredicate<
+export default function MethodPredicate<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
->(props: HostPredicateProps<TFieldValues, TName>) {
+>(props: MethodPredicateProps<TFieldValues, TName>) {
   const {className, ...rest} = props
 
   return (
@@ -35,38 +63,27 @@ export default function HostPredicate<
                   {...field}
                   value={value}
                   onChange={options => field.onChange(options.map(it => it.value))}
+                  defaultOptions={options}
                   creatable
-                  placeholder={"Host"}
                   hidePlaceholderWhenSelected
-                  badgeClassName={"bg-transparent hover:bg-transparent font-normal text-primary text-sm"}
+                  badgeClassName={"bg-transparent hover:bg-transparent text-primary"}
                 />
               </FormControl>
+
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <CircleHelp className={"h-4 w-4"}/>
                 </HoverCardTrigger>
                 <HoverCardContent>
                   <p>
-                    Host 匹配规则使用{" "}
-                    <a href={"https://ant.apache.org/"}
-                       target={"_blank"}
-                       className={"underline underline-offset-2"}
-                    >
-                      Ant
-                    </a>
-                    {" "} 风格路径模式，如下所示：
+                    请求方式匹配规则 <br/>
+                    基于指定的请求方式进行路由规则的匹配
                   </p>
-
-                  <ul>
-                    <li>? 匹配一个字符</li>
-                    <li>* 匹配零个或多个字符</li>
-                    <li>** 匹配路径中的零个或多个层级</li>
-                  </ul>
                 </HoverCardContent>
               </HoverCard>
             </div>
             <FormDescription>
-              Host 匹配
+              请求方式匹配
             </FormDescription>
             <FormMessage/>
           </FormItem>
@@ -75,5 +92,3 @@ export default function HostPredicate<
     />
   )
 }
-
-

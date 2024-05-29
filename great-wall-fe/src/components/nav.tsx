@@ -99,7 +99,7 @@ export function Nav({links, isCollapsed}: NavProps) {
                         )}
                       >
                                         {link.badge}
-                                    </span>
+                     </span>
                     )}
                   </Link>
                 )

@@ -5,20 +5,21 @@ import {CircleHelp} from "lucide-react";
 import MultipleSelector from "@/components/custom-ui/multiple-selector.tsx";
 
 
-export interface HostPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
+export interface PathsPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
   control?: Control<TFieldValues>;
   name: TName;
   className?: string
 }
 
 /**
- * host 路由条件
+ * 路径匹配路由条件
+ * @param props
  * @constructor
  */
-export default function HostPredicate<
+export default function PathsPredicate<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
->(props: HostPredicateProps<TFieldValues, TName>) {
+>(props: PathsPredicateProps<TFieldValues, TName>) {
   const {className, ...rest} = props
 
   return (
@@ -36,37 +37,25 @@ export default function HostPredicate<
                   value={value}
                   onChange={options => field.onChange(options.map(it => it.value))}
                   creatable
-                  placeholder={"Host"}
+                  placeholder={"Path"}
                   hidePlaceholderWhenSelected
                   badgeClassName={"bg-transparent hover:bg-transparent font-normal text-primary text-sm"}
                 />
               </FormControl>
+
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <CircleHelp className={"h-4 w-4"}/>
                 </HoverCardTrigger>
                 <HoverCardContent>
                   <p>
-                    Host 匹配规则使用{" "}
-                    <a href={"https://ant.apache.org/"}
-                       target={"_blank"}
-                       className={"underline underline-offset-2"}
-                    >
-                      Ant
-                    </a>
-                    {" "} 风格路径模式，如下所示：
+                    路径匹配规则
                   </p>
-
-                  <ul>
-                    <li>? 匹配一个字符</li>
-                    <li>* 匹配零个或多个字符</li>
-                    <li>** 匹配路径中的零个或多个层级</li>
-                  </ul>
                 </HoverCardContent>
               </HoverCard>
             </div>
             <FormDescription>
-              Host 匹配
+              路径匹配
             </FormDescription>
             <FormMessage/>
           </FormItem>
@@ -75,5 +64,3 @@ export default function HostPredicate<
     />
   )
 }
-
-

@@ -8,17 +8,14 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu.tsx";
 import {cn} from "@/utils/shadcnUtils.ts";
+import {Button} from "@/components/ui/button.tsx";
+import {PredicatesSchemaValues} from "@/pages/app-routes/components/app-routes/schema.ts";
+import {PredicateTypeEnum} from "@/constant/api/app-routes/types.ts";
 
 
 export interface RoutePredicatesPlusOptionsProps {
 
-  onAddMethodPredicate?: () => void
-  onAddQueryParamPredicate?: () => void
-  onAddHeaderPredicate?: () => void
-  onAddCookiePredicate?: () => void
-  onAddHostPredicate?: () => void
-  onAddPathPredicate?: () => void
-  onAddRemoteAddrPredicate?: () => void
+  onAddPredicate: (predicate: PredicatesSchemaValues) => void
 
 }
 
@@ -28,34 +25,78 @@ export interface RoutePredicatesPlusOptionsProps {
  * @constructor
  */
 function RoutePredicatesPlusOptions(props: RoutePredicatesPlusOptionsProps) {
+  const {onAddPredicate} = props
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <CirclePlus className={cn("cursor-pointer h-6 w-6")}/>
+        <Button variant={"outline"} size={"icon"} asChild>
+          <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[150px]">
         <DropdownMenuLabel>添加路由条件</DropdownMenuLabel>
         <DropdownMenuSeparator/>
-        <DropdownMenuItem onClick={props.onAddMethodPredicate}>
+        <DropdownMenuItem
+          onClick={() =>
+            onAddPredicate(
+              {
+                type: PredicateTypeEnum.Method,
+                methods: []
+              })}
+        >
           请求方式
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={props.onAddQueryParamPredicate}>
+        <DropdownMenuItem onClick={() =>
+          onAddPredicate(
+            {
+              type: PredicateTypeEnum.Query,
+              name: "",
+              regexp: ""
+            })}>
           查询参数
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={props.onAddHeaderPredicate}>
+        <DropdownMenuItem onClick={() =>
+          onAddPredicate(
+            {
+              type: PredicateTypeEnum.Header,
+              name: "",
+              regexp: ""
+            })}>
           请求头
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={props.onAddCookiePredicate}>
+        <DropdownMenuItem onClick={() =>
+          onAddPredicate(
+            {
+              type: PredicateTypeEnum.Cookie,
+              name: "",
+              regexp: ""
+            })}>
           Cookie
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={props.onAddHostPredicate}>
+        <DropdownMenuItem onClick={() =>
+          onAddPredicate(
+            {
+              type: PredicateTypeEnum.Host,
+              patterns: []
+            })}>
           Host
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={props.onAddPathPredicate}>
+        <DropdownMenuItem onClick={() =>
+          onAddPredicate(
+            {
+              type: PredicateTypeEnum.Path,
+              patterns: [],
+              matchTrailingSlash: true
+            })}>
           请求路径
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={props.onAddRemoteAddrPredicate}>
+        <DropdownMenuItem onClick={() =>
+          onAddPredicate(
+            {
+              type: PredicateTypeEnum.RemoteAddr,
+              sources: []
+            })}>
           RemoteAddr
         </DropdownMenuItem>
       </DropdownMenuContent>

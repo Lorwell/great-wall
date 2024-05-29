@@ -1,7 +1,9 @@
 import {Route} from "react-router-dom";
-import {SidebarNavItem} from "@/pages/app-routes/components/app-routes/sidebar-nav.tsx";
 import BaseInfoConfPage from "@/pages/app-routes/components/app-routes/base-info-conf-page.tsx";
 import PredicatesConfPage from "@/pages/app-routes/components/app-routes/predicates-conf-page.tsx";
+import {SidebarNavItem} from "@/pages/app-routes/components/app-routes/layout.tsx";
+import PluginsConfPage from "@/pages/app-routes/components/app-routes/plugins-conf-page.tsx";
+import PreviewConfPage from "@/pages/app-routes/components/app-routes/preview-conf-page.tsx";
 
 /**
  * 侧边导航
@@ -18,8 +20,11 @@ export const sidebarNavItems: SidebarNavItem[] = [
   {
     title: "插件配置",
     to: "/manage/app-routes/add/filter",
+  },
+  {
+    title: "配置预览",
+    to: "/manage/app-routes/add/preview",
   }
-
 ]
 
 /**
@@ -31,7 +36,8 @@ export default function getAddAppRoutesRoutes() {
     <>
       <Route path="base-info" element={<BaseInfoConfPage/>}/>
       <Route path="predicates" element={<PredicatesConfPage/>}/>
-      <Route path="filter" element={<div>1</div>}/>
+      <Route path="filter" element={<PluginsConfPage/>}/>
+      <Route path="preview" element={<PreviewConfPage/>}/>
     </>
   )
 }

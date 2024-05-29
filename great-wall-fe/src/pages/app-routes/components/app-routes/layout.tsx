@@ -1,16 +1,18 @@
-import {Separator} from "@/components/ui/separator.tsx"
-import {SidebarNav, SidebarNavItem} from "./sidebar-nav.tsx"
 import {ReactElement, ReactNode} from "react";
-import {Outlet, useLocation, useNavigate, useOutletContext} from "react-router-dom";
+import {Link, Outlet, useLocation, useNavigate, useOutletContext} from "react-router-dom";
 import {replacePathname} from "@/components/hooks/useRoutePathVariate.ts";
 import {isNull} from "@/utils/Utils.ts";
 import {toast} from "sonner";
-
+import {cn} from "@/utils/shadcnUtils.ts";
 
 interface LayoutProps {
   title: string | ReactNode | ReactElement
-  subTitle?: string | ReactNode | ReactElement
   items: SidebarNavItem[]
+}
+
+export interface SidebarNavItem {
+  to: string
+  title: string
 }
 
 export interface LayoutOutletContext {
@@ -34,7 +36,6 @@ export function useLayoutOutletContext() {
 export default function Layout(props: LayoutProps) {
   const {
     title,
-    subTitle,
     items
   } = props
 
@@ -62,24 +63,34 @@ export default function Layout(props: LayoutProps) {
   }
 
   return (
-    <div className="hidden space-y-6 px-6 pt-2 pb-16 md:block">
-      <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-10">
+      <div className="grid w-full max-w-6xl gap-2">
+        <h1 className="text-2xl font-semibold">
           {title}
-        </h2>
-        <p className="text-muted-foreground">
-          {subTitle}
-        </p>
+        </h1>
       </div>
-      <Separator className="my-6"/>
-      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-        <aside className="-mx-4 lg:w-1/6">
-          <SidebarNav items={items}/>
-        </aside>
-        <div className="flex-1 lg:max-w-2xl">
+
+      <div className="grid w-full max-w-6xl items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
+        <nav className={"grid gap-4 text-sm text-muted-foreground"}>
+          {items.map((item) => {
+            const active = pathname === item.to;
+            return (
+              <Link key={item.to}
+                    to={item.to}
+                    className={cn(
+                      active && "font-semibold text-primary",
+                    )}
+              >
+                {item.title}
+              </Link>
+            )
+          })}
+        </nav>
+        <div className="grid gap-6">
           <Outlet context={{nextPage}}/>
         </div>
       </div>
+
     </div>
   )
 }

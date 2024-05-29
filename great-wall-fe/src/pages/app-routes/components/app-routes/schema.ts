@@ -65,66 +65,65 @@ export const cookiePredicatesSchema = z.object({
   name: z.string({required_error: "不可以为空"}),
   regexp: z.string({required_error: "不可以为空"}),
 })
-export type CookiePredicatesFormValues = z.infer<typeof cookiePredicatesSchema>
 
 export const headerPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Header]),
   name: z.string({required_error: "不可以为空"}),
   regexp: z.string({required_error: "不可以为空"}),
 })
-export type HeaderPredicatesFormValues = z.infer<typeof headerPredicatesSchema>
 
 export const queryParamPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Query]),
   name: z.string({required_error: "不可以为空"}),
   regexp: z.string({required_error: "不可以为空"}),
 })
-export type QueryParamPredicatesFormValues = z.infer<typeof queryParamPredicatesSchema>
 
 export const hostPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Host]),
-  value: z.string({required_error: "不可以为空"})
+  patterns: z.array(
+    z.string({required_error: "不可以为空"}),
+    {required_error: "不可以为空"}
+  ).min(1, "不可以为空")
 })
-export type HostPredicatesFormValues = z.infer<typeof hostPredicatesSchema>
 
 export const methodPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Method]),
-  value: z.string({required_error: "不可以为空"})
+  methods: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"})
 })
-export type MethodPredicatesFormValues = z.infer<typeof methodPredicatesSchema>
 
 export const pathPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Path]),
-  patterns: z.array(z.string({required_error: "不可以为空"})),
+  patterns: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"}),
   matchTrailingSlash: z.boolean({required_error: "不可以为空"}),
 })
-export type PathPredicatesFormValues = z.infer<typeof pathPredicatesSchema>
 
 export const remoteAddrPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.RemoteAddr]),
-  value: z.array(z.string({required_error: "不可以为空"}))
+  sources: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"}),
 })
 
-export type RemoteAddrPredicatesFormValues = z.infer<typeof remoteAddrPredicatesSchema>
 
-export const predicatesSchema =z.union([cookiePredicatesSchema, headerPredicatesSchema, queryParamPredicatesSchema, hostPredicatesSchema, methodPredicatesSchema, pathPredicatesSchema, remoteAddrPredicatesSchema]);
+export const predicatesSchema = z.union([cookiePredicatesSchema, headerPredicatesSchema, queryParamPredicatesSchema, hostPredicatesSchema, methodPredicatesSchema, pathPredicatesSchema, remoteAddrPredicatesSchema]);
 export type PredicatesSchemaValues = z.infer<typeof predicatesSchema>
 
 export const predicatesOperatorSchema = z.object({
   operator: z.enum([RoutePredicateOperatorEnum.AND, RoutePredicateOperatorEnum.OR]),
-  predicate: z.union([cookiePredicatesSchema, headerPredicatesSchema, queryParamPredicatesSchema, hostPredicatesSchema, methodPredicatesSchema, pathPredicatesSchema, remoteAddrPredicatesSchema])
+  predicate: predicatesSchema
 })
-export type PredicatesOperatorSchemaValues = z.infer<typeof predicatesOperatorSchema>
 
 export const predicatesFormSchema = z.object({
   predicates: z.array(predicatesOperatorSchema),
   urls: z.array(
     z.object({
       url: z.string({required_error: "不可以为空"}).url({message: "请输入有效地址"}),
-      weight: z.number({required_error: "不可以为空"}).min(0, "权重最小值为0"),
+      weight: z.number({required_error: "不可以为空"})
+        .min(0, "权重最小值为0")
+        .max(100, "权重最大值为100"),
     })
   ),
 
 })
 
 export type PredicatesFormValues = z.infer<typeof predicatesFormSchema>
+
+// -------------------------- 插件配置
