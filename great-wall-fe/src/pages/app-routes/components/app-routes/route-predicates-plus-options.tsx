@@ -14,9 +14,8 @@ import {PredicateTypeEnum} from "@/constant/api/app-routes/types.ts";
 
 
 export interface RoutePredicatesPlusOptionsProps {
-
+  disabled?: boolean
   onAddPredicate: (predicate: PredicatesSchemaValues) => void
-
 }
 
 /**
@@ -25,12 +24,12 @@ export interface RoutePredicatesPlusOptionsProps {
  * @constructor
  */
 function RoutePredicatesPlusOptions(props: RoutePredicatesPlusOptionsProps) {
-  const {onAddPredicate} = props
+  const {onAddPredicate, disabled = false} = props
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"} asChild>
+        <Button variant={"outline"} size={"icon"} disabled={disabled}>
           <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
         </Button>
       </DropdownMenuTrigger>

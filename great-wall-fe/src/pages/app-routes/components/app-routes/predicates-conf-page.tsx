@@ -1,4 +1,4 @@
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 import {
   AppRoutesContext,
   predicatesFormSchema,
@@ -23,11 +23,21 @@ import KVPredicate from "@/pages/app-routes/components/app-routes/predicates/kv-
 import PathsPredicate from "@/pages/app-routes/components/app-routes/predicates/paths-predicate.tsx";
 import RemoteAddrPredicate from "@/pages/app-routes/components/app-routes/predicates/remote-addr-predicate.tsx";
 
+export interface PredicatesConfPageProps {
+
+  preview?: boolean
+}
+
+
 /**
  * 路由条件
  * @constructor
  */
-function PredicatesConfPage() {
+function PredicatesConfPage(props: PredicatesConfPageProps) {
+  const {
+    preview = false
+  } = props
+
   const ctx = useContext(AppRoutesContext);
   const outletContext = useLayoutOutletContext();
 
@@ -47,7 +57,8 @@ function PredicatesConfPage() {
           weight: 1
         }]
       }, ...ctx?.predicates
-    }
+    },
+    disabled: preview
   });
 
   const {
@@ -69,6 +80,12 @@ function PredicatesConfPage() {
     name: "urls",
   });
 
+  useEffect(() => {
+    if (preview) {
+      form.trigger().then()
+    }
+  }, [preview])
+
   /**
    * 提交数据
    * @param data
@@ -79,200 +96,202 @@ function PredicatesConfPage() {
   }
 
   return (
-    <div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className={"flex flex-row items-center text-xl"}>
+              <span>匹配条件</span>
+              <RoutePredicatesPlusOptions
+                disabled={preview}
+                onAddPredicate={(predicate) => {
+                  predicatesAppend({
+                    operator: RoutePredicateOperatorEnum.AND,
+                    predicate: predicate
+                  })
+                }}
+              />
+            </CardTitle>
+            <CardDescription>
+              匹配请求的路由条件，只有满足条件的才会进行路由请求转发 <br/>
+              需要注意的是：路由匹配条件自上而下进行匹配
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={"space-y-2"}>
+            {
+              predicatesFields.map((predicatesField, index) => {
+                const type = predicatesField.predicate.type;
 
-          <Card>
-            <CardHeader>
-              <CardTitle className={"flex flex-row space-x-2 items-center text-xl"}>
-                <span>匹配条件</span>
-                <RoutePredicatesPlusOptions
-                  onAddPredicate={(predicate) => {
-                    predicatesAppend({
-                      operator: RoutePredicateOperatorEnum.AND,
-                      predicate: predicate
-                    })
-                  }}
-                />
-              </CardTitle>
-              <CardDescription>
-                匹配请求的路由条件，只有满足条件的才会进行路由请求转发 <br/>
-                需要注意的是：路由匹配条件自上而下进行匹配
-              </CardDescription>
-            </CardHeader>
-            <CardContent className={"space-y-2"}>
-              {
-                predicatesFields.map((predicatesField, index) => {
-                  const type = predicatesField.predicate.type;
+                return (
+                  <div key={predicatesField.id} className={"flex flex-row space-x-2 items-start"}>
+                    <OperatorFormField control={form.control}
+                                       name={`predicates.${index}.operator`}
+                    />
 
-                  return (
-                    <div key={predicatesField.id} className={"flex flex-row space-x-2 items-start"}>
-                      <OperatorFormField control={form.control}
-                                         name={`predicates.${index}.operator`}
-                      />
+                    {
+                      PredicateTypeEnum.Host === type && (
+                        <HostPredicate control={form.control}
+                                       name={`predicates.${index}.predicate.patterns`}
+                                       className={"flex-auto"}
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.Host === type && (
-                          <HostPredicate control={form.control}
+                    {
+                      PredicateTypeEnum.Method === type && (
+                        <MethodPredicate control={form.control}
                                          name={`predicates.${index}.predicate.patterns`}
                                          className={"flex-auto"}
-                          />
-                        )
-                      }
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.Method === type && (
-                          <MethodPredicate control={form.control}
-                                           name={`predicates.${index}.predicate.patterns`}
-                                           className={"flex-auto"}
-                          />
-                        )
-                      }
+                    {
+                      PredicateTypeEnum.Cookie === type && (
+                        <KVPredicate control={form.control}
+                                     kvType={"Cookie"}
+                                     keyName={`predicates.${index}.predicate.name`}
+                                     valueName={`predicates.${index}.predicate.regexp`}
+                                     className={"flex-auto"}
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.Cookie === type && (
-                          <KVPredicate control={form.control}
-                                       kvType={"Cookie"}
-                                       keyName={`predicates.${index}.predicate.name`}
-                                       valueName={`predicates.${index}.predicate.regexp`}
-                                       className={"flex-auto"}
-                          />
-                        )
-                      }
+                    {
+                      PredicateTypeEnum.Query === type && (
+                        <KVPredicate control={form.control}
+                                     kvType={"Query"}
+                                     keyName={`predicates.${index}.predicate.name`}
+                                     valueName={`predicates.${index}.predicate.regexp`}
+                                     className={"flex-auto"}
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.Query === type && (
-                          <KVPredicate control={form.control}
-                                       kvType={"Query"}
-                                       keyName={`predicates.${index}.predicate.name`}
-                                       valueName={`predicates.${index}.predicate.regexp`}
-                                       className={"flex-auto"}
-                          />
-                        )
-                      }
+                    {
+                      PredicateTypeEnum.Header === type && (
+                        <KVPredicate control={form.control}
+                                     kvType={"Header"}
+                                     keyName={`predicates.${index}.predicate.name`}
+                                     valueName={`predicates.${index}.predicate.regexp`}
+                                     className={"flex-auto"}
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.Header === type && (
-                          <KVPredicate control={form.control}
-                                       kvType={"Header"}
-                                       keyName={`predicates.${index}.predicate.name`}
-                                       valueName={`predicates.${index}.predicate.regexp`}
-                                       className={"flex-auto"}
-                          />
-                        )
-                      }
+                    {
+                      PredicateTypeEnum.Path === type && (
+                        <PathsPredicate control={form.control}
+                                        name={`predicates.${index}.predicate.patterns`}
+                                        className={"flex-auto"}
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.Path === type && (
-                          <PathsPredicate control={form.control}
-                                          name={`predicates.${index}.predicate.patterns`}
-                                          className={"flex-auto"}
-                          />
-                        )
-                      }
+                    {
+                      PredicateTypeEnum.RemoteAddr === type && (
+                        <RemoteAddrPredicate control={form.control}
+                                             name={`predicates.${index}.predicate.sources`}
+                                             className={"flex-auto"}
+                        />
+                      )
+                    }
 
-                      {
-                        PredicateTypeEnum.RemoteAddr === type && (
-                          <RemoteAddrPredicate control={form.control}
-                                               name={`predicates.${index}.predicate.sources`}
-                                               className={"flex-auto"}
-                          />
-                        )
-                      }
+                    <div className={"flex flex-row space-x-2 items-center mt-1"}>
+                      <Button variant="outline"
+                              size={"icon"}
+                              className={"h-8 w-8"}
 
-                      <div className={"flex flex-row space-x-2 items-center mt-1"}>
-                        <Button variant="outline"
-                                size={"icon"}
-                                className={"h-8 w-8"}
-                                type={"button"}
-                                disabled={index === 0}
-                                onClick={() => predicatesSwap(index, index - 1)}
-                        >
-                          <MoveUp className={"h-5 w-5"}/>
-                        </Button>
-                        <Button variant="outline"
-                                size={"icon"}
-                                className={"h-8 w-8"}
-                                type={"button"}
-                                disabled={index === (predicatesFields.length - 1)}
-                                onClick={() => predicatesSwap(index, index + 1)}
-                        >
-                          <MoveDown className={"h-5 w-5"}/>
-                        </Button>
-                        <Button variant="outline"
-                                size={"icon"}
-                                className={"h-8 w-8"}
-                                type={"button"}
-                                disabled={predicatesFields.length <= 1}
-                                onClick={() => predicatesRemove(index)}
-                        >
-                          <Trash2 className={"h-5 w-5"}/>
-                        </Button>
-                      </div>
+                              disabled={index === 0}
+                              onClick={() => predicatesSwap(index, index - 1)}
+                      >
+                        <MoveUp className={"h-5 w-5"}/>
+                      </Button>
+                      <Button variant="outline"
+                              size={"icon"}
+                              className={"h-8 w-8"}
+
+                              disabled={index === (predicatesFields.length - 1)}
+                              onClick={() => predicatesSwap(index, index + 1)}
+                      >
+                        <MoveDown className={"h-5 w-5"}/>
+                      </Button>
+                      <Button variant="outline"
+                              size={"icon"}
+                              className={"h-8 w-8"}
+
+                              disabled={predicatesFields.length <= 1}
+                              onClick={() => predicatesRemove(index)}
+                      >
+                        <Trash2 className={"h-5 w-5"}/>
+                      </Button>
                     </div>
-                  )
-                })
-              }
-            </CardContent>
-          </Card>
+                  </div>
+                )
+              })
+            }
+          </CardContent>
+        </Card>
 
 
-          <Card>
-            <CardHeader>
-              <CardTitle className={"flex flex-row space-x-2 items-center text-xl"}>
-                <span>目标服务</span>
-                <Button variant={"outline"} size={"icon"} asChild
-                        onClick={() => urlsAppend({url: "", weight: 1})}
-                >
-                  <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
-                </Button>
-              </CardTitle>
-              <CardDescription>
-                路由条件匹配成功，将把请求转发到以下目标服务上 <br/>
-                每个 URL 都会设置一个权重值，权重计算方式为：当前权重值 / 所有权重值之和 = 当前 URL 的权重的百分比
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {
-                urlsFields.map((uriField, index) => {
+        <Card>
+          <CardHeader>
+            <CardTitle className={"flex flex-row items-center text-xl"}>
+              <span>目标服务</span>
+              <Button variant={"outline"} size={"icon"} disabled={preview}
+                      onClick={() => urlsAppend({url: "", weight: 1})}
+              >
+                <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              路由条件匹配成功，将把请求转发到以下目标服务上 <br/>
+              每个 URL 都会设置一个权重值，权重计算方式为：当前权重值 / 所有权重值之和 = 当前 URL 的权重的百分比
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={"flex flex-col space-y-2"}>
+            {
+              urlsFields.map((uriField, index) => {
 
-                  return (
-                    <div key={uriField.id} className={"flex flex-row space-x-2 items-start"}>
+                return (
+                  <div key={uriField.id} className={"flex flex-row space-x-2 items-start"}>
 
-                      <UrlFormField control={form.control}
-                                    name={`urls.${index}.url`}
-                                    className={"flex-auto"}
-                      />
+                    <UrlFormField control={form.control}
+                                  name={`urls.${index}.url`}
+                                  className={"flex-auto"}
+                    />
 
-                      <WeightFormField control={form.control}
-                                       name={`urls.${index}.weight`}
-                                       className={"w-20"}
-                      />
+                    <WeightFormField control={form.control}
+                                     name={`urls.${index}.weight`}
+                                     className={"w-20"}
+                    />
 
-                      <div className={"flex flex-row space-x-2 items-center mt-1"}>
-                        <Button variant="outline"
-                                size={"icon"}
-                                className={"h-8 w-8"}
-                                type={"button"}
-                                disabled={urlsFields.length <= 1}
-                                onClick={() => urlsRemove(index)}
-                        >
-                          <Trash2 className={"h-5 w-5"}/>
-                        </Button>
-                      </div>
+                    <div className={"flex flex-row space-x-2 items-center mt-1"}>
+                      <Button variant="outline"
+                              size={"icon"}
+                              className={"h-8 w-8"}
+
+                              disabled={urlsFields.length <= 1}
+                              onClick={() => urlsRemove(index)}
+                      >
+                        <Trash2 className={"h-5 w-5"}/>
+                      </Button>
                     </div>
-                  )
-                })
-              }
-            </CardContent>
-          </Card>
+                  </div>
+                )
+              })
+            }
+          </CardContent>
+        </Card>
 
-          <Button type="submit">下一项</Button>
-        </form>
-      </Form>
-    </div>
+        {
+          !preview && (
+            <Button type="submit">保存</Button>
+          )
+        }
+      </form>
+    </Form>
   )
 }
 

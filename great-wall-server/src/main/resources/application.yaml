@@ -71,6 +71,16 @@ site:
         auto-id: 5r8r9e
         domain: "*.shacocloud.cc"
 
+management:
+  server:
+    port: 8080
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: gateway
 
 logging:
   level:

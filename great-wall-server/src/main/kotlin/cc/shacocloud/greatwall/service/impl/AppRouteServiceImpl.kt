@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author 思追(shaco)
  */
 @Slf4j
-@Service
+//@Service
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
     val routePredicateFactory: RoutePredicateFactory

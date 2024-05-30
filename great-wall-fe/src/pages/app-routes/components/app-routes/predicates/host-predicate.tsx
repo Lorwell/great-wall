@@ -26,7 +26,6 @@ export default function HostPredicate<
       {...rest}
       render={({field}) => {
         const value = field.value?.map((it: string) => ({label: it, value: it}));
-
         return (
           <FormItem className={className}>
             <div className={"flex flex-row items-center gap-2"}>

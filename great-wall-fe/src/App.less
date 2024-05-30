@@ -1,3 +1,12 @@
+body {
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
 /* 设置滚动条的样式 */
 ::-webkit-scrollbar {
 
@@ -10,7 +19,7 @@
   }
 
   &-thumb {
-    background-color: #d4d5d6;
+    background-color: hsl(var(--muted));
     border-radius: 5px;
 
     &:hover {

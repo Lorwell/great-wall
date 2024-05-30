@@ -1,8 +1,7 @@
 import Layout from "@/pages/app-routes/components/app-routes/layout.tsx";
-import {sidebarNavItems} from "@/pages/app-routes/add/route.tsx";
-import {useLocation, useNavigate} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {
+  AppRoutesConfValues,
   AppRoutesContext,
   AppRoutesDataOptions,
   BaseInfoFormValues,
@@ -13,17 +12,8 @@ import {
  * 添加应用路由
  * @constructor
  */
-function AddAppRoutes() {
-  const {pathname} = useLocation();
-  const navigate = useNavigate();
-
+export default function AddAppRoutes() {
   const [data, setData] = useState<AppRoutesDataOptions>();
-
-  useEffect(() => {
-    if (pathname === "/manage/app-routes/add") {
-      navigate("/manage/app-routes/add/base-info")
-    }
-  }, [])
 
   /**
    * 更新基础信息
@@ -41,15 +31,19 @@ function AddAppRoutes() {
     setData({...data, predicates: newData})
   }
 
+  /**
+   * 提交
+   * @param data
+   */
+  function onSubmit(data: Partial<AppRoutesConfValues>) {
+    console.log(data)
+  }
+
   return (
-    <div className={"w-full h-full"}>
-      <AppRoutesContext.Provider value={{...data, setBaseInfo, setPredicates}}>
-        <Layout title={"新建应用路由"}
-                items={sidebarNavItems}
-        />
+    <div className={"h-full w-full"}>
+      <AppRoutesContext.Provider value={{...data, setBaseInfo, setPredicates, onSubmit}}>
+        <Layout title={"新建应用路由"}/>
       </AppRoutesContext.Provider>
     </div>
   )
 }
-
-export default AddAppRoutes

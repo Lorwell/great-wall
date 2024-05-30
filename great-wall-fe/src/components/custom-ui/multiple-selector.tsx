@@ -156,6 +156,10 @@ const CommandEmpty = forwardRef<
 
 CommandEmpty.displayName = 'CommandEmpty';
 
+/**
+ * 多项选择器
+ * @see https://shadcnui-expansions.typeart.cc/docs/multiple-selector
+ */
 const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorProps>(
   (
     {
@@ -183,6 +187,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
     }: MultipleSelectorProps,
     ref: React.Ref<MultipleSelectorRef>,
   ) => {
+
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [open, setOpen] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -359,7 +364,10 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
           handleKeyDown(e);
           commandProps?.onKeyDown?.(e);
         }}
-        className={cn('h-auto overflow-visible bg-transparent', commandProps?.className)}
+        className={cn('h-auto overflow-visible bg-transparent', commandProps?.className,
+          {
+            "cursor-not-allowed": disabled
+          })}
         shouldFilter={
           commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch
         } // When onSearch is provided, we don't want to filter the options. You can still override it.
@@ -393,15 +401,23 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                   data-disabled={disabled || undefined}
                 >
                   {option.label}
-                  <Button variant={"outline"}
-                          size={"icon"}
-                          type={"button"}
-                          asChild
-                          onClick={() => handleUnselect(option)}
-                  >
-                    <X className={cn("cursor-pointer h-4 w-4 ml-1")}/>
-                  </Button>
 
+                  {
+                    !disabled && (
+                      <Button variant={"outline"}
+                              size={"icon"}
+                              
+                              asChild
+                              onClick={() => {
+                                if (disabled) return;
+                                handleUnselect(option)
+                              }}
+                      >
+                        <X className={cn("cursor-pointer h-4 w-4 ml-1")}/>
+                      </Button>
+
+                    )
+                  }
                 </Badge>
               );
             })}
@@ -431,6 +447,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                   'w-full': hidePlaceholderWhenSelected,
                   'px-3 py-2': selected.length === 0,
                   'ml-1': selected.length !== 0,
+                  "cursor-not-allowed": disabled
                 },
                 inputProps?.className,
               )}

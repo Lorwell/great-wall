@@ -6,7 +6,8 @@ import {useAsyncEffect} from "ahooks";
 import {isBlank, removePrefix, removeSuffix} from "@/utils/Utils.ts";
 import Error404 from "@/pages/Error404.tsx";
 import SuspenseFallback from "@/pages/SuspenseFallback.tsx";
-import getAddAppRoutesRoutes from "@/pages/app-routes/add/route.tsx";
+import {Toaster} from "@/components/ui/sonner.tsx";
+import configAppRoutesRoutes from "@/pages/app-routes/components/app-routes/routes.tsx";
 
 const AppFrame = lazy(() => import("@/pages/AppFrame"));
 const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
@@ -27,7 +28,7 @@ const App = () => {
               <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
                 <Route path="list" element={<AppRouteList/>}/>
                 <Route path="add" element={<AddAppRoutes/>}>
-                  {getAddAppRoutesRoutes()}
+                  {configAppRoutesRoutes()}
                 </Route>
 
               </Route>
@@ -36,6 +37,7 @@ const App = () => {
           </Route>
         </Routes>
       </Suspense>
+      <Toaster/>
     </ThemeProvider>
   )
 }

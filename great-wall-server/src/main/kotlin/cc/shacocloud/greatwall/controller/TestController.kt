@@ -16,7 +16,7 @@ import java.util.*
  *
  * @author 思追(shaco)
  */
-@RestController
+//@RestController
 class TestController(
     val appRouteRepository: AppRouteRepository,
     val appRouteService: AppRouteService

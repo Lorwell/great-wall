@@ -1,13 +1,13 @@
-import {ReactElement, ReactNode} from "react";
+import {ReactElement, ReactNode, useEffect} from "react";
 import {Link, Outlet, useLocation, useNavigate, useOutletContext} from "react-router-dom";
-import {replacePathname} from "@/components/hooks/useRoutePathVariate.ts";
 import {isNull} from "@/utils/Utils.ts";
 import {toast} from "sonner";
 import {cn} from "@/utils/shadcnUtils.ts";
+import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
 interface LayoutProps {
   title: string | ReactNode | ReactElement
-  items: SidebarNavItem[]
+  items?: SidebarNavItem[]
 }
 
 export interface SidebarNavItem {
@@ -28,6 +28,25 @@ export function useLayoutOutletContext() {
   return useOutletContext<LayoutOutletContext>()
 }
 
+const sidebarNavItems: SidebarNavItem[] = [
+  {
+    title: "基础信息",
+    to: "base-info",
+  },
+  {
+    title: "路由条件",
+    to: "predicates",
+  },
+  // {
+  //   title: "插件配置",
+  //   to: "filter",
+  // },
+  {
+    title: "配置预览",
+    to: "preview",
+  }
+]
+
 /**
  * 应用路由布局
  * @param props
@@ -36,17 +55,25 @@ export function useLayoutOutletContext() {
 export default function Layout(props: LayoutProps) {
   const {
     title,
-    items
+    items = sidebarNavItems
   } = props
 
   const {pathname} = useLocation()
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const item = items.find(it => pathname.endsWith(it.to));
+
+    if (isNull(item)) {
+      navigate("base-info")
+    }
+  }, [])
+
   /**
    * 下一页
    */
   function nextPage() {
-    let itemIndex = items.findIndex(it => replacePathname(it.to, pathname) === pathname);
+    let itemIndex = items.findIndex(it => pathname.endsWith(it.to));
     itemIndex += 1
 
     const item = items.length > itemIndex ? items[itemIndex] : undefined
@@ -59,21 +86,24 @@ export default function Layout(props: LayoutProps) {
       return
     }
 
-    navigate(replacePathname(item!!.to, pathname))
+    navigate(item!!.to)
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-10">
-      <div className="grid w-full max-w-6xl gap-2">
+
+    <div className={"w-full h-full p-10 flex flex-col gap-8"}>
+
+      <div className="w-full max-w-6xl">
         <h1 className="text-2xl font-semibold">
           {title}
         </h1>
       </div>
 
-      <div className="grid w-full max-w-6xl items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
-        <nav className={"grid gap-4 text-sm text-muted-foreground"}>
+      <div
+        className="flex-auto flex flex-row w-full max-w-6xl items-start gap-6">
+        <nav className={"flex flex-col gap-4 text-sm text-muted-foreground md:w-[180px] lg:w-[250px]"}>
           {items.map((item) => {
-            const active = pathname === item.to;
+            const active = pathname.endsWith(item.to);
             return (
               <Link key={item.to}
                     to={item.to}
@@ -86,11 +116,17 @@ export default function Layout(props: LayoutProps) {
             )
           })}
         </nav>
-        <div className="grid gap-6">
-          <Outlet context={{nextPage}}/>
-        </div>
-      </div>
 
+        <AutoSizablePanel className={"flex-auto overflow-hidden"}>
+          {
+            (size) => (
+              <div style={{...size}} className={"overflow-auto"}>
+                <Outlet context={{nextPage}}/>
+              </div>
+            )
+          }
+        </AutoSizablePanel>
+      </div>
     </div>
   )
 }

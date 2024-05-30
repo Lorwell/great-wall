@@ -7,14 +7,15 @@ import {Nav} from "@/components/nav.tsx";
 import {navConfig} from "@/pages/navConfig.ts";
 import {Separator} from "@/components/ui/separator";
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import {ModeToggle} from "@/components/mode-toggle.tsx";
+import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
 /**
  * 应用框架
@@ -25,9 +26,7 @@ const AppFrame = () => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <ResizablePanelGroup direction="horizontal"
-                           style={{height: "100vh", width: "100vw"}}
-      >
+      <ResizablePanelGroup direction="horizontal">
         <ResizablePanel defaultSize={15}
                         minSize={10}
                         maxSize={20}
@@ -56,16 +55,22 @@ const AppFrame = () => {
         <ResizableHandle withHandle/>
         <ResizablePanel defaultSize={85}>
 
-          <div className={"flex flex-col gap-4 px-4 sm:py-3 h-full w-full"}>
+          <div className={"flex flex-col gap-4 px-4 sm:py-3 h-full w-full box-border"}>
 
             <div className={"flex flex-row justify-between"}>
               <AppFrameBreadcrumb/>
               <ModeToggle/>
             </div>
 
-            <div className={"flex-auto"}>
-              <Outlet/>
-            </div>
+            <AutoSizablePanel className={"flex-auto overflow-hidden"}>
+              {
+                (size) => (
+                  <div style={{...size}}>
+                    <Outlet/>
+                  </div>
+                )
+              }
+            </AutoSizablePanel>
           </div>
 
         </ResizablePanel>

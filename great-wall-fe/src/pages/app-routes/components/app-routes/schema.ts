@@ -31,6 +31,12 @@ export interface AppRoutesOptions extends AppRoutesDataOptions {
    */
   setPredicates?: (data: Partial<PredicatesFormValues>) => void
 
+  /**
+   * 提交信息
+   * @param data
+   */
+  onSubmit?: (data: Partial<AppRoutesConfValues>) => void
+
 }
 
 export const AppRoutesContext = createContext<AppRoutesOptions>({});
@@ -127,3 +133,9 @@ export const predicatesFormSchema = z.object({
 export type PredicatesFormValues = z.infer<typeof predicatesFormSchema>
 
 // -------------------------- 插件配置
+
+
+// -------------------------- 配置结果集
+
+export const appRoutesConfSchema = baseInfoFormSchema.merge(predicatesFormSchema)
+export type AppRoutesConfValues = z.infer<typeof appRoutesConfSchema>

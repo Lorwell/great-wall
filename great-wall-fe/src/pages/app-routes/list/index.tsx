@@ -63,7 +63,7 @@ function AppRoutesList() {
                    {
                      label: "新建应用路由",
                      icon: LayoutPanelLeft,
-                     onClick: () => navigate("/manage/app-routes/add"),
+                     onClick: () => navigate("/manage/app-routes/add/base-info"),
                    }
                  ]}
       />
