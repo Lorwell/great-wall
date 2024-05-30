@@ -1,5 +1,7 @@
 server:
   port: 443
+  config-server:
+    port: 8080
   http2:
     enabled: false
   ssl:
@@ -70,17 +72,6 @@ site:
         user: 1679924785@qq.com
         auto-id: 5r8r9e
         domain: "*.shacocloud.cc"
-
-management:
-  server:
-    port: 8080
-  endpoint:
-    gateway:
-      enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: gateway
 
 logging:
   level:
