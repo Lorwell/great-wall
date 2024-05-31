@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java")
@@ -75,14 +75,13 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 }
 
-
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
-        jvmTarget = "21"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+        jvmTarget = JvmTarget.JVM_21
     }
 }
+
 
 tasks.withType<Test> {
     useJUnitPlatform()

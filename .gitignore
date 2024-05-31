@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 .runtimeData/
 /data/
+.kotlin
 
 ### STS ###
 .apt_generated
