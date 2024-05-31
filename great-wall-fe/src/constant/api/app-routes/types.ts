@@ -1,3 +1,6 @@
+import {AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
+import {BaseOutputSchemaValues} from "@/constant/api/schema.ts";
+
 export enum AppRouteStatusEnum {
 
   /**
@@ -8,12 +11,7 @@ export enum AppRouteStatusEnum {
   /**
    * 下线
    */
-  OFFLINE = "OFFLINE",
-
-  /**
-   * 草稿状态
-   */
-  DRAFT = "DRAFT"
+  OFFLINE = "OFFLINE"
 
 }
 
@@ -58,12 +56,10 @@ export enum PredicateTypeEnum {
   /**
    * RemoteAddr
    */
-  RemoteAddr = "RemoteAddr",
-
-  /**
-   * Weight
-   */
-  Weight = "Weight"
-
+  RemoteAddr = "RemoteAddr"
 
 }
+
+export type AppRouteInput = Partial<AppRoutesConfValues>
+export type AppRouteOutput = Partial<AppRoutesConfValues> & Partial<BaseOutputSchemaValues>
+

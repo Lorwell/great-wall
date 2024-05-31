@@ -406,7 +406,6 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                     !disabled && (
                       <Button variant={"outline"}
                               size={"icon"}
-                              
                               asChild
                               onClick={() => {
                                 if (disabled) return;

@@ -14,11 +14,7 @@ enum class AppRouteStatusEnum {
     /**
      * 下线
      */
-    OFFLINE,
+    OFFLINE
 
-    /**
-     * 草稿状态
-     */
-    DRAFT
 
 }

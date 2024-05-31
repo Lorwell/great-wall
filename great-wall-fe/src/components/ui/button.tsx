@@ -1,8 +1,10 @@
 import * as React from "react"
+import {SyntheticEvent, useState} from "react"
 import {Slot} from "@radix-ui/react-slot"
 import {cva, type VariantProps} from "class-variance-authority"
-
+import {Loader2} from 'lucide-react';
 import {cn} from "@/utils/shadcnUtils"
+import {isNull} from "@/utils/Utils.ts";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring  disabled:pointer-events-none disabled:opacity-50",
@@ -37,6 +39,8 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  loading?: boolean
+  onClick?: (event: SyntheticEvent) => void | Promise<void>
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -46,22 +50,87 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
      size,
      type = "button",
      asChild = false,
+     loading = false,
+     children,
+     onClick,
      ...props
    }, ref) => {
-    const Comp = asChild ? Slot : "button"
-    const buttonProps = asChild ? {} : {type}
+
+    const [clickLoading, setClickLoading] = useState<boolean>(false);
+
+    async function handleClick(event: SyntheticEvent) {
+      if (isNull(onClick)) return
+
+      setClickLoading(true);
+
+      try {
+        await onClick!!(event)
+      } finally {
+        setClickLoading(false);
+      }
+    }
+
+    const loadingState = loading || clickLoading
+
+    if (asChild) {
+      return (
+        <>
+          {
+            loadingState && (
+              <Loader2 className={cn('h-4 w-4 animate-spin', children && 'mr-2')}/>
+            )
+          }
+          <Slot
+            className={cn(buttonVariants({variant, size, className}))}
+            ref={ref}
+            onClick={handleClick}
+            {...props}
+          >
+            {children}
+          </Slot>
+        </>
+      );
+    }
 
     return (
-      <Comp
+      <button
         className={cn(buttonVariants({variant, size, className}))}
+        disabled={loadingState}
         ref={ref}
-        type={type}
+        onClick={handleClick}
         {...props}
-        {...buttonProps}
-      />
-    )
+      >
+        {loadingState && <Loader2 className={cn('h-4 w-4 animate-spin', children && 'mr-2')}/>}
+        {children}
+      </button>
+    );
   }
 )
+
+// const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+//   ({
+//      className,
+//      variant,
+//      size,
+//      type = "button",
+//      asChild = false,
+//      loading=false,
+//      ...props
+//    }, ref) => {
+//     const Comp = asChild ? Slot : "button"
+//     const buttonProps = asChild ? {} : {type}
+//
+//     return (
+//       <Comp
+//         className={cn(buttonVariants({variant, size, className}))}
+//         ref={ref}
+//         type={type}
+//         {...props}
+//         {...buttonProps}
+//       />
+//     )
+//   }
+// )
 Button.displayName = "Button"
 
 export {Button, buttonVariants}

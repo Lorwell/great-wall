@@ -1,5 +1,9 @@
 package cc.shacocloud.greatwall.service
 
+import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
+import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
+import cc.shacocloud.greatwall.model.po.AppRoutePo
+
 /**
  *
  * @author 思追(shaco)
@@ -7,8 +11,13 @@ package cc.shacocloud.greatwall.service
 interface AppRouteService {
 
     /**
-     * 刷新路由
+     * 创建路由
      */
-    fun refreshRoutes()
+    suspend fun create(input: AppRouteInput): AppRoutePo
+
+    /**
+     * 根据状态查询列表
+     */
+    suspend fun findByStatus(status: AppRouteStatusEnum): List<AppRoutePo>
 
 }

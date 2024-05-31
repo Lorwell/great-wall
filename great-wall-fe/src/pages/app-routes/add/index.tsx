@@ -1,12 +1,11 @@
 import Layout from "@/pages/app-routes/components/app-routes/layout.tsx";
 import {useState} from "react";
-import {
-  AppRoutesConfValues,
-  AppRoutesContext,
-  AppRoutesDataOptions,
-  BaseInfoFormValues,
-  PredicatesFormValues
-} from "@/pages/app-routes/components/app-routes/schema.ts";
+import {AppRoutesContext, AppRoutesDataOptions,} from "@/pages/app-routes/components/app-routes/schema.ts";
+import {AppRoutesConfValues, BaseInfoFormValues, PredicatesFormValues} from "@/constant/api/app-routes/schema.ts";
+import {createAppRoute} from "@/constant/api/app-routes";
+import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import {useNavigate} from "react-router-dom";
+import {toast} from "sonner";
 
 /**
  * 添加应用路由
@@ -14,6 +13,9 @@ import {
  */
 export default function AddAppRoutes() {
   const [data, setData] = useState<AppRoutesDataOptions>();
+  const navigate = useNavigate();
+
+  const {runAsync} = useApiRequest(createAppRoute, {manual: true});
 
   /**
    * 更新基础信息
@@ -35,8 +37,13 @@ export default function AddAppRoutes() {
    * 提交
    * @param data
    */
-  function onSubmit(data: Partial<AppRoutesConfValues>) {
-    console.log(data)
+  async function onSubmit(data: Partial<AppRoutesConfValues>): Promise<void> {
+    await runAsync(data)
+
+    toast.info("应用路由添加成功", {position: "top-center"})
+
+    // 提交成功返回列表
+    navigate("/manage/app-routes/list")
   }
 
   return (

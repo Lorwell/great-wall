@@ -7,7 +7,7 @@ export const schema = z.object({
   describe: z.string().optional(),
   uris: z.array(z.string()),
   priority: z.number(),
-  status: z.enum([AppRouteStatusEnum.DRAFT, AppRouteStatusEnum.ONLINE, AppRouteStatusEnum.OFFLINE]),
+  status: z.enum([AppRouteStatusEnum.ONLINE, AppRouteStatusEnum.OFFLINE]),
   createTime: z.date(),
   lastUpdateTime: z.date()
 })

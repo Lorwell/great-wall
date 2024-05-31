@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS app_route
     describe         VARCHAR(150),
     priority         INT         NOT NULL,
     urls             LONGTEXT    NOT NULL,
-    app_order        INT         NOT NULL,
     predicates       LONGTEXT    NOT NULL,
     status           VARCHAR(20) NOT NULL,
     create_time      BIGINT      NOT NULL,

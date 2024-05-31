@@ -1,22 +1,24 @@
-package cc.shacocloud.greatwall.model.dto.input
+package cc.shacocloud.greatwall.model.dto.output
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteUrl
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotEmpty
+import java.util.*
 
 /**
  *
  * @author 思追(shaco)
  */
-data class AppRouteInput(
+data class AppRouteOutput(
+
+    /**
+     * 主键id
+     */
+    val id: Long,
 
     /**
      * 名称
      */
-    @field:NotBlank
     val name: String,
 
     /**
@@ -37,15 +39,21 @@ data class AppRouteInput(
     /**
      * 请求地址
      */
-    @field:Valid
-    @field:NotEmpty
     val urls: List<RouteUrl>,
 
     /**
      * 路由条件
      */
-    @field:Valid
-    @field:NotEmpty
-    val predicates: RoutePredicates
+    val predicates: RoutePredicates,
+
+    /**
+     * 创建时间
+     */
+    val createTime: Date,
+
+    /**
+     * 最后更新时间
+     */
+    val lastUpdateTime: Date
 
 )

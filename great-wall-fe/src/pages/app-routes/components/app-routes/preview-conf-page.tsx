@@ -1,15 +1,15 @@
 import BaseInfoConfPage from "@/pages/app-routes/components/app-routes/base-info-conf-page.tsx";
 import PredicatesConfPage from "@/pages/app-routes/components/app-routes/predicates-conf-page.tsx";
 import {useContext} from "react";
+import {AppRoutesContext,} from "@/pages/app-routes/components/app-routes/schema.ts";
+import {Button} from "@/components/ui/button.tsx";
+import {toast} from "sonner";
 import {
-  AppRoutesContext,
   baseInfoFormSchema,
   BaseInfoFormValues,
   predicatesFormSchema,
   PredicatesFormValues
-} from "@/pages/app-routes/components/app-routes/schema.ts";
-import {Button} from "@/components/ui/button.tsx";
-import {toast} from "sonner";
+} from "@/constant/api/app-routes/schema.ts";
 
 /**
  * 插件配置
@@ -21,7 +21,7 @@ export default function PreviewConfPage() {
   /**
    * 提交
    */
-  function handleSubmit() {
+  function handleSubmit(): Promise<void> {
     let baseInfoData: Partial<BaseInfoFormValues>
     let predicates: Partial<PredicatesFormValues>
 
@@ -34,10 +34,10 @@ export default function PreviewConfPage() {
           position: "top-center",
           duration: 3000,
         })
-      return
+      return Promise.resolve()
     }
 
-    ctx.onSubmit?.({...baseInfoData, ...predicates})
+    return ctx.onSubmit?.({...baseInfoData, ...predicates}) || Promise.resolve()
   }
 
   return (

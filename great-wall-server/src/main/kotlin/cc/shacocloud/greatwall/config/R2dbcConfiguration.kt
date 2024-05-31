@@ -79,8 +79,8 @@ class R2dbcConfiguration(
             object : JsonStringToBeanConverter<CookiesParamsMetrics>() {},
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
-            object : BeanToJsonStringConverter<RouteUrl>() {},
-            object : JsonStringToBeanConverter<RouteUrl>() {},
+            object : BeanToJsonStringConverter<List<RouteUrl>>() {},
+            object : JsonStringToBeanConverter<List<RouteUrl>>() {},
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
             object : StringToEnumConverter<AppRouteStatusEnum>() {}
         )

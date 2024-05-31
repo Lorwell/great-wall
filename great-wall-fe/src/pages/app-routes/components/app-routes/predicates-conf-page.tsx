@@ -1,16 +1,15 @@
 import {useContext, useEffect} from "react";
-import {
-  AppRoutesContext,
-  predicatesFormSchema,
-  PredicatesFormValues
-} from "@/pages/app-routes/components/app-routes/schema.ts";
+import {AppRoutesContext,} from "@/pages/app-routes/components/app-routes/schema.ts";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
 import {Control, FieldPath, FieldValues, useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import RoutePredicatesPlusOptions from "@/pages/app-routes/components/app-routes/route-predicates-plus-options.tsx";
-import {PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
+import {
+  PredicateTypeEnum,
+  RoutePredicateOperatorEnum
+} from "@/constant/api/app-routes/types.ts";
 import HostPredicate from "@/pages/app-routes/components/app-routes/predicates/host-predicate.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Input} from "@/components/ui/input.tsx";
@@ -22,6 +21,7 @@ import MethodPredicate from "@/pages/app-routes/components/app-routes/predicates
 import KVPredicate from "@/pages/app-routes/components/app-routes/predicates/kv-predicate.tsx";
 import PathsPredicate from "@/pages/app-routes/components/app-routes/predicates/paths-predicate.tsx";
 import RemoteAddrPredicate from "@/pages/app-routes/components/app-routes/predicates/remote-addr-predicate.tsx";
+import {predicatesFormSchema, PredicatesFormValues} from "@/constant/api/app-routes/schema.ts";
 
 export interface PredicatesConfPageProps {
 

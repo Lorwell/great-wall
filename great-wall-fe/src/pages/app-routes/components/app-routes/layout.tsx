@@ -7,6 +7,7 @@ import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
 interface LayoutProps {
   title: string | ReactNode | ReactElement
+  loading?: boolean
   items?: SidebarNavItem[]
 }
 
@@ -55,6 +56,7 @@ const sidebarNavItems: SidebarNavItem[] = [
 export default function Layout(props: LayoutProps) {
   const {
     title,
+    loading = false,
     items = sidebarNavItems
   } = props
 

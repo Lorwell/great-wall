@@ -1,25 +1,13 @@
 package cc.shacocloud.greatwall.service.impl
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
-import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.AND
-import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.OR
-import cc.shacocloud.greatwall.model.mo.BaseRouteInfo
+import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
+import cc.shacocloud.greatwall.model.po.AppRoutePo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
 import cc.shacocloud.greatwall.service.AppRouteService
-import cc.shacocloud.greatwall.service.RoutePredicateFactory
-import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import kotlinx.coroutines.reactor.flux
-import org.springframework.cloud.gateway.event.RefreshRoutesEvent
-import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
-import org.springframework.cloud.gateway.route.Route
-import org.springframework.cloud.gateway.route.RouteLocator
-import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
-import java.net.URI
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.*
 
 /**
  *
@@ -29,82 +17,31 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Service
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
-    val routePredicateFactory: RoutePredicateFactory,
-    val weightRoutePredicateFactory: WeightRoutePredicateFactory
-) : AppRouteService, RouteLocator {
+) : AppRouteService {
 
     /**
-     * 加载所有数据库中路由
+     * 创建路由
      */
-    override fun getRoutes(): Flux<Route> {
-        return flux {
-            appRouteRepository.findByStatus(AppRouteStatusEnum.ONLINE)
-                .forEach { appRoute ->
-                    val id = appRoute.id!!
-                    val routeUrls = appRoute.urls
-                    val isSingleton = routeUrls.size == 1
+    override suspend fun create(input: AppRouteInput): AppRoutePo {
+        val appRoutePo = AppRoutePo(
+            name = input.name,
+            describe = input.describe,
+            priority = input.priority,
+            status = input.status,
+            urls = input.urls,
+            predicates = input.predicates,
+            createTime = Date(),
+            lastUpdateTime = Date()
+        )
 
-                    for ((index, url) in routeUrls.withIndex()) {
-                        val uri = URI.create(url.url)
-
-                        val appId = "${id}-${index}"
-
-                        val routeBuilder = Route.async()
-                            .id(appId)
-                            .uri(uri)
-                            .order(appRoute.priority)
-
-                        // 如果目标地址存在多个则绑定权重路由条件
-                        val first = if (isSingleton) {
-                            AtomicBoolean(true)
-                        } else {
-                            routeBuilder.and(
-                                ServerWebExchangeUtils.toAsyncPredicate(
-                                    weightRoutePredicateFactory.apply {
-                                        it.routeId = appId
-                                        it.group = "appRoute-${id}"
-                                        it.weight = url.weight
-                                    }
-                                )
-                            )
-                            AtomicBoolean(false)
-                        }
-
-                        val baseInfo = BaseRouteInfo(appId, uri, appRoute.priority)
-
-                        // 路由条件
-                        appRoute.predicates
-                            .map {
-                                it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
-                            }
-                            .forEach { (operator, predicate) ->
-                                if (first.getAndSet(false)) {
-                                    routeBuilder.asyncPredicate(predicate)
-                                } else {
-                                    when (operator) {
-                                        AND -> routeBuilder.and(predicate)
-                                        OR -> routeBuilder.or(predicate)
-                                    }
-                                }
-                            }
-
-                        // 插件配置 TODO
-
-                        send(routeBuilder.build())
-                    }
-                }
-        }
+        return appRouteRepository.save(appRoutePo)
     }
 
     /**
-     * 刷新路由
+     * 根据状态查询列表
      */
-    override fun refreshRoutes() {
-        if (log.isInfoEnabled) {
-            log.info("刷新路由...")
-        }
-
-        ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
+    override suspend fun findByStatus(status: AppRouteStatusEnum): List<AppRoutePo> {
+        return appRouteRepository.findByStatus(status)
     }
 
 }

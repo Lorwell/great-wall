@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {cn} from "@/utils/shadcnUtils.ts";
 import {Button} from "@/components/ui/button.tsx";
-import {PredicatesSchemaValues} from "@/pages/app-routes/components/app-routes/schema.ts";
 import {PredicateTypeEnum} from "@/constant/api/app-routes/types.ts";
+import {PredicatesSchemaValues} from "@/constant/api/app-routes/schema.ts";
 
 
 export interface RoutePredicatesPlusOptionsProps {
