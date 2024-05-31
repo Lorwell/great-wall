@@ -12,9 +12,10 @@ import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.reactor.flux
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
+import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
-import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URI
@@ -25,10 +26,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author 思追(shaco)
  */
 @Slf4j
-//@Service
+@Service
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
-    val routePredicateFactory: RoutePredicateFactory
+    val routePredicateFactory: RoutePredicateFactory,
+    val weightRoutePredicateFactory: WeightRoutePredicateFactory
 ) : AppRouteService, RouteLocator {
 
     /**
@@ -38,19 +40,39 @@ class AppRouteServiceImpl(
         return flux {
             appRouteRepository.findByStatus(AppRouteStatusEnum.ONLINE)
                 .forEach { appRoute ->
-                    appRoute.uris.forEach { uriStr ->
-                        val uri = URI.create(uriStr)
+                    val id = appRoute.id!!
+                    val routeUrls = appRoute.urls
+                    val isSingleton = routeUrls.size == 1
+
+                    for ((index, url) in routeUrls.withIndex()) {
+                        val uri = URI.create(url.url)
+
+                        val appId = "${id}-${index}"
 
                         val routeBuilder = Route.async()
-                            .id(appRoute.appId)
+                            .id(appId)
                             .uri(uri)
                             .order(appRoute.priority)
 
-                        val first = AtomicBoolean(true)
+                        // 如果目标地址存在多个则绑定权重路由条件
+                        val first = if (isSingleton) {
+                            AtomicBoolean(true)
+                        } else {
+                            routeBuilder.and(
+                                ServerWebExchangeUtils.toAsyncPredicate(
+                                    weightRoutePredicateFactory.apply {
+                                        it.routeId = appId
+                                        it.group = "appRoute-${id}"
+                                        it.weight = url.weight
+                                    }
+                                )
+                            )
+                            AtomicBoolean(false)
+                        }
 
-                        val baseInfo = BaseRouteInfo(appRoute.appId, uri, appRoute.priority)
+                        val baseInfo = BaseRouteInfo(appId, uri, appRoute.priority)
 
-                        // 条件
+                        // 路由条件
                         appRoute.predicates
                             .map {
                                 it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
@@ -66,7 +88,7 @@ class AppRouteServiceImpl(
                                 }
                             }
 
-                        routeBuilder.filters()
+                        // 插件配置 TODO
 
                         send(routeBuilder.build())
                     }

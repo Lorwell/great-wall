@@ -123,7 +123,7 @@ export const predicatesFormSchema = z.object({
     z.object({
       url: z.string({required_error: "不可以为空"}).url({message: "请输入有效地址"}),
       weight: z.number({required_error: "不可以为空"})
-        .min(0, "权重最小值为0")
+        .min(1, "权重最小值为1")
         .max(100, "权重最大值为100"),
     })
   ),

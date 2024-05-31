@@ -2,6 +2,7 @@ package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
+import cc.shacocloud.greatwall.model.mo.RouteUrl
 import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
 import cc.shacocloud.greatwall.model.po.QueryParamsMetrics
 import cc.shacocloud.greatwall.model.po.converter.*
@@ -78,6 +79,8 @@ class R2dbcConfiguration(
             object : JsonStringToBeanConverter<CookiesParamsMetrics>() {},
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
+            object : BeanToJsonStringConverter<RouteUrl>() {},
+            object : JsonStringToBeanConverter<RouteUrl>() {},
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
             object : StringToEnumConverter<AppRouteStatusEnum>() {}
         )

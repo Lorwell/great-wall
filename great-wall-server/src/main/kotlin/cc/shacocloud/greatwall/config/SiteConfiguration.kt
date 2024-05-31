@@ -9,5 +9,5 @@ import org.springframework.context.annotation.ImportRuntimeHints
 // */
 @Configuration
 @EnableConfigurationProperties(OsfipinProperties::class)
-@ImportRuntimeHints(FixBugRuntimeHintsRegistrar::class)
+@ImportRuntimeHints(SiteRuntimeHintsRegistrar::class)
 class SiteConfiguration

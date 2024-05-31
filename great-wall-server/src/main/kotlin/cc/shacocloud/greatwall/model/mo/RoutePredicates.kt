@@ -5,12 +5,10 @@ import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum
 import cc.shacocloud.greatwall.utils.validator.Regexp
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import org.springframework.cloud.gateway.handler.predicate.*
-import org.springframework.cloud.gateway.support.WeightConfig
 import org.springframework.http.HttpMethod
 
 
@@ -40,7 +38,6 @@ data class RoutePredicateOperator(
     JsonSubTypes.Type(value = RoutePathPredicate::class, name = "Path"),
     JsonSubTypes.Type(value = RouteQueryPredicate::class, name = "Query"),
     JsonSubTypes.Type(value = RouteRemoteAddrPredicate::class, name = "RemoteAddr"),
-    JsonSubTypes.Type(value = RouteWeightPredicate::class, name = "Weight"),
 )
 abstract class RoutePredicate(
 
@@ -220,34 +217,6 @@ data class RouteRemoteAddrPredicate(
     override fun <T : Any> fillConfig(config: T, baseInfo: BaseRouteInfo) {
         config as RemoteAddrRoutePredicateFactory.Config
         config.setSources(sources)
-    }
-}
-
-data class RouteWeightPredicate(
-
-    /**
-     * 组名称
-     */
-    @field:NotBlank
-    val group: String,
-
-    /**
-     * 权重
-     */
-    @field:Min(0)
-    @field:NotNull
-    val weight: Int
-
-) : RoutePredicate(RoutePredicateEnum.Weight) {
-
-    /**
-     * 填充配置
-     */
-    override fun <T : Any> fillConfig(config: T, baseInfo: BaseRouteInfo) {
-        config as WeightConfig
-        config.setGroup(group)
-        config.setRouteId(baseInfo.routeId)
-        config.setWeight(weight)
     }
 }
 
