@@ -30,11 +30,11 @@ class DefaultExceptionHandler {
      */
     @ResponseBody
     @ExceptionHandler(Exception::class)
-    fun handleException(
+    suspend fun handleException(
         e: Exception,
         request: ServerHttpRequest,
         response: ServerHttpResponse
-    ): Mono<Any> {
+    ): Any {
         if (log.isErrorEnabled) {
             val message = URLDecoder.decode(
                 "${request.path.pathWithinApplication().value()}${request.queryParams.let { "?$it" }}", Charsets.UTF_8
@@ -44,7 +44,7 @@ class DefaultExceptionHandler {
 
         response.headers.contentType = MediaType.APPLICATION_JSON
         response.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-        return Mono.just(ResponseBusinessMessage.INTERNAL_SERVER_ERROR)
+        return ResponseBusinessMessage.INTERNAL_SERVER_ERROR
     }
 
 }
