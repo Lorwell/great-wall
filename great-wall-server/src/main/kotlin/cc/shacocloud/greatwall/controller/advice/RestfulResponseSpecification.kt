@@ -54,7 +54,7 @@ class RestfulResponseSpecification(
         val returnValue = result.returnValue
         val bodyTypeParameter = result.returnTypeSource
 
-        var result = if (returnValue is Mono<*>) {
+        var resultValue = if (returnValue is Mono<*>) {
             returnValue.awaitSingle()
         } else if (returnValue is Flux<*>) {
             returnValue.collectList().awaitFirst()
@@ -62,25 +62,25 @@ class RestfulResponseSpecification(
             returnValue
         }
 
-        restfulStatusSpecification(exchange, result)
+        restfulStatusSpecification(exchange, resultValue)
 
-        result = when (result) {
+        resultValue = when (resultValue) {
             null -> null
 
             // RFC 7807 问题详细信息的表示形式
             is ProblemDetail -> {
-                exchange.response.setStatusCode(HttpStatusCode.valueOf(result.status))
-                if (result.instance == null) {
+                exchange.response.setStatusCode(HttpStatusCode.valueOf(resultValue.status))
+                if (resultValue.instance == null) {
                     val path = URI.create(exchange.request.path.value())
-                    result.instance = path
+                    resultValue.instance = path
                 }
-                result
+                resultValue
             }
 
             // 字符串结果
             is String -> {
                 val message = MessageSourceHolder.getMessage(
-                    result, null, result, LocaleContextHolder.getLocale()
+                    resultValue, null, resultValue, LocaleContextHolder.getLocale()
                 )
                 StrRespMsg(message = message ?: ResponseBusinessMessage.SUCCESS_MESSAGE)
             }
@@ -88,23 +88,23 @@ class RestfulResponseSpecification(
             //  封装 spring data 分页结果
             is Page<*> -> {
                 val respPage = RespPage(
-                    current = result.number,
-                    size = result.size,
-                    total = result.totalElements
+                    current = resultValue.number,
+                    size = resultValue.size,
+                    total = resultValue.totalElements
                 )
-                PageRespMsg(result.content, respPage)
+                PageRespMsg(resultValue.content, respPage)
             }
 
             // 业务消息
-            is ResponseBusinessMessage -> result
+            is ResponseBusinessMessage -> resultValue
 
             // 可迭代对象
-            is Iterable<*> -> RespMsg<Any>(records = result)
+            is Iterable<*> -> RespMsg<Any>(records = resultValue)
 
-            else -> result
+            else -> resultValue
         }
 
-          writeBody(result, bodyTypeParameter, exchange).awaitSingle()
+        writeBody(resultValue, bodyTypeParameter, exchange).awaitSingle()
     }
 
     /**
@@ -123,13 +123,14 @@ class RestfulResponseSpecification(
     ) {
         val request = exchange.request
         val response = exchange.response
-        if (response.statusCode?.is2xxSuccessful == true) return
 
-        when (request.method) {
-            GET -> response.statusCode = HttpStatus.OK
-            POST -> response.statusCode = if (returnValue == null) HttpStatus.ACCEPTED else HttpStatus.CREATED
-            PATCH, PUT -> response.statusCode = if (returnValue == null) HttpStatus.ACCEPTED else HttpStatus.OK
-            DELETE -> response.statusCode = HttpStatus.NO_CONTENT
+        if (response.statusCode?.is2xxSuccessful == true) {
+            when (request.method) {
+                GET -> response.statusCode = HttpStatus.OK
+                POST -> response.statusCode = if (returnValue == null) HttpStatus.ACCEPTED else HttpStatus.CREATED
+                PATCH, PUT -> response.statusCode = if (returnValue == null) HttpStatus.ACCEPTED else HttpStatus.OK
+                DELETE -> response.statusCode = HttpStatus.NO_CONTENT
+            }
         }
     }
 
