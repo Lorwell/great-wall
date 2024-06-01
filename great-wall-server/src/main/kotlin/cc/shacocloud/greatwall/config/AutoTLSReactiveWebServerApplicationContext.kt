@@ -38,8 +38,7 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         }
 
         // 停止web服务
-        val webServer = getWebServer()
-        webServer.stop()
+        webServer?.stop()
 
         // 反射设置 WebServerManager 为空，方便后续 onRefresh 方法执行
         val field = ReactiveWebServerApplicationContext::class.java.getDeclaredField("serverManager")

@@ -2,10 +2,16 @@ package cc.shacocloud.greatwall.service.impl
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
+import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
 import cc.shacocloud.greatwall.model.po.AppRoutePo
+import cc.shacocloud.greatwall.model.po.QAppRoutePo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
 import cc.shacocloud.greatwall.service.AppRouteService
 import cc.shacocloud.greatwall.utils.Slf4j
+import com.querydsl.core.types.dsl.BooleanExpression
+import kotlinx.coroutines.reactor.awaitSingle
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -34,14 +40,28 @@ class AppRouteServiceImpl(
             lastUpdateTime = Date()
         )
 
-        return appRouteRepository.save(appRoutePo)
+        return appRouteRepository.save(appRoutePo).awaitSingle()
     }
 
     /**
      * 根据状态查询列表
      */
     override suspend fun findByStatus(status: AppRouteStatusEnum): List<AppRoutePo> {
-        return appRouteRepository.findByStatus(status)
+        return appRouteRepository.findByStatus(status).collectList().awaitSingle()
+    }
+
+    /**
+     * 列表查询
+     */
+    override suspend fun list(input: AppRouteListInput): Page<AppRoutePo> {
+        val pageable = input.toPageable()
+
+        val qAppRoutePo = QAppRoutePo.appRoutePo
+        val predicate = input.likeKeyWordOr(qAppRoutePo.name, qAppRoutePo.describe)
+
+        val total = appRouteRepository.count(predicate).awaitSingle()
+        val contents = appRouteRepository.findAllBy(predicate, pageable).collectList().awaitSingle()
+        return PageImpl(contents, pageable, total)
     }
 
 }

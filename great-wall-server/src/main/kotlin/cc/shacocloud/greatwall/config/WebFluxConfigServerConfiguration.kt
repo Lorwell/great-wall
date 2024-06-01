@@ -3,7 +3,9 @@ package cc.shacocloud.greatwall.config
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import jakarta.annotation.PostConstruct
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.autoconfigure.web.reactive.WebFluxRegistrations
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.embedded.netty.NettyServerCustomizer
@@ -12,6 +14,7 @@ import org.springframework.boot.web.server.WebServer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.event.EventListener
 import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.util.ReflectionUtils
 import org.springframework.web.reactive.DispatcherHandler
@@ -79,13 +82,18 @@ class WebFluxConfigServerConfiguration(
         return RequestMappingHandlerMapping()
     }
 
+    @Bean(destroyMethod = "stop")
+    fun configWebServer(): ConfigWebServer {
+        val webServer = createConfigWebServer()
+        return ConfigWebServer(webServer)
+    }
+
     /**
      * 创建 配置服务
      */
     fun createConfigWebServer(): WebServer {
         configPostInit.set(true)
         try {
-
             val dispatcherHandler = DispatcherHandler(applicationContext)
             val handlerMapping = configServerRequestMappingHandlerMapping()
             val handlerMappings = listOf(handlerMapping) + dispatcherHandler.handlerMappings
@@ -116,38 +124,19 @@ class WebFluxConfigServerConfiguration(
         }
     }
 
-    override fun getWebServer(httpHandler: HttpHandler): WebServer {
-        val mainWebServer = super.getWebServer(httpHandler)
-        val configWebServer = createConfigWebServer()
-        return MultiPortWebServer(mainWebServer, configWebServer)
+    class ConfigWebServer(
+        private val webServer: WebServer
+    ) {
+
+        @EventListener(ApplicationReadyEvent::class)
+        fun start() {
+            webServer.start()
+        }
+
+        fun stop() {
+            webServer.stop()
+        }
+
     }
-
-    class MultiPortWebServer(
-        private val mainWebServer: WebServer,
-        private val configWebServer: WebServer
-    ) : WebServer {
-
-        override fun start() {
-            mainWebServer.start()
-            configWebServer.start()
-        }
-
-        override fun stop() {
-            try {
-                configWebServer.stop()
-            } catch (e: Throwable) {
-                if (log.isErrorEnabled) {
-                    log.error("关闭配置 Web Server 发生例外！", e)
-                }
-            }
-
-            mainWebServer.stop()
-        }
-
-        override fun getPort(): Int {
-            return mainWebServer.port
-        }
-    }
-
 
 }

@@ -3,6 +3,8 @@ package cc.shacocloud.greatwall.model.mo
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 
+class RouteUrls : ArrayList<RouteUrl>()
+
 /**
  * 路由肚子
  * @author 思追(shaco)

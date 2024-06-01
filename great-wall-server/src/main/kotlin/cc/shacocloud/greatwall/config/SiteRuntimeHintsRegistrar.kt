@@ -14,6 +14,9 @@ class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
 
         // sql 文件
         hints.resources().registerPattern("sql/*.sql")
+
+        // 静态资源
+        hints.resources().registerPattern("static/*")
     }
 
 }

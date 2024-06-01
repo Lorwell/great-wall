@@ -3,6 +3,7 @@ package cc.shacocloud.greatwall.model.dto.output
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteUrl
+import cc.shacocloud.greatwall.model.mo.RouteUrls
 import java.util.*
 
 /**
@@ -39,7 +40,7 @@ data class AppRouteOutput(
     /**
      * 请求地址
      */
-    val urls: List<RouteUrl>,
+    val urls: RouteUrls,
 
     /**
      * 路由条件

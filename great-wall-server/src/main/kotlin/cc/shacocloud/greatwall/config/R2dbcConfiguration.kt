@@ -2,10 +2,12 @@ package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
-import cc.shacocloud.greatwall.model.mo.RouteUrl
+import cc.shacocloud.greatwall.model.mo.RouteUrls
 import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
 import cc.shacocloud.greatwall.model.po.QueryParamsMetrics
 import cc.shacocloud.greatwall.model.po.converter.*
+import com.querydsl.sql.H2Templates
+import com.querydsl.sql.SQLTemplates
 import io.r2dbc.h2.H2ConnectionConfiguration
 import io.r2dbc.h2.H2ConnectionFactory
 import io.r2dbc.pool.ConnectionPool
@@ -30,6 +32,11 @@ import org.springframework.transaction.ReactiveTransactionManager
 class R2dbcConfiguration(
     val r2dbcProperties: R2dbcProperties
 ) : AbstractR2dbcConfiguration() {
+
+    @Bean
+    fun sqlTemplates(): SQLTemplates {
+        return H2Templates()
+    }
 
     @Bean(destroyMethod = "dispose")
     override fun connectionFactory(): ConnectionPool {
@@ -79,8 +86,8 @@ class R2dbcConfiguration(
             object : JsonStringToBeanConverter<CookiesParamsMetrics>() {},
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
-            object : BeanToJsonStringConverter<List<RouteUrl>>() {},
-            object : JsonStringToBeanConverter<List<RouteUrl>>() {},
+            object : BeanToJsonStringConverter<RouteUrls>() {},
+            object : JsonStringToBeanConverter<RouteUrls>() {},
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
             object : StringToEnumConverter<AppRouteStatusEnum>() {}
         )

@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
  *
  * @author 思追(shaco)
  */
-@Service
+//@Service
 class AutoRefreshTLSScheduled {
 
     private var expirationTime: Date? = null
@@ -20,7 +20,7 @@ class AutoRefreshTLSScheduled {
     /**
      * 每隔一小时刷新一次证书
      */
-//    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
+    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
     fun refreshTls() {
         if (!ApplicationContextHolder.available()) return
 
