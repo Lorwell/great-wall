@@ -90,7 +90,7 @@ export const getErrorMessage = (e: HttpException) => {
   } else {
     const message = e.body?.message;
     if (!isBlank(message)) {
-      detail = message
+      detail = message!!
     } else {
       detail = `${e.url} 请求发生错误！`
     }

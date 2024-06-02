@@ -1,5 +1,7 @@
 import _ from "lodash";
 import {isBlank} from "@/utils/Utils";
+import {errorMsgSchema, ErrorMsgValues} from "@/constant/api/schema.ts";
+import {ZodTypeAny} from "zod";
 
 /**
  * 发送 fetch 请求
@@ -13,9 +15,10 @@ const fetchRequest = (uri: string, init?: RequestInit) => {
  * @param uri 请求地址
  * @param queryParam 查询参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const Get = <T>(uri: string, {queryParam, headers}: RequestParam = {}): Promise<T> => {
+export const Get = <T>(uri: string, {queryParam, headers, resultSchema}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -25,7 +28,7 @@ export const Get = <T>(uri: string, {queryParam, headers}: RequestParam = {}): P
           "Accept": "application/json;charset=utf-8"
         }
       });
-  });
+  }, resultSchema);
 };
 
 
@@ -35,9 +38,10 @@ export const Get = <T>(uri: string, {queryParam, headers}: RequestParam = {}): P
  * @param queryParam 查询参数
  * @param body 参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const Post = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const Post = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -49,7 +53,7 @@ export const Post = <T>(uri: string, {queryParam, body, headers}: RequestParam =
         },
         body: body && Object.keys(body).length > 0 ? queryParamJoint(body) : null
       });
-  });
+  }, resultSchema);
 };
 
 
@@ -59,9 +63,15 @@ export const Post = <T>(uri: string, {queryParam, body, headers}: RequestParam =
  * @param queryParam 查询参数
  * @param body 参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const PostFormData = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const PostFormData = <T>(uri: string, {
+  queryParam,
+  body,
+  headers,
+  resultSchema
+}: RequestParam = {}): Promise<T> => {
   const formData = new FormData();
 
   if (body && Object.keys(body).length > 0) {
@@ -81,7 +91,7 @@ export const PostFormData = <T>(uri: string, {queryParam, body, headers}: Reques
         },
         body: formData,
       });
-  });
+  }, resultSchema);
 };
 
 
@@ -91,9 +101,10 @@ export const PostFormData = <T>(uri: string, {queryParam, body, headers}: Reques
  * @param queryParam 查询参数
  * @param body 参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const PostJson = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const PostJson = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -105,7 +116,7 @@ export const PostJson = <T>(uri: string, {queryParam, body, headers}: RequestPar
         },
         body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
       });
-  });
+  }, resultSchema);
 };
 
 /**
@@ -114,9 +125,10 @@ export const PostJson = <T>(uri: string, {queryParam, body, headers}: RequestPar
  * @param queryParam 查询参数
  * @param body 参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const PutJson = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const PutJson = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -128,7 +140,7 @@ export const PutJson = <T>(uri: string, {queryParam, body, headers}: RequestPara
         },
         body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
       });
-  });
+  }, resultSchema);
 };
 
 /**
@@ -137,9 +149,10 @@ export const PutJson = <T>(uri: string, {queryParam, body, headers}: RequestPara
  * @param queryParam 查询参数
  * @param body 参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const Patch = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const Patch = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -151,7 +164,7 @@ export const Patch = <T>(uri: string, {queryParam, body, headers}: RequestParam 
         },
         body: body && Object.keys(body).length > 0 ? queryParamJoint(body) : null
       });
-  });
+  }, resultSchema);
 };
 
 
@@ -161,9 +174,10 @@ export const Patch = <T>(uri: string, {queryParam, body, headers}: RequestParam 
  * @param queryParam 查询参数
  * @param body 参数
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const PatchJson = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const PatchJson = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -175,7 +189,7 @@ export const PatchJson = <T>(uri: string, {queryParam, body, headers}: RequestPa
         },
         body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
       });
-  });
+  }, resultSchema);
 };
 
 
@@ -183,10 +197,17 @@ export const PatchJson = <T>(uri: string, {queryParam, body, headers}: RequestPa
  * DeleteJson 请求
  * @param uri 请求地址
  * @param queryParam 查询参数
+ * @param body 请求头
  * @param headers 请求头
+ * @param resultSchema 结构值结构
  * @constructor
  */
-export const DeleteJson = <T>(uri: string, {queryParam, body, headers}: RequestParam = {}): Promise<T> => {
+export const DeleteJson = <T>(uri: string, {
+  queryParam,
+  body,
+  headers,
+  resultSchema
+}: RequestParam = {}): Promise<T> => {
   return fetchResultHandle(() => {
     return fetchRequest(uriQueryParamJoint(uri, queryParam),
       {
@@ -198,7 +219,7 @@ export const DeleteJson = <T>(uri: string, {queryParam, body, headers}: RequestP
         },
         body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
       });
-  });
+  }, resultSchema);
 };
 
 export interface RequestParam {
@@ -217,6 +238,11 @@ export interface RequestParam {
    * 请求体
    */
   body?: Record<string, any>
+
+  /**
+   * 响应值结构
+   */
+  resultSchema?: ZodTypeAny
 }
 
 /**
@@ -226,10 +252,14 @@ export class HttpException extends Error {
   url: string;
   status: number;
   statusText: string;
-  body: ErrorMsg;
+  body: Partial<ErrorMsgValues> | any;
 
-  constructor(url: string, status: number, statusText: string, body: ErrorMsg) {
-    super(`请求 ${url} 发生错误,响应: ${status} - ${statusText}${!!body ? ", 主体: " + JSON.stringify(body) : ""}`);
+  constructor(url: string,
+              status: number,
+              statusText: string,
+              body: Partial<ErrorMsgValues> | any,
+              message?: string) {
+    super(`请求 ${url} 发生错误,响应: ${status} - ${statusText}${message ? `：${message}` : JSON.stringify(body)}`);
     this.url = url;
     this.status = status;
     this.statusText = statusText;
@@ -241,18 +271,18 @@ export class HttpException extends Error {
 /**
  * fetch 结果处理器
  * @param service 服务请求函数
+ * @param resultSchema 结果值结构
  */
-const fetchResultHandle = async <T>(service: () => Promise<Response>): Promise<T> => {
+const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSchema?: ZodTypeAny): Promise<T> => {
   const response = await service();
-
-  const status = response.status;
+  const {headers, status, statusText, url} = response
   const success = status >= 200 && status <= 300;
 
   let body;
 
   // JSON 结果解析
-  const content = response.headers.get("content-Type");
-  if (content && content.includes("application/json")) {
+  const contentType = headers.get("content-Type");
+  if (contentType && contentType.includes("application/json")) {
     body = await response.json();
   } else {
     body = await response.text()
@@ -264,11 +294,12 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>): Promise<T
         body = JSON.parse(body)
       } catch (e) {
         if (success) {
-          throw new HttpException(response.url, status, response.statusText,
+          throw new HttpException(url, status, statusText,
             {
-              code: "response.content-type.invalid",
-              message: `不支持响应类型解析：${content}, 响应值：${body}`
-            });
+              code: "response.contentType-type.invalid",
+              message: `不支持响应类型解析：${contentType}, 响应值：${body}`
+            },
+            `不支持响应类型解析：${contentType}, 响应值：${body}`);
         }
       }
     }
@@ -276,10 +307,27 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>): Promise<T
 
   // 请求成功
   if (success) {
-    return body;
+    try {
+      return resultSchema?.parse(body) || body
+    } catch (e) {
+      console.log(`结果值结构解析失败!`, e)
+      body = {
+        code: "response.invalid",
+        message: `结果值结构解析失败：${e}`
+      }
+      throw new HttpException(url, status, statusText, body, `结果值结构解析失败：${e}`);
+    }
   }
 
-  throw new HttpException(response.url, status, response.statusText, body);
+  try {
+    body = errorMsgSchema.parse(body)
+  } catch (e) {
+    body = {
+      code: "response.invalid",
+      message: `未知的响应值：${body}`
+    }
+  }
+  throw new HttpException(url, status, statusText, body);
 };
 
 /**
@@ -338,142 +386,3 @@ export const queryParamJoint = (queryParam?: Record<string, any | Array<any>>): 
 
   return params.join("&");
 };
-
-
-export interface Msg {
-
-  /**
-   * 唯一码
-   */
-  code: string;
-
-  /**
-   * 消息
-   */
-  message: string;
-
-}
-
-export interface ErrorMsg extends Msg {
-
-}
-
-/**
- * 字段错误输出
- */
-export interface FieldsError extends ErrorMsg {
-
-  /**
-   * 错误的字段
-   */
-  fields: Record<string, Array<FieldError>>;
-
-}
-
-export interface FieldError extends ErrorMsg {
-
-  /**
-   * 错误的字段值
-   */
-  rejectedValue?: any;
-
-}
-
-
-/**
- * 集合结果
- */
-export interface Records<T> {
-
-  records: Array<T>;
-
-}
-
-/**
- * 集合结果
- */
-export interface PageRecords<T> extends Records<T> {
-
-  /**
-   * 分页信息
-   */
-  page: PageOutput;
-
-}
-
-export interface PageOutput {
-
-  /**
-   * 当前页码，从0开始
-   */
-  current: number;
-
-  /**
-   * 页长度
-   */
-  size: number;
-
-  /**
-   * 总量
-   */
-  total: number;
-
-}
-
-/**
- * 基础列表输入模型
- */
-export interface BaseListInput {
-
-  /**
-   * 分页字段 当前页，从0开始
-   * <p>
-   * 默认为空，不分页
-   */
-  current?: number;
-
-  /**
-   * 分页字段 页长度
-   */
-  size?: number;
-
-  /**
-   * 排序字段名称
-   */
-  orderBy?: string | string[];
-
-  /**
-   * 排序方式
-   */
-  orderDirection?: Direction;
-
-  /**
-   * 排序空值处理
-   */
-  orderNullHandling?: NullHandling;
-
-}
-
-export enum NullHandling {
-
-  /**
-   * 默认处理
-   */
-  NATIVE = "NATIVE",
-
-  /**
-   * 提示所使用的数据存储以将具有空值的条目排在非空条目之前
-   */
-  NULLS_FIRST = "NULLS_FIRST",
-
-  /**
-   * 提示所使用的数据存储，以便将具有空值的条目排在非空条目之后
-   */
-  NULLS_LAST = "NULLS_LAST"
-}
-
-export enum Direction {
-
-  ASC = "ASC",
-  DESC = "DESC"
-}

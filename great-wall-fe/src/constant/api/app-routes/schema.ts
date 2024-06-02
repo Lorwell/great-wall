@@ -1,7 +1,8 @@
-// 基础信息
 import {z} from "zod";
 import {AppRouteStatusEnum, PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
+import {baseOutputSchema, getPageRecordSchema} from "@/constant/api/schema.ts";
 
+// 基础信息
 export const baseInfoFormSchema = z.object({
   name: z.string({required_error: "不可以为空"})
     .min(2, {
@@ -100,3 +101,13 @@ export type PredicatesFormValues = z.infer<typeof predicatesFormSchema>
 
 export const appRoutesConfSchema = baseInfoFormSchema.merge(predicatesFormSchema)
 export type AppRoutesConfValues = z.infer<typeof appRoutesConfSchema>
+
+
+export const appRouteOutputSchema = appRoutesConfSchema.merge(baseOutputSchema)
+export type AppRouteOutputValues = z.infer<typeof appRouteOutputSchema>
+
+export const appRouteListOutputSchema = appRoutesConfSchema.merge(baseOutputSchema).omit({predicates: true})
+export type AppRouteListOutputValues = z.infer<typeof appRouteListOutputSchema>
+
+export const appRouteListPageRecordsSchema = getPageRecordSchema(appRouteListOutputSchema)
+export type AppRouteListPageRecordsValues = z.infer<typeof appRouteListPageRecordsSchema>

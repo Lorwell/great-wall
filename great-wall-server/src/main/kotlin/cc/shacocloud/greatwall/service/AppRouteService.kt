@@ -27,4 +27,14 @@ interface AppRouteService {
      */
     suspend fun list(input: AppRouteListInput): Page<AppRoutePo>
 
+    /**
+     * 根据id查询
+     */
+    suspend fun findById(id: Long): AppRoutePo?
+
+    /**
+     * 更新路由
+     */
+    suspend fun update(appRoutePo: AppRoutePo, input: AppRouteInput): AppRoutePo
+
 }

@@ -37,10 +37,6 @@ class AppRouteLocator(
          * 刷新路由
          */
         fun refreshRoutes() {
-            if (log.isInfoEnabled) {
-                log.info("刷新路由...")
-            }
-
             ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
         }
     }
@@ -48,64 +44,66 @@ class AppRouteLocator(
     /**
      * 加载所有数据库中路由
      */
-    override fun getRoutes(): Flux<Route> {
-        return flux {
-            appRouteService.findByStatus(AppRouteStatusEnum.ONLINE)
-                .forEach { appRoute ->
-                    val id = appRoute.id!!
-                    val routeUrls = appRoute.urls
-                    val isSingleton = routeUrls.size == 1
+    override fun getRoutes(): Flux<Route> = flux {
+        if (log.isInfoEnabled) {
+            log.info("刷新路由...")
+        }
 
-                    for ((index, url) in routeUrls.withIndex()) {
-                        val uri = URI.create(url.url)
+        appRouteService.findByStatus(AppRouteStatusEnum.ONLINE)
+            .forEach { appRoute ->
+                val id = appRoute.id!!
+                val routeUrls = appRoute.urls
+                val isSingleton = routeUrls.size == 1
 
-                        val appId = "${id}-${index}"
+                for ((index, url) in routeUrls.withIndex()) {
+                    val uri = URI.create(url.url)
 
-                        val routeBuilder = Route.async()
-                            .id(appId)
-                            .uri(uri)
-                            .order(appRoute.priority)
+                    val appId = "${id}-${index}"
 
-                        // 如果目标地址存在多个则绑定权重路由条件
-                        val first = if (isSingleton) {
-                            AtomicBoolean(true)
-                        } else {
-                            routeBuilder.and(
-                                ServerWebExchangeUtils.toAsyncPredicate(
-                                    weightRoutePredicateFactory.apply {
-                                        it.routeId = appId
-                                        it.group = "appRoute-${id}"
-                                        it.weight = url.weight
-                                    }
-                                )
+                    val routeBuilder = Route.async()
+                        .id(appId)
+                        .uri(uri)
+                        .order(appRoute.priority)
+
+                    // 如果目标地址存在多个则绑定权重路由条件
+                    val first = if (isSingleton) {
+                        AtomicBoolean(true)
+                    } else {
+                        routeBuilder.and(
+                            ServerWebExchangeUtils.toAsyncPredicate(
+                                weightRoutePredicateFactory.apply {
+                                    it.routeId = appId
+                                    it.group = "appRoute-${id}"
+                                    it.weight = url.weight
+                                }
                             )
-                            AtomicBoolean(false)
+                        )
+                        AtomicBoolean(false)
+                    }
+
+                    val baseInfo = BaseRouteInfo(appId, uri, appRoute.priority)
+
+                    // 路由条件
+                    appRoute.predicates
+                        .map {
+                            it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
                         }
-
-                        val baseInfo = BaseRouteInfo(appId, uri, appRoute.priority)
-
-                        // 路由条件
-                        appRoute.predicates
-                            .map {
-                                it.operator to routePredicateFactory.asyncPredicate(it.predicate, baseInfo)
-                            }
-                            .forEach { (operator, predicate) ->
-                                if (first.getAndSet(false)) {
-                                    routeBuilder.asyncPredicate(predicate)
-                                } else {
-                                    when (operator) {
-                                        AND -> routeBuilder.and(predicate)
-                                        OR -> routeBuilder.or(predicate)
-                                    }
+                        .forEach { (operator, predicate) ->
+                            if (first.getAndSet(false)) {
+                                routeBuilder.asyncPredicate(predicate)
+                            } else {
+                                when (operator) {
+                                    AND -> routeBuilder.and(predicate)
+                                    OR -> routeBuilder.or(predicate)
                                 }
                             }
+                        }
 
-                        // 插件配置 TODO
+                    // 插件配置 TODO
 
-                        send(routeBuilder.build())
-                    }
+                    send(routeBuilder.build())
                 }
-        }
+            }
     }
 
 }

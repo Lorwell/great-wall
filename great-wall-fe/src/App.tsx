@@ -12,6 +12,8 @@ import configAppRoutesRoutes from "@/pages/app-routes/components/app-routes/rout
 const AppFrame = lazy(() => import("@/pages/AppFrame"));
 const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
 const AddAppRoutes = lazy(() => import("@/pages/app-routes/add"));
+const UpdateAppRoutes = lazy(() => import("@/pages/app-routes/update"));
+
 const App = () => {
 
   return (
@@ -28,6 +30,9 @@ const App = () => {
               <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
                 <Route path="list" element={<AppRouteList/>}/>
                 <Route path="add" element={<AddAppRoutes/>}>
+                  {configAppRoutesRoutes()}
+                </Route>
+                <Route path=":id" element={<UpdateAppRoutes/>}>
                   {configAppRoutesRoutes()}
                 </Route>
 

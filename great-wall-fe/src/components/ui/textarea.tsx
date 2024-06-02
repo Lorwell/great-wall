@@ -1,12 +1,12 @@
 import * as React from "react"
 
-import { cn } from "@/utils/shadcnUtils"
+import {cn} from "@/utils/shadcnUtils"
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, ...props }, ref) => {
+  ({className, ...props}, ref) => {
     return (
       <textarea
         className={cn(
@@ -21,4 +21,4 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 )
 Textarea.displayName = "Textarea"
 
-export { Textarea }
+export {Textarea}

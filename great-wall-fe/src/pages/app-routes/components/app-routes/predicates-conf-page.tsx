@@ -1,15 +1,11 @@
-import {useContext, useEffect} from "react";
-import {AppRoutesContext,} from "@/pages/app-routes/components/app-routes/schema.ts";
+import {useEffect} from "react";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
 import {Control, FieldPath, FieldValues, useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import RoutePredicatesPlusOptions from "@/pages/app-routes/components/app-routes/route-predicates-plus-options.tsx";
-import {
-  PredicateTypeEnum,
-  RoutePredicateOperatorEnum
-} from "@/constant/api/app-routes/types.ts";
+import {PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
 import HostPredicate from "@/pages/app-routes/components/app-routes/predicates/host-predicate.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Input} from "@/components/ui/input.tsx";
@@ -22,6 +18,8 @@ import KVPredicate from "@/pages/app-routes/components/app-routes/predicates/kv-
 import PathsPredicate from "@/pages/app-routes/components/app-routes/predicates/paths-predicate.tsx";
 import RemoteAddrPredicate from "@/pages/app-routes/components/app-routes/predicates/remote-addr-predicate.tsx";
 import {predicatesFormSchema, PredicatesFormValues} from "@/constant/api/app-routes/schema.ts";
+import {useRecoilState} from "recoil";
+import {appRoutesDataOptionsState} from "@/pages/app-routes/components/app-routes/store.ts";
 
 export interface PredicatesConfPageProps {
 
@@ -38,7 +36,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
     preview = false
   } = props
 
-  const ctx = useContext(AppRoutesContext);
+  const [appRoutesDataOptions, setAppRoutesDataOptions] = useRecoilState(appRoutesDataOptionsState);
   const outletContext = useLayoutOutletContext();
 
   const form = useForm<PredicatesFormValues>({
@@ -56,7 +54,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
           url: "",
           weight: 1
         }]
-      }, ...ctx?.predicates
+      }, ...appRoutesDataOptions.predicates
     },
     disabled: preview
   });
@@ -91,7 +89,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
    * @param data
    */
   function onSubmit(data: PredicatesFormValues) {
-    ctx?.setPredicates?.(data);
+    setAppRoutesDataOptions({...appRoutesDataOptions, predicates: data})
     outletContext.nextPage()
   }
 

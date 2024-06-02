@@ -1,5 +1,5 @@
-import {AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
-import {BaseOutputSchemaValues} from "@/constant/api/schema.ts";
+import {AppRouteListOutputValues, AppRouteOutputValues, AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
+import {BaseListInputSchemaValues} from "@/constant/api/schema.ts";
 
 export enum AppRouteStatusEnum {
 
@@ -61,5 +61,13 @@ export enum PredicateTypeEnum {
 }
 
 export type AppRouteInput = Partial<AppRoutesConfValues>
-export type AppRouteOutput = Partial<AppRoutesConfValues> & Partial<BaseOutputSchemaValues>
+export type AppRouteOutput = Partial<AppRouteOutputValues>
+export type AppRouteListOutput = Partial<AppRouteListOutputValues>
 
+export interface AppRouteListInput extends BaseListInputSchemaValues {
+
+  /**
+   * 状态匹配
+   */
+  status?: AppRouteStatusEnum
+}

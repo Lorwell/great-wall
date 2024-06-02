@@ -96,7 +96,7 @@ class WebFluxConfigServerConfiguration(
         try {
             val dispatcherHandler = DispatcherHandler(applicationContext)
             val handlerMapping = configServerRequestMappingHandlerMapping()
-            val handlerMappings = listOf(handlerMapping) + dispatcherHandler.handlerMappings
+            val handlerMappings = mutableListOf(handlerMapping) + dispatcherHandler.handlerMappings
 
             val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
             ReflectionUtils.makeAccessible(handlerMappingsField)

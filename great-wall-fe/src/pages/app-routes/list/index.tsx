@@ -1,9 +1,10 @@
 import {DataTable} from "@/components/data-table/data-table.tsx";
 import {columns} from "@/pages/app-routes/list/columns.tsx";
-import {data} from "@/pages/app-routes/list/data.ts";
 import {RowContext} from "@/pages/app-routes/list/row-actions.tsx";
 import {useNavigate} from "react-router-dom";
 import {LayoutPanelLeft} from "lucide-react";
+import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import {appRouteList} from "@/constant/api/app-routes";
 
 
 /**
@@ -13,13 +14,15 @@ import {LayoutPanelLeft} from "lucide-react";
 function AppRoutesList() {
 
   const navigate = useNavigate();
+  const {data,} = useApiRequest(appRouteList);
 
   /**
    * 查看事件
    * @param ctx
    */
   function handleView(ctx: RowContext) {
-
+    const id = ctx.row.original.id
+    navigate(`/manage/app-routes/${id}`)
   }
 
   /**
@@ -31,7 +34,7 @@ function AppRoutesList() {
   }
 
   /**
-   * 查看事件
+   * 下线事件
    * @param ctx
    */
   function handleOffline(ctx: RowContext) {
@@ -39,7 +42,7 @@ function AppRoutesList() {
   }
 
   /**
-   * 查看事件
+   * 上线事件
    * @param ctx
    */
   function handleOnline(ctx: RowContext) {
@@ -48,7 +51,8 @@ function AppRoutesList() {
 
   return (
     <div className={"w-full h-full"}>
-      <DataTable data={data}
+      <DataTable data={data?.records || []}
+                 rowCount={data?.page.total}
                  searchColumnId={"name"}
                  manual={false}
                  columns={columns({

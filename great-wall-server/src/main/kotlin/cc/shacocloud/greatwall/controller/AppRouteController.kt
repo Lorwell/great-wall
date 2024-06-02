@@ -1,11 +1,13 @@
 package cc.shacocloud.greatwall.controller
 
+import cc.shacocloud.greatwall.controller.exception.NotFoundException
 import cc.shacocloud.greatwall.model.dto.convert.toListOutput
 import cc.shacocloud.greatwall.model.dto.convert.toOutput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
 import cc.shacocloud.greatwall.model.dto.output.AppRouteListOutput
 import cc.shacocloud.greatwall.model.dto.output.AppRouteOutput
+import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.AppRouteService
 import org.springframework.data.domain.Page
 import org.springframework.validation.annotation.Validated
@@ -28,6 +30,9 @@ class AppRouteController(
     @PostMapping
     suspend fun create(@RequestBody @Validated input: AppRouteInput): AppRouteOutput {
         val appRoutePo = appRouteService.create(input)
+
+        // 刷新路由
+        AppRouteLocator.refreshRoutes()
         return appRoutePo.toOutput()
     }
 
@@ -38,6 +43,33 @@ class AppRouteController(
     suspend fun list(@Validated input: AppRouteListInput): Page<AppRouteListOutput> {
         return appRouteService.list(input)
             .map { it.toListOutput() }
+    }
+
+    /**
+     * 应用路由详情
+     */
+    @GetMapping("/{id}")
+    suspend fun details(@PathVariable id: Long): AppRouteOutput {
+        val appRoutePo = (appRouteService.findById(id)
+            ?: throw NotFoundException())
+        return appRoutePo.toOutput()
+    }
+
+    /**
+     * 更新应用路由
+     */
+    @PutMapping("/{id}")
+    suspend fun update(
+        @PathVariable id: Long,
+        @RequestBody @Validated input: AppRouteInput
+    ): AppRouteOutput {
+        var appRoutePo = (appRouteService.findById(id)
+            ?: throw NotFoundException())
+        appRoutePo = appRouteService.update(appRoutePo, input)
+
+        // 刷新路由
+        AppRouteLocator.refreshRoutes()
+        return appRoutePo.toOutput()
     }
 
 }

@@ -10,6 +10,8 @@ import {
   predicatesFormSchema,
   PredicatesFormValues
 } from "@/constant/api/app-routes/schema.ts";
+import {useRecoilValue} from "recoil";
+import {appRoutesDataOptionsState} from "@/pages/app-routes/components/app-routes/store.ts";
 
 /**
  * 插件配置
@@ -17,6 +19,7 @@ import {
  */
 export default function PreviewConfPage() {
   const ctx = useContext(AppRoutesContext);
+  const appRoutesDataOptions = useRecoilValue(appRoutesDataOptionsState);
 
   /**
    * 提交
@@ -26,8 +29,8 @@ export default function PreviewConfPage() {
     let predicates: Partial<PredicatesFormValues>
 
     try {
-      baseInfoData = baseInfoFormSchema.parse(ctx.baseInfo);
-      predicates = predicatesFormSchema.parse(ctx.predicates);
+      baseInfoData = baseInfoFormSchema.parse(appRoutesDataOptions.baseInfo);
+      predicates = predicatesFormSchema.parse(appRoutesDataOptions.predicates);
     } catch (e) {
       toast.warning("表单存在错误的字段，请检查！",
         {

@@ -13,6 +13,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 /**
@@ -21,6 +22,7 @@ import java.util.*
  */
 @Slf4j
 @Service
+@Transactional(rollbackFor = [Exception::class])
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
 ) : AppRouteService {
@@ -62,6 +64,30 @@ class AppRouteServiceImpl(
         val total = appRouteRepository.count(predicate).awaitSingle()
         val contents = appRouteRepository.findAllBy(predicate, pageable).collectList().awaitSingle()
         return PageImpl(contents, pageable, total)
+    }
+
+    /**
+     * 根据id查询
+     */
+    override suspend fun findById(id: Long): AppRoutePo? {
+        return appRouteRepository.findById(id).awaitSingle()
+    }
+
+    /**
+     * 更新路由
+     */
+    override suspend fun update(appRoutePo: AppRoutePo, input: AppRouteInput): AppRoutePo {
+        appRoutePo.apply {
+            name = input.name
+            describe = input.describe
+            priority = input.priority
+            status = input.status
+            urls = input.urls
+            predicates = input.predicates
+            lastUpdateTime = Date()
+        }
+
+        return appRouteRepository.save(appRoutePo).awaitSingle()
     }
 
 }

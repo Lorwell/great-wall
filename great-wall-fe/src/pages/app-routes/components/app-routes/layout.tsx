@@ -4,6 +4,7 @@ import {isNull} from "@/utils/Utils.ts";
 import {toast} from "sonner";
 import {cn} from "@/utils/shadcnUtils.ts";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
+import {Spinner} from "@/components/custom-ui/spinner.tsx";
 
 interface LayoutProps {
   title: string | ReactNode | ReactElement
@@ -123,7 +124,8 @@ export default function Layout(props: LayoutProps) {
           {
             (size) => (
               <div style={{...size}} className={"overflow-auto"}>
-                <Outlet context={{nextPage}}/>
+                {loading && (<Spinner/>)}
+                {!loading && (<Outlet context={{nextPage}}/>)}
               </div>
             )
           }

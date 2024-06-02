@@ -1,10 +1,11 @@
 import {ColumnDef} from "@tanstack/react-table";
-import {AppRoute} from "@/pages/app-routes/list/schema.ts";
 import {columnCell, dataTableCheckboxColumn} from "@/components/data-table/data-table-column.tsx";
 import dayjs from "dayjs";
 import {Badge} from "@/components/ui/badge";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
 import RowActions, {RowActionsEvent} from "@/pages/app-routes/list/row-actions.tsx";
+import {AppRouteListOutput} from "@/constant/api/app-routes/types.ts";
+import {UrlsSchemaValues} from "@/constant/api/app-routes/schema.ts";
 
 export interface ColumnsProps {
 
@@ -15,7 +16,7 @@ export interface ColumnsProps {
  * 数据表列配置
  * @param event
  */
-export const columns = ({event}: ColumnsProps): ColumnDef<AppRoute>[] => {
+export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] => {
 
   return [
     dataTableCheckboxColumn(),
@@ -38,24 +39,26 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRoute>[] => {
     ),
     columnCell(
       {
-        columnId: "uris",
+        columnId: "urls",
         label: "路由地址",
         size: 200,
         enableSorting: false,
         cell: ({getValue}) => {
-          const uris = getValue<Array<string>>();
+          const urls = getValue<Array<UrlsSchemaValues>>();
           return (
             <div className={"w-full flex gap-1"}>
               <div className={"truncate"} style={{width: "calc(100% - 25px)"}}>
-                {uris.join(", ")}
+                {urls.map(it => it.url).join(", ")}
               </div>
               <HoverCard>
                 <HoverCardTrigger>
-                  <Badge variant={"secondary"} className={"cursor-pointer"}>{uris.length}</Badge>
+                  <Badge variant={"secondary"} className={"cursor-pointer"}>{urls.length}</Badge>
                 </HoverCardTrigger>
                 <HoverCardContent>
                   <div className={"flex flex-col gap-1"}>
-                    {uris.map((it, index) => (<span key={index}>{it}</span>))}
+                    {urls.map((it, index) => (
+                      <span key={index}>{it.url}{"  -  权重："}{it.weight}</span>
+                    ))}
                   </div>
                 </HoverCardContent>
               </HoverCard>

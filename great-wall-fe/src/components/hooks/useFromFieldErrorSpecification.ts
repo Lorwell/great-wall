@@ -1,8 +1,9 @@
-import {FieldsError, HttpException} from "@/constant/api";
+import {HttpException} from "@/constant/api";
 import {getErrorMessage} from "@/components/hooks/useApiRequest.ts";
 import {isBlank, isNull} from "@/utils/Utils.ts";
 import {FieldValues, UseFormReturn} from "react-hook-form";
 import {toast} from "sonner";
+import {FieldsErrorValues} from "@/constant/api/schema.ts";
 
 export type Service<T> = () => Promise<T>
 
@@ -26,7 +27,7 @@ function useFromFieldErrorSpecification<TFieldValues extends FieldValues = Field
       // http 异常状态码处理
       if (e instanceof HttpException) {
         if (e.status === 422) {
-          const fields = (e.body as FieldsError).fields;
+          const fields = (e.body as Partial<FieldsErrorValues>).fields;
           for (let key in fields) {
             const value = fields[key];
             if (value.length > 0) {

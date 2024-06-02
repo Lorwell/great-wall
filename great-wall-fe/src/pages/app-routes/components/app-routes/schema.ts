@@ -16,19 +16,8 @@ export interface AppRoutesDataOptions {
 
 }
 
-export interface AppRoutesOptions extends AppRoutesDataOptions {
+export interface AppRoutesOptions {
 
-  /**
-   * 设置基础信息
-   * @param data
-   */
-  setBaseInfo?: (data: Partial<BaseInfoFormValues>) => void
-
-  /**
-   * 设置路由条件
-   * @param data
-   */
-  setPredicates?: (data: Partial<PredicatesFormValues>) => void
 
   /**
    * 提交信息

@@ -12,13 +12,14 @@ import {
 import {Input} from "@/components/ui/input.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {AppRoutesContext,} from "@/pages/app-routes/components/app-routes/schema.ts";
-import {useContext, useEffect} from "react";
+import {useEffect} from "react";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {baseInfoFormSchema, BaseInfoFormValues} from "@/constant/api/app-routes/schema.ts";
+import {useRecoilState} from "recoil";
+import {appRoutesDataOptionsState} from "@/pages/app-routes/components/app-routes/store.ts";
 
 export interface BaseInfoConfPageProps {
 
@@ -35,12 +36,12 @@ function BaseInfoConfPage(props: BaseInfoConfPageProps) {
     preview = false
   } = props
 
-  const ctx = useContext(AppRoutesContext);
+  const [appRoutesDataOptions, setAppRoutesDataOptions] = useRecoilState(appRoutesDataOptionsState);
   const outletContext = useLayoutOutletContext();
 
   const form = useForm<BaseInfoFormValues>({
     resolver: zodResolver(baseInfoFormSchema),
-    defaultValues: {priority: 0, status: AppRouteStatusEnum.ONLINE, ...ctx?.baseInfo},
+    defaultValues: {priority: 0, status: AppRouteStatusEnum.ONLINE, ...appRoutesDataOptions.baseInfo},
     disabled: preview
   });
 
@@ -55,7 +56,7 @@ function BaseInfoConfPage(props: BaseInfoConfPageProps) {
    * @param data
    */
   function onSubmit(data: BaseInfoFormValues) {
-    ctx?.setBaseInfo?.(data);
+    setAppRoutesDataOptions({...appRoutesDataOptions, baseInfo: data});
     outletContext.nextPage()
   }
 
@@ -88,7 +89,7 @@ function BaseInfoConfPage(props: BaseInfoConfPageProps) {
                          <FormItem>
                            <FormLabel>应用描述</FormLabel>
                            <FormControl>
-                             <Textarea {...field} />
+                             <Textarea {...field}/>
                            </FormControl>
                            <FormDescription>
                              应用描述信息，最多150个字符

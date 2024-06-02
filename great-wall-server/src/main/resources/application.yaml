@@ -3,33 +3,25 @@ server:
   config-server:
     port: 8080
   http2:
-    enabled: false
+    enabled: true
   ssl:
     enabled: false
 
 spring:
+  jackson:
+    # 解决 jackson @JsonFormat 序列化时差
+    time-zone: GMT+8
+    serialization:
+      # 将时间转为时间戳输出
+      write-dates-as-timestamps: true
+      write-null-map-values: true
+      write-empty-json-arrays: true
+    default-property-inclusion: non_null
   threads:
     virtual:
-      # 虚拟线程开启后将导致web server重启后关闭
       enabled: false
   cloud:
     gateway:
-      # 路由配置
-      routes:
-        - id: true-nas
-          uri: ${TRUE_NAS_ADDRESS:http://192.168.1.145:80}
-          predicates:
-            - Host=true-nas.shacocloud.cc
-          filters:
-            - PreserveHostHeader
-        - id: qilin-pavilion
-          uri: ${QILIN_PAVILION_ADDRESS:http://192.168.1.145:9546}
-          predicates:
-            - Host=qilin-pavilion.shacocloud.cc
-        - id: ddns
-          uri: ${DDNS_ADDRESS:http://192.168.1.145:9876}
-          predicates:
-            - Host=ddns.shacocloud.cc
       httpclient:
         websocket:
           # 设置 ws 最大帧数字节长度
