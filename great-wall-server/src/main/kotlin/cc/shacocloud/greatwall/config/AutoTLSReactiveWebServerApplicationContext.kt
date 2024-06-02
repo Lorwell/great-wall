@@ -9,7 +9,14 @@ import org.springframework.boot.ssl.SslBundle
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext
 import org.springframework.boot.web.server.Ssl
+import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping
 import org.springframework.context.SmartLifecycle
+import org.springframework.http.server.reactive.HttpHandler
+import org.springframework.util.ReflectionUtils
+import org.springframework.web.reactive.DispatcherHandler
+import org.springframework.web.reactive.HandlerMapping
+import org.springframework.web.server.adapter.HttpWebHandlerAdapter
+import org.springframework.web.server.handler.WebHandlerDecorator
 
 
 /**
@@ -20,6 +27,37 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
 
     // 内置的ssl证书名称
     private val builtSslBundleName = "_built_ssl_bundle"
+
+    /**
+     * 将主端口的服务只绑定一个网关的转发路由映射处理器
+     */
+    override fun getHttpHandler(): HttpHandler {
+        val httpHandler = super.getHttpHandler()
+
+        if (httpHandler is HttpWebHandlerAdapter) {
+            val dispatcherHandler = DispatcherHandler(this)
+            val routePredicateHandlerMapping = getBean(RoutePredicateHandlerMapping::class.java)
+            val handlerMappings = listOf<HandlerMapping>(routePredicateHandlerMapping)
+
+            val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
+            ReflectionUtils.makeAccessible(handlerMappingsField)
+            ReflectionUtils.setField(
+                handlerMappingsField,
+                dispatcherHandler,
+                handlerMappings
+            )
+
+            val delegateField = WebHandlerDecorator::class.java.getDeclaredField("delegate")
+            ReflectionUtils.makeAccessible(delegateField)
+            ReflectionUtils.setField(
+                delegateField,
+                httpHandler,
+                dispatcherHandler
+            )
+        }
+
+        return httpHandler
+    }
 
     /**
      * 重启 web 服务

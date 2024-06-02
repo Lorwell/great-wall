@@ -17,13 +17,14 @@ import {
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
 import {DataTablePagination} from "./data-table-pagination"
 import {DataTableToolbar} from "./data-table-toolbar"
-import {isNull} from "@/utils/Utils.ts";
+import {isEmpty, isNull} from "@/utils/Utils.ts";
 import {checkboxSelectId} from "@/components/data-table/data-table-column.tsx";
 import {cn} from "@/utils/shadcnUtils.ts";
 import {DataTableToolbarFilterOptions} from "@/components/data-table/data-table-filter-options.tsx";
 import {DataTablePlusItemOptions} from "@/components/data-table/data-table-plus-options.tsx";
 
 import styles from "./styles.module.less"
+import {Spinner} from "@/components/custom-ui/spinner.tsx";
 
 interface DataTableProps<TData, TValue> {
 
@@ -36,6 +37,11 @@ interface DataTableProps<TData, TValue> {
    * 数据总长度，如果为空则自动计算
    */
   rowCount?: number
+
+  /**
+   * 加载状态
+   */
+  loading?: boolean
 
   /**
    * 列描述
@@ -88,6 +94,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
     searchColumnId,
     filterOptions = [],
     plusOptions = [],
+    loading = false,
     manual = false,
     onChange
   } = props
@@ -184,42 +191,56 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
             }
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length
-              ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}
-                            data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}
-                                 style={{width: cell.column.getSize()}}
-                      >
-                        <div className={cn("truncate", {
-                          "pl-3": cell.column.getCanSort()
-                        })}
-                             style={{width: "calc(100% - 0.725rem)"}}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </div>
+            {/* 加载状态 */}
+            {loading && (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <Spinner/>
+                </TableCell>
+              </TableRow>
+            )}
 
-                      </TableCell>
-                    ))}
+            {!loading && (
+              !isEmpty(table.getRowModel().rows)
+                ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id}
+                              data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}
+                                   style={{width: cell.column.getSize()}}
+                        >
+                          <div className={cn("truncate", {
+                            "pl-3": cell.column.getCanSort()
+                          })}
+                               style={{width: "calc(100% - 0.725rem)"}}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </div>
+
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                )
+                : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      暂无数据
+                    </TableCell>
                   </TableRow>
-                ))
-              )
-              : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    暂无数据
-                  </TableCell>
-                </TableRow>
-              )}
+                )
+            )}
           </TableBody>
         </Table>
       </div>

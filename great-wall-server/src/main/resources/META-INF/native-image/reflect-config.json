@@ -34,5 +34,13 @@
         "name": "webHandler"
       }
     ]
+  },
+  {
+    "name": "org.springframework.web.server.handler.WebHandlerDecorator",
+    "fields": [
+      {
+        "name": "delegate"
+      }
+    ]
   }
 ]

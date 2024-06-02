@@ -90,4 +90,12 @@ class AppRouteServiceImpl(
         return appRouteRepository.save(appRoutePo).awaitSingle()
     }
 
+    /**
+     * 设置应用路由状态
+     */
+    override suspend fun setStatus(appRoutePo: AppRoutePo, status: AppRouteStatusEnum): AppRoutePo {
+        appRoutePo.status = status
+        return appRouteRepository.save(appRoutePo).awaitSingle()
+    }
+
 }

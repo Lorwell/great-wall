@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.controller.exception.NotFoundException
+import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.dto.convert.toListOutput
 import cc.shacocloud.greatwall.model.dto.convert.toOutput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
@@ -50,8 +51,7 @@ class AppRouteController(
      */
     @GetMapping("/{id}")
     suspend fun details(@PathVariable id: Long): AppRouteOutput {
-        val appRoutePo = (appRouteService.findById(id)
-            ?: throw NotFoundException())
+        val appRoutePo = appRouteService.findById(id) ?: throw NotFoundException()
         return appRoutePo.toOutput()
     }
 
@@ -63,9 +63,24 @@ class AppRouteController(
         @PathVariable id: Long,
         @RequestBody @Validated input: AppRouteInput
     ): AppRouteOutput {
-        var appRoutePo = (appRouteService.findById(id)
-            ?: throw NotFoundException())
+        var appRoutePo = appRouteService.findById(id) ?: throw NotFoundException()
         appRoutePo = appRouteService.update(appRoutePo, input)
+
+        // 刷新路由
+        AppRouteLocator.refreshRoutes()
+        return appRoutePo.toOutput()
+    }
+
+    /**
+     * 更新应用路由状态
+     */
+    @PatchMapping("/{id}/status/{status}")
+    suspend fun setStatus(
+        @PathVariable id: Long,
+        @PathVariable status: AppRouteStatusEnum,
+    ): AppRouteOutput {
+        var appRoutePo = appRouteService.findById(id) ?: throw NotFoundException()
+        appRoutePo = appRouteService.setStatus(appRoutePo, status)
 
         // 刷新路由
         AppRouteLocator.refreshRoutes()

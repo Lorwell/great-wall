@@ -4,7 +4,8 @@ import {RowContext} from "@/pages/app-routes/list/row-actions.tsx";
 import {useNavigate} from "react-router-dom";
 import {LayoutPanelLeft} from "lucide-react";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
-import {appRouteList} from "@/constant/api/app-routes";
+import {appRouteList, setAppRouteStatus} from "@/constant/api/app-routes";
+import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 
 
 /**
@@ -14,15 +15,24 @@ import {appRouteList} from "@/constant/api/app-routes";
 function AppRoutesList() {
 
   const navigate = useNavigate();
-  const {data,} = useApiRequest(appRouteList);
+  const {
+    data: appRouteListData,
+    loading: appRouteListLoading,
+    run: appRouteListRun
+  } = useApiRequest(appRouteList);
+
+  const {
+    loading: setAppRouteStatusLoading,
+    runAsync: setAppRouteStatusRun
+  } = useApiRequest(setAppRouteStatus, {manual: true});
 
   /**
    * 查看事件
    * @param ctx
    */
   function handleView(ctx: RowContext) {
-    const id = ctx.row.original.id
-    navigate(`/manage/app-routes/${id}`)
+    const id = ctx.row.original.id!!
+    navigate(`/manage/app-routes/${id}/preview`)
   }
 
   /**
@@ -30,31 +40,37 @@ function AppRoutesList() {
    * @param ctx
    */
   function handleEdit(ctx: RowContext) {
-
+    const id = ctx.row.original.id!!
+    navigate(`/manage/app-routes/${id}`)
   }
 
   /**
    * 下线事件
    * @param ctx
    */
-  function handleOffline(ctx: RowContext) {
-
+  async function handleOffline(ctx: RowContext) {
+    const id = ctx.row.original.id!!
+    await setAppRouteStatusRun(id, AppRouteStatusEnum.OFFLINE)
+    appRouteListRun()
   }
 
   /**
    * 上线事件
    * @param ctx
    */
-  function handleOnline(ctx: RowContext) {
-
+  async function handleOnline(ctx: RowContext) {
+    const id = ctx.row.original.id!!
+    await setAppRouteStatusRun(id, AppRouteStatusEnum.ONLINE)
+    appRouteListRun()
   }
 
   return (
     <div className={"w-full h-full"}>
-      <DataTable data={data?.records || []}
-                 rowCount={data?.page.total}
+      <DataTable data={appRouteListData?.records || []}
+                 rowCount={appRouteListData?.page.total}
                  searchColumnId={"name"}
                  manual={false}
+                 loading={appRouteListLoading || setAppRouteStatusLoading}
                  columns={columns({
                    event: {
                      onView: handleView,

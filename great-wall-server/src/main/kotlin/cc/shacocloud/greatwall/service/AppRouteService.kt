@@ -37,4 +37,9 @@ interface AppRouteService {
      */
     suspend fun update(appRoutePo: AppRoutePo, input: AppRouteInput): AppRoutePo
 
+    /**
+     * 设置应用路由状态
+     */
+    suspend fun setStatus(appRoutePo: AppRoutePo, status: AppRouteStatusEnum): AppRoutePo
+
 }

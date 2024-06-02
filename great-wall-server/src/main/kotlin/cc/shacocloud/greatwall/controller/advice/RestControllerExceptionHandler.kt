@@ -9,6 +9,7 @@ import cc.shacocloud.greatwall.controller.exception.BusinessException
 import cc.shacocloud.greatwall.controller.specification.ResponseBusinessMessage
 import cc.shacocloud.greatwall.controller.specification.StrRespMsg
 import jakarta.validation.ConstraintViolationException
+import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.InvalidMediaTypeException
@@ -28,7 +29,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException
  */
 @Slf4j
 @RestControllerAdvice
-@Order(1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
 class RestControllerExceptionHandler {
 
     /**
