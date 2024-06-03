@@ -15,7 +15,6 @@ import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.util.ReflectionUtils
 import org.springframework.web.reactive.DispatcherHandler
 import org.springframework.web.reactive.HandlerMapping
-import org.springframework.web.server.adapter.HttpWebHandlerAdapter
 import org.springframework.web.server.handler.WebHandlerDecorator
 
 
@@ -34,7 +33,7 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
     override fun getHttpHandler(): HttpHandler {
         val httpHandler = super.getHttpHandler()
 
-        if (httpHandler is HttpWebHandlerAdapter) {
+        if (httpHandler is WebHandlerDecorator) {
             val dispatcherHandler = DispatcherHandler(this)
             val routePredicateHandlerMapping = getBean(RoutePredicateHandlerMapping::class.java)
             val handlerMappings = listOf<HandlerMapping>(routePredicateHandlerMapping)

@@ -8,7 +8,6 @@ import cc.shacocloud.greatwall.model.po.QAppRoutePo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
 import cc.shacocloud.greatwall.service.AppRouteService
 import cc.shacocloud.greatwall.utils.Slf4j
-import com.querydsl.core.types.dsl.BooleanExpression
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl

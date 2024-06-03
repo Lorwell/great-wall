@@ -6,7 +6,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.embedded.netty.NettyServerCustomizer
-import org.springframework.boot.web.embedded.netty.NettyWebServer
 import org.springframework.boot.web.server.WebServer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
@@ -27,6 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * 配置端口用于配置代理策略
  *
+ * 主服务见 [AutoTLSReactiveWebServerApplicationContext]
+ *
  * @author 思追(shaco)
  */
 @Slf4j
@@ -40,6 +41,9 @@ class WebFluxConfigServerConfiguration(
     private val configPort = configServerProperties.port
     private val configPostInit = AtomicBoolean(false)
 
+    /**
+     * 绑定配置服务为指定端口
+     */
     @PostConstruct
     fun init() {
         addServerCustomizers(object : NettyServerCustomizer {
@@ -53,23 +57,16 @@ class WebFluxConfigServerConfiguration(
         })
     }
 
-
+    /**
+     * 配置web服务
+     */
     @Bean(destroyMethod = "stop")
     fun configWebServer(dispatcherHandler: DispatcherHandler): ConfigWebServer {
-        val webServer = createConfigWebServer(dispatcherHandler)
-        return ConfigWebServer(webServer)
-    }
-
-    /**
-     * 创建 配置服务
-     */
-    fun createConfigWebServer(dispatcherHandler: DispatcherHandler): WebServer {
         configPostInit.set(true)
         try {
-            val configHttpHandlerBuilder = WebHttpHandlerBuilder.applicationContext(applicationContext);
-            val configWebServer = super.getWebServer(configHttpHandlerBuilder.build()) as NettyWebServer
-
-            return configWebServer
+            val configHttpHandler = WebHttpHandlerBuilder.applicationContext(applicationContext).build()
+            val configWebServer = super.getWebServer(configHttpHandler)
+            return ConfigWebServer(configWebServer)
         } finally {
             configPostInit.set(false)
         }

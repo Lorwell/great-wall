@@ -37,7 +37,7 @@ spring:
           eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
   # r2dbc 配置
   r2dbc:
-    url: file:${H2_FILE_DIR:./data/db}/db;MODE=MYSQL
+    url: file:${H2_FILE_DIR:./data/db}/db;CACHE_SIZE=131072;MODE=MYSQL
     username: ${H2_USER:faLhBysh}
     password: ${H2_PASS:aclmUe6#!aq1tb0VL}
     pool:
@@ -69,5 +69,4 @@ logging:
   level:
     root: info
     "reactor.netty.http.server.AccessLog": info
-    "org.springframework.r2dbc": debug
-    "org.springframework.data.r2dbc": debug
+    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug
