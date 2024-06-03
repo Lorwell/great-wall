@@ -8,6 +8,7 @@ import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.getHost
 import cc.shacocloud.greatwall.utils.getRealIp
+import io.questdb.std.Os
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -32,7 +33,7 @@ class MonitorGlobalFilter(
 ) : GlobalFilter, Ordered {
 
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
-        val requestTime = System.currentTimeMillis()
+        val requestTime = Os.currentTimeMicros()
 
         return chain.filter(exchange)
             .doOnSuccess { filterCompleteCallback(exchange, requestTime) }
@@ -78,7 +79,7 @@ class MonitorGlobalFilter(
                 queryParams = queryParamsMetrics,
                 cookies = cookiesParamsMetrics,
                 requestTime = requestTime,
-                responseTime = System.currentTimeMillis(),
+                responseTime = Os.currentTimeMicros(),
                 statusCode = response.statusCode?.value() ?: 500
             )
 

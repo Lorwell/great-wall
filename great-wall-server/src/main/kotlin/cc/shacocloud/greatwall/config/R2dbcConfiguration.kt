@@ -6,6 +6,7 @@ import cc.shacocloud.greatwall.model.mo.RouteUrls
 import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
 import cc.shacocloud.greatwall.model.po.QueryParamsMetrics
 import cc.shacocloud.greatwall.model.po.converter.*
+import cc.shacocloud.greatwall.utils.AppUtil
 import com.querydsl.sql.H2Templates
 import com.querydsl.sql.SQLTemplates
 import io.r2dbc.h2.H2ConnectionConfiguration
@@ -20,6 +21,9 @@ import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
 import org.springframework.transaction.ReactiveTransactionManager
+import java.io.File
+import java.nio.file.Paths
+import kotlin.io.path.absolutePathString
 
 
 /**
@@ -33,6 +37,10 @@ class R2dbcConfiguration(
     val r2dbcProperties: R2dbcProperties
 ) : AbstractR2dbcConfiguration() {
 
+    companion object {
+        const val FILE_PROTOCOL = "file:"
+    }
+
     @Bean
     fun sqlTemplates(): SQLTemplates {
         return H2Templates()
@@ -42,8 +50,7 @@ class R2dbcConfiguration(
     override fun connectionFactory(): ConnectionPool {
 
         val builder = H2ConnectionConfiguration.builder()
-
-        builder.url(r2dbcProperties.url)
+        builder.url(urlFileProtocolAbsolutePath(r2dbcProperties.url))
             .username(r2dbcProperties.username)
             .password(r2dbcProperties.password)
         r2dbcProperties.properties.forEach { (t, u) -> builder.property(t, u) }
@@ -93,5 +100,22 @@ class R2dbcConfiguration(
         )
     }
 
+
+    /**
+     * 将指定本地文件的h2地址转为绝对路径
+     */
+    fun urlFileProtocolAbsolutePath(url: String): String {
+        if (url.startsWith(FILE_PROTOCOL, ignoreCase = true)) {
+            val containsProperty = url.contains(";")
+            val path = url.substring(FILE_PROTOCOL.length, if (containsProperty) url.indexOf(";") else url.length)
+            if (!File(path).isAbsolute) {
+                val startDir = AppUtil.getStartDir(R2dbcConfiguration::class.java)
+                val absolutePath = Paths.get(startDir.absolutePath, path).normalize().absolutePathString()
+                val property = if (containsProperty) ";${url.substringAfter(";")}" else ""
+                return "file:${absolutePath}${property}"
+            }
+        }
+        return url
+    }
 
 }
