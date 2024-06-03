@@ -1,10 +1,9 @@
-package cc.shacocloud.greatwall.controller.filter
+package cc.shacocloud.greatwall.controller.handler
 
 import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
 import cc.shacocloud.greatwall.model.po.MonitorMetricsRecordPo
 import cc.shacocloud.greatwall.model.po.QueryParamsMetrics
 import cc.shacocloud.greatwall.service.MonitorMetricsService
-import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.getHost
 import cc.shacocloud.greatwall.utils.getRealIp
@@ -13,29 +12,23 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.springframework.cloud.gateway.filter.GatewayFilterChain
-import org.springframework.cloud.gateway.filter.GlobalFilter
-import org.springframework.cloud.gateway.filter.NettyWriteResponseFilter
-import org.springframework.core.Ordered
 import org.springframework.http.HttpCookie
-import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
+import org.springframework.web.server.WebHandler
 import reactor.core.publisher.Mono
 
 /**
- * 监控过滤器
  * @author 思追(shaco)
  */
-@Slf4j
-@Component
-class MonitorGlobalFilter(
-    val monitorMetricsService: MonitorMetricsService
-) : GlobalFilter, Ordered {
+class MonitorMetricsWebHandler(
+    private val webHandler: WebHandler,
+    private val monitorMetricsService: MonitorMetricsService
+) : WebHandler {
 
-    override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
+    override fun handle(exchange: ServerWebExchange): Mono<Void> {
         val requestTime = Os.currentTimeMicros()
 
-        return chain.filter(exchange)
+        return webHandler.handle(exchange)
             .doOnSuccess { filterCompleteCallback(exchange, requestTime) }
             .doOnError { filterCompleteCallback(exchange, requestTime) }
     }
@@ -94,11 +87,5 @@ class MonitorGlobalFilter(
             }
         }
     }
-
-    override fun getOrder(): Int {
-        // 尽快启动指标监控，并在我们向客户端写入响应之前报告指标事件
-        return NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER + 1
-    }
-
 
 }

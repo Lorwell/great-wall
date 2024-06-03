@@ -1,18 +1,21 @@
 package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.utils.Slf4j
+import cc.shacocloud.greatwall.utils.setValue
 import jakarta.annotation.PostConstruct
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.embedded.netty.NettyServerCustomizer
 import org.springframework.boot.web.server.WebServer
+import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.context.event.EventListener
-import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.web.reactive.DispatcherHandler
+import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder
 import reactor.netty.http.server.HttpServer
 import java.util.concurrent.atomic.AtomicBoolean
@@ -32,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @Slf4j
 @Configuration
+@EnableWebFlux
 @EnableConfigurationProperties(ConfigServerProperties::class)
 class WebFluxConfigServerConfiguration(
     private val applicationContext: ApplicationContext,
@@ -57,11 +61,28 @@ class WebFluxConfigServerConfiguration(
         })
     }
 
+    @Bean
+    @Primary
+    fun configWebHandler(): DispatcherHandler {
+        return object : DispatcherHandler() {
+            override fun initStrategies(context: ApplicationContext) {
+                super.initStrategies(context)
+
+                // TODO
+                // 过滤网关的路由处理器映射
+                val handlerMappings = handlerMappings?.filter { it !is RoutePredicateHandlerMapping } ?: emptyList()
+                val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
+                handlerMappingsField.setValue(this, handlerMappings)
+            }
+        }
+    }
+
+
     /**
      * 配置web服务
      */
     @Bean(destroyMethod = "stop")
-    fun configWebServer(dispatcherHandler: DispatcherHandler): ConfigWebServer {
+    fun configWebServer(): ConfigWebServer {
         configPostInit.set(true)
         try {
             val configHttpHandler = WebHttpHandlerBuilder.applicationContext(applicationContext).build()
@@ -70,10 +91,6 @@ class WebFluxConfigServerConfiguration(
         } finally {
             configPostInit.set(false)
         }
-    }
-
-    override fun getWebServer(httpHandler: HttpHandler): WebServer {
-        return super.getWebServer(httpHandler)
     }
 
     class ConfigWebServer(

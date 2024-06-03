@@ -1,5 +1,8 @@
 package cc.shacocloud.greatwall.config
 
+import cc.shacocloud.greatwall.controller.handler.MonitorMetricsWebHandler
+import cc.shacocloud.greatwall.service.MonitorMetricsService
+import cc.shacocloud.greatwall.utils.setValue
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry
 import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
@@ -12,7 +15,6 @@ import org.springframework.boot.web.server.Ssl
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping
 import org.springframework.context.SmartLifecycle
 import org.springframework.http.server.reactive.HttpHandler
-import org.springframework.util.ReflectionUtils
 import org.springframework.web.reactive.DispatcherHandler
 import org.springframework.web.reactive.HandlerMapping
 import org.springframework.web.server.handler.WebHandlerDecorator
@@ -34,25 +36,22 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         val httpHandler = super.getHttpHandler()
 
         if (httpHandler is WebHandlerDecorator) {
+
+            // 主服务只绑定一个条件处理器
             val dispatcherHandler = DispatcherHandler(this)
             val routePredicateHandlerMapping = getBean(RoutePredicateHandlerMapping::class.java)
             val handlerMappings = listOf<HandlerMapping>(routePredicateHandlerMapping)
-
             val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
-            ReflectionUtils.makeAccessible(handlerMappingsField)
-            ReflectionUtils.setField(
-                handlerMappingsField,
-                dispatcherHandler,
-                handlerMappings
+            handlerMappingsField.setValue(dispatcherHandler, handlerMappings)
+
+            // 使用监控指标处理器来委托目标处理器
+            val webHandler = MonitorMetricsWebHandler(
+                webHandler = dispatcherHandler,
+                monitorMetricsService = getBean(MonitorMetricsService::class.java)
             )
 
             val delegateField = WebHandlerDecorator::class.java.getDeclaredField("delegate")
-            ReflectionUtils.makeAccessible(delegateField)
-            ReflectionUtils.setField(
-                delegateField,
-                httpHandler,
-                dispatcherHandler
-            )
+            delegateField.setValue(httpHandler, webHandler)
         }
 
         return httpHandler
