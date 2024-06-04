@@ -15,20 +15,21 @@ import kotlinx.coroutines.launch
 import org.springframework.http.HttpCookie
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebHandler
+import org.springframework.web.server.handler.WebHandlerDecorator
 import reactor.core.publisher.Mono
 
 /**
  * @author 思追(shaco)
  */
 class MonitorMetricsWebHandler(
-    private val webHandler: WebHandler,
+    webHandler: WebHandler,
     private val monitorMetricsService: MonitorMetricsService
-) : WebHandler {
+) : WebHandlerDecorator(webHandler) {
 
     override fun handle(exchange: ServerWebExchange): Mono<Void> {
         val requestTime = Os.currentTimeMicros()
 
-        return webHandler.handle(exchange)
+        return delegate.handle(exchange)
             .doOnSuccess { filterCompleteCallback(exchange, requestTime) }
             .doOnError { filterCompleteCallback(exchange, requestTime) }
     }
@@ -36,7 +37,7 @@ class MonitorMetricsWebHandler(
     /**
      * 过滤器完成回调
      */
-    fun filterCompleteCallback(exchange: ServerWebExchange, requestTime: Long) {
+    private fun filterCompleteCallback(exchange: ServerWebExchange, requestTime: Long) {
         val response = exchange.response
 
         if (response.isCommitted) {
@@ -52,7 +53,7 @@ class MonitorMetricsWebHandler(
     /**
      * 指标记录提交
      */
-    fun metricsRecordCommit(exchange: ServerWebExchange, requestTime: Long) {
+    private fun metricsRecordCommit(exchange: ServerWebExchange, requestTime: Long) {
         try {
             val request = exchange.request
             val response = exchange.response

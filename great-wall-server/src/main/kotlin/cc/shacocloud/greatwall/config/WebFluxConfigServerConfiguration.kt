@@ -12,11 +12,13 @@ import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.context.event.EventListener
 import org.springframework.web.reactive.DispatcherHandler
-import org.springframework.web.reactive.config.EnableWebFlux
+import org.springframework.web.reactive.HandlerMapping
+import org.springframework.web.server.WebHandler
+import org.springframework.web.server.adapter.HttpWebHandlerAdapter
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder
+import org.springframework.web.server.handler.WebHandlerDecorator
 import reactor.netty.http.server.HttpServer
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -35,7 +37,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @Slf4j
 @Configuration
-@EnableWebFlux
 @EnableConfigurationProperties(ConfigServerProperties::class)
 class WebFluxConfigServerConfiguration(
     private val applicationContext: ApplicationContext,
@@ -61,23 +62,6 @@ class WebFluxConfigServerConfiguration(
         })
     }
 
-    @Bean
-    @Primary
-    fun configWebHandler(): DispatcherHandler {
-        return object : DispatcherHandler() {
-            override fun initStrategies(context: ApplicationContext) {
-                super.initStrategies(context)
-
-                // TODO
-                // 过滤网关的路由处理器映射
-                val handlerMappings = handlerMappings?.filter { it !is RoutePredicateHandlerMapping } ?: emptyList()
-                val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
-                handlerMappingsField.setValue(this, handlerMappings)
-            }
-        }
-    }
-
-
     /**
      * 配置web服务
      */
@@ -85,7 +69,31 @@ class WebFluxConfigServerConfiguration(
     fun configWebServer(): ConfigWebServer {
         configPostInit.set(true)
         try {
-            val configHttpHandler = WebHttpHandlerBuilder.applicationContext(applicationContext).build()
+            val configHttpHandler = WebHttpHandlerBuilder.applicationContext(applicationContext)
+                .httpHandlerDecorator { httpHandler ->
+
+                    // 匹配到 DispatcherHandler
+                    var delegate: WebHandler = httpHandler as HttpWebHandlerAdapter
+                    while (delegate !is DispatcherHandler) {
+                        if (delegate is WebHandlerDecorator) {
+                            delegate = delegate.delegate
+                        } else {
+                            throw RuntimeException("Web 服务器处理器内未匹配到 DispatcherHandler")
+                        }
+                    }
+
+                    // 排除 RoutePredicateHandlerMapping 这个处理器
+                    val dispatcherHandler = delegate
+                    val handlerMappings =
+                        dispatcherHandler.handlerMappings?.filter { it !is RoutePredicateHandlerMapping }
+                    val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
+                    handlerMappingsField.setValue(dispatcherHandler, handlerMappings ?: listOf<HandlerMapping>())
+
+                    httpHandler
+                }
+                .build()
+
+
             val configWebServer = super.getWebServer(configHttpHandler)
             return ConfigWebServer(configWebServer)
         } finally {

@@ -1,13 +1,13 @@
 package cc.shacocloud.greatwall.controller.advice
 
+import cc.shacocloud.greatwall.controller.exception.BusinessException
+import cc.shacocloud.greatwall.controller.specification.ResponseBusinessMessage
+import cc.shacocloud.greatwall.controller.specification.StrRespMsg
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.ValidationExceptionUtil.constraintViolation
 import cc.shacocloud.greatwall.utils.ValidationExceptionUtil.getFieldsRespMsg
 import cc.shacocloud.greatwall.utils.ValidationExceptionUtil.objectErrorViolation
-import cc.shacocloud.greatwall.controller.exception.BusinessException
-import cc.shacocloud.greatwall.controller.specification.ResponseBusinessMessage
-import cc.shacocloud.greatwall.controller.specification.StrRespMsg
 import jakarta.validation.ConstraintViolationException
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -18,7 +18,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.util.InvalidMimeTypeException
 import org.springframework.validation.BindException
-import org.springframework.web.*
+import org.springframework.web.ErrorResponseException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.multipart.MaxUploadSizeExceededException
@@ -36,7 +36,7 @@ class RestControllerExceptionHandler {
      * 消息不可读
      */
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleHttpMessageNotReadableException(
+    suspend fun handleHttpMessageNotReadableException(
         e: HttpMessageNotReadableException,
         request: ServerHttpRequest,
         response: ServerHttpResponse
@@ -49,7 +49,7 @@ class RestControllerExceptionHandler {
      * 错误响应消息
      */
     @ExceptionHandler(ErrorResponseException::class)
-    fun handleErrorResponseException(
+    suspend fun handleErrorResponseException(
         e: ErrorResponseException,
         request: ServerHttpRequest,
         response: ServerHttpResponse
@@ -87,7 +87,7 @@ class RestControllerExceptionHandler {
      * 媒体类型相关的异常
      */
     @ExceptionHandler(InvalidMediaTypeException::class, InvalidMimeTypeException::class)
-    fun handleHttpMediaTypeException(
+    suspend fun handleHttpMediaTypeException(
         e: Exception,
         request: ServerHttpRequest,
         response: ServerHttpResponse
@@ -112,7 +112,7 @@ class RestControllerExceptionHandler {
      * 业务异常处理器
      */
     @ExceptionHandler(BusinessException::class)
-    fun handleBusinessException(
+    suspend fun handleBusinessException(
         e: BusinessException,
         request: ServerHttpRequest,
         response: ServerHttpResponse
@@ -129,7 +129,7 @@ class RestControllerExceptionHandler {
      * restful 参数验证失败异常处理器
      */
     @ExceptionHandler(BindException::class, ConstraintViolationException::class)
-    fun handleBindingException(e: Exception, response: ServerHttpResponse): Any {
+    suspend fun handleBindingException(e: Exception, response: ServerHttpResponse): Any {
         response.statusCode = HttpStatus.UNPROCESSABLE_ENTITY
 
         return when (e) {
@@ -149,7 +149,7 @@ class RestControllerExceptionHandler {
      * 文件超过最大上传限制
      */
     @ExceptionHandler(MaxUploadSizeExceededException::class)
-    fun handleMaxUploadSizeExceededException(
+    suspend fun handleMaxUploadSizeExceededException(
         request: ServerHttpRequest,
         response: ServerHttpResponse
     ): Any {

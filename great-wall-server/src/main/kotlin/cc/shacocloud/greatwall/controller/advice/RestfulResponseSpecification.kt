@@ -4,6 +4,7 @@ import cc.shacocloud.greatwall.controller.specification.*
 import cc.shacocloud.greatwall.utils.MessageSourceHolder
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.i18n.LocaleContextHolder
@@ -42,7 +43,7 @@ class RestfulResponseSpecification(
             val returnType = result.returnTypeSource
             val containingClass = returnType.containingClass
             return !(AnnotatedElementUtils.hasAnnotation(containingClass, OriginalControllerReturnValue::class.java) ||
-                    returnType.hasMethodAnnotation(OriginalControllerReturnValue::class.java))
+                returnType.hasMethodAnnotation(OriginalControllerReturnValue::class.java))
         }
         return false
     }
@@ -54,12 +55,10 @@ class RestfulResponseSpecification(
         val returnValue = result.returnValue
         val bodyTypeParameter = result.returnTypeSource
 
-        var resultValue = if (returnValue is Mono<*>) {
-            returnValue.awaitSingle()
-        } else if (returnValue is Flux<*>) {
-            returnValue.collectList().awaitFirst()
-        } else {
-            returnValue
+        var resultValue = when (returnValue) {
+            is Mono<*> -> returnValue.awaitSingleOrNull()
+            is Flux<*> -> returnValue.collectList().awaitFirst()
+            else -> returnValue
         }
 
         restfulStatusSpecification(exchange, resultValue)
@@ -104,7 +103,7 @@ class RestfulResponseSpecification(
             else -> resultValue
         }
 
-        writeBody(resultValue, bodyTypeParameter, exchange).awaitSingle()
+        writeBody(resultValue, bodyTypeParameter, exchange).awaitSingleOrNull()
     }
 
     /**

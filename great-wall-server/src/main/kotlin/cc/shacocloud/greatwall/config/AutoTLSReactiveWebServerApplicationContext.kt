@@ -17,7 +17,8 @@ import org.springframework.context.SmartLifecycle
 import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.web.reactive.DispatcherHandler
 import org.springframework.web.reactive.HandlerMapping
-import org.springframework.web.server.handler.WebHandlerDecorator
+import org.springframework.web.server.WebHandler
+import org.springframework.web.server.adapter.WebHttpHandlerBuilder
 
 
 /**
@@ -30,31 +31,38 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
     private val builtSslBundleName = "_built_ssl_bundle"
 
     /**
+     * 主要的 web 处理器
+     */
+    private val mainWebHandler: WebHandler by lazy {
+        // 主服务只绑定一个条件处理器
+        val dispatcherHandler = DispatcherHandler(this)
+        val routePredicateHandlerMapping = getBean(RoutePredicateHandlerMapping::class.java)
+        val handlerMappings = listOf<HandlerMapping>(routePredicateHandlerMapping)
+        val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
+        handlerMappingsField.setValue(dispatcherHandler, handlerMappings)
+
+        // 使用监控指标处理器来委托目标处理器
+        MonitorMetricsWebHandler(
+            webHandler = dispatcherHandler,
+            monitorMetricsService = getBean(MonitorMetricsService::class.java)
+        )
+    }
+
+    /**
+     * 主要的 http 处理器
+     */
+    private val mainHttpHandler: HttpHandler by lazy {
+        val builder = WebHttpHandlerBuilder.applicationContext(this)
+        val webHandlerField = WebHttpHandlerBuilder::class.java.getDeclaredField("webHandler")
+        webHandlerField.setValue(builder, mainWebHandler)
+        builder.build()
+    }
+
+    /**
      * 将主端口的服务只绑定一个网关的转发路由映射处理器
      */
     override fun getHttpHandler(): HttpHandler {
-        val httpHandler = super.getHttpHandler()
-
-        if (httpHandler is WebHandlerDecorator) {
-
-            // 主服务只绑定一个条件处理器
-            val dispatcherHandler = DispatcherHandler(this)
-            val routePredicateHandlerMapping = getBean(RoutePredicateHandlerMapping::class.java)
-            val handlerMappings = listOf<HandlerMapping>(routePredicateHandlerMapping)
-            val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
-            handlerMappingsField.setValue(dispatcherHandler, handlerMappings)
-
-            // 使用监控指标处理器来委托目标处理器
-            val webHandler = MonitorMetricsWebHandler(
-                webHandler = dispatcherHandler,
-                monitorMetricsService = getBean(MonitorMetricsService::class.java)
-            )
-
-            val delegateField = WebHandlerDecorator::class.java.getDeclaredField("delegate")
-            delegateField.setValue(httpHandler, webHandler)
-        }
-
-        return httpHandler
+        return mainHttpHandler
     }
 
     /**
