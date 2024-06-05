@@ -18,29 +18,5 @@
         ]
       }
     ]
-  },
-  {
-    "name": "org.springframework.web.reactive.DispatcherHandler",
-    "fields": [
-      {
-        "name": "handlerMappings"
-      }
-    ]
-  },
-  {
-    "name": "org.springframework.web.server.adapter.WebHttpHandlerBuilder",
-    "fields": [
-      {
-        "name": "webHandler"
-      }
-    ]
-  },
-  {
-    "name": "org.springframework.web.server.handler.WebHandlerDecorator",
-    "fields": [
-      {
-        "name": "delegate"
-      }
-    ]
   }
 ]

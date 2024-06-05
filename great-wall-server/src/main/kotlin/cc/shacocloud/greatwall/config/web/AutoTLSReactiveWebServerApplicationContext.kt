@@ -1,8 +1,6 @@
-package cc.shacocloud.greatwall.config
+package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.controller.handler.MonitorMetricsWebHandler
 import cc.shacocloud.greatwall.service.MonitorMetricsService
-import cc.shacocloud.greatwall.utils.setValue
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry
 import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
@@ -15,14 +13,13 @@ import org.springframework.boot.web.server.Ssl
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping
 import org.springframework.context.SmartLifecycle
 import org.springframework.http.server.reactive.HttpHandler
-import org.springframework.web.reactive.DispatcherHandler
 import org.springframework.web.reactive.HandlerMapping
 import org.springframework.web.server.WebHandler
-import org.springframework.web.server.adapter.WebHttpHandlerBuilder
 
 
 /**
  * 基于 [ReactiveWebServerApplicationContext] 的自定义tls证书刷新上下文，支持重新指定证书后，重启启动web服务
+ *
  * @author 思追(shaco)
  */
 class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationContext() {
@@ -35,11 +32,13 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
      */
     private val mainWebHandler: WebHandler by lazy {
         // 主服务只绑定一个条件处理器
-        val dispatcherHandler = DispatcherHandler(this)
-        val routePredicateHandlerMapping = getBean(RoutePredicateHandlerMapping::class.java)
-        val handlerMappings = listOf<HandlerMapping>(routePredicateHandlerMapping)
-        val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
-        handlerMappingsField.setValue(dispatcherHandler, handlerMappings)
+        val dispatcherHandler = object : WebFluxDispatcherHandler(this) {
+
+            override fun handlerMapping(mappings: List<HandlerMapping>) {
+                val handlers = mappings.filterIsInstance<RoutePredicateHandlerMapping>()
+                super.handlerMapping(handlers)
+            }
+        }
 
         // 使用监控指标处理器来委托目标处理器
         MonitorMetricsWebHandler(
@@ -52,10 +51,12 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
      * 主要的 http 处理器
      */
     private val mainHttpHandler: HttpHandler by lazy {
-        val builder = WebHttpHandlerBuilder.applicationContext(this)
-        val webHandlerField = WebHttpHandlerBuilder::class.java.getDeclaredField("webHandler")
-        webHandlerField.setValue(builder, mainWebHandler)
-        builder.build()
+        WebFluxHttpHandlerBuilder(this)
+            .applyApplicationContext(
+                webHandler = false
+            )
+            .webHandler(mainWebHandler)
+            .build()
     }
 
     /**

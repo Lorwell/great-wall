@@ -37,9 +37,9 @@ class MonitorMetricsServiceImpl(
     val dispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
     init {
-        repeat(2) {
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch {
+        @OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch {
+            repeat(2) {
                 launch(dispatcher) {
                     try {
                         while (!channel.isClosedForReceive) {

@@ -1,7 +1,7 @@
 package cc.shacocloud.greatwall
 
 import cc.shacocloud.greatwall.config.CustomApplicationContextFactory
-import cc.shacocloud.greatwall.config.WebFluxConfigServerConfiguration
+import cc.shacocloud.greatwall.config.web.WebFluxConfigServerConfiguration
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.scheduling.annotation.EnableScheduling

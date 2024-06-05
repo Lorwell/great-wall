@@ -1,7 +1,6 @@
-package cc.shacocloud.greatwall.config
+package cc.shacocloud.greatwall.config.web
 
 import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.setValue
 import jakarta.annotation.PostConstruct
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -13,12 +12,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
-import org.springframework.web.reactive.DispatcherHandler
 import org.springframework.web.reactive.HandlerMapping
-import org.springframework.web.server.WebHandler
-import org.springframework.web.server.adapter.HttpWebHandlerAdapter
-import org.springframework.web.server.adapter.WebHttpHandlerBuilder
-import org.springframework.web.server.handler.WebHandlerDecorator
 import reactor.netty.http.server.HttpServer
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -69,28 +63,19 @@ class WebFluxConfigServerConfiguration(
     fun configWebServer(): ConfigWebServer {
         configPostInit.set(true)
         try {
-            val configHttpHandler = WebHttpHandlerBuilder.applicationContext(applicationContext)
-                .httpHandlerDecorator { httpHandler ->
+            val dispatcherHandler = object : WebFluxDispatcherHandler(applicationContext) {
 
-                    // 匹配到 DispatcherHandler
-                    var delegate: WebHandler = httpHandler as HttpWebHandlerAdapter
-                    while (delegate !is DispatcherHandler) {
-                        if (delegate is WebHandlerDecorator) {
-                            delegate = delegate.delegate
-                        } else {
-                            throw RuntimeException("Web 服务器处理器内未匹配到 DispatcherHandler")
-                        }
-                    }
-
-                    // 排除 RoutePredicateHandlerMapping 这个处理器
-                    val dispatcherHandler = delegate
-                    val handlerMappings =
-                        dispatcherHandler.handlerMappings?.filter { it !is RoutePredicateHandlerMapping }
-                    val handlerMappingsField = DispatcherHandler::class.java.getDeclaredField("handlerMappings")
-                    handlerMappingsField.setValue(dispatcherHandler, handlerMappings ?: listOf<HandlerMapping>())
-
-                    httpHandler
+                override fun handlerMapping(mappings: List<HandlerMapping>) {
+                    val handlers = mappings.filter { it !is RoutePredicateHandlerMapping }
+                    super.handlerMapping(handlers)
                 }
+            }
+
+            val configHttpHandler = WebFluxHttpHandlerBuilder(applicationContext)
+                .applyApplicationContext(
+                    webHandler = false
+                )
+                .webHandler(dispatcherHandler)
                 .build()
 
 

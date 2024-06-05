@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.controller.handler
+package cc.shacocloud.greatwall.config.web
 
 import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
 import cc.shacocloud.greatwall.model.po.MonitorMetricsRecordPo
@@ -19,6 +19,8 @@ import org.springframework.web.server.handler.WebHandlerDecorator
 import reactor.core.publisher.Mono
 
 /**
+ * 监控指标 web 处理器
+ *
  * @author 思追(shaco)
  */
 class MonitorMetricsWebHandler(

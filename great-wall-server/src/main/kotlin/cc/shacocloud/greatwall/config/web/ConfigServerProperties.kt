@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.config
+package cc.shacocloud.greatwall.config.web
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

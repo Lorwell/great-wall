@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.config
+package cc.shacocloud.greatwall.config.web
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory

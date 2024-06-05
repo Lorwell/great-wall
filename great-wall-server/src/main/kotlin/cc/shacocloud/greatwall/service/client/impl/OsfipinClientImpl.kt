@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.service.client.impl
 
-import cc.shacocloud.greatwall.config.InputStreamHttpMessageConverter
+import cc.shacocloud.greatwall.controller.converter.InputStreamHttpMessageConverter
 import cc.shacocloud.greatwall.config.OsfipinProperties
 import cc.shacocloud.greatwall.service.client.LogLevel
 import cc.shacocloud.greatwall.service.client.OsfipinClient

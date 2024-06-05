@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.config
+package cc.shacocloud.greatwall.controller.converter
 
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import org.springframework.http.HttpInputMessage

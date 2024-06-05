@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.utils
 
-import cc.shacocloud.greatwall.config.AutoTLSReactiveWebServerApplicationContext
+import cc.shacocloud.greatwall.config.web.AutoTLSReactiveWebServerApplicationContext
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.stereotype.Component
