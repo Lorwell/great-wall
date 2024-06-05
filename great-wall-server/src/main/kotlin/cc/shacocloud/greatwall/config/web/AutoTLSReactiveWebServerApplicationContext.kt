@@ -41,7 +41,7 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         }
 
         // 使用监控指标处理器来委托目标处理器
-        MonitorMetricsWebHandler(
+        MonitorRouteMetricsWebHandler(
             webHandler = dispatcherHandler,
             monitorMetricsService = getBean(MonitorMetricsService::class.java)
         )

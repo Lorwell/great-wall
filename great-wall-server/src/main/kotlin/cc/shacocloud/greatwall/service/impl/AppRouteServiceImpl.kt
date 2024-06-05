@@ -6,11 +6,11 @@ import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
 import cc.shacocloud.greatwall.model.po.AppRoutePo
 import cc.shacocloud.greatwall.model.po.QAppRoutePo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
+import cc.shacocloud.greatwall.repository.queryPage
 import cc.shacocloud.greatwall.service.AppRouteService
 import cc.shacocloud.greatwall.utils.Slf4j
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -60,9 +60,7 @@ class AppRouteServiceImpl(
         val qAppRoutePo = QAppRoutePo.appRoutePo
         val predicate = input.likeKeyWordOr(qAppRoutePo.name, qAppRoutePo.describe)
 
-        val total = appRouteRepository.count(predicate).awaitSingle()
-        val contents = appRouteRepository.findAllBy(predicate, pageable).collectList().awaitSingle()
-        return PageImpl(contents, pageable, total)
+        return appRouteRepository.queryPage(predicate, pageable)
     }
 
     /**

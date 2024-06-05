@@ -33,6 +33,8 @@ class AppRouteLocator(
 
     companion object {
 
+        val APP_ROUTE_ID_META_KEY = "${AppRouteLocator::class.java}.appRouteId"
+
         /**
          * 刷新路由
          */
@@ -64,6 +66,7 @@ class AppRouteLocator(
                         .id(appId)
                         .uri(uri)
                         .order(appRoute.priority)
+                        .metadata(APP_ROUTE_ID_META_KEY, id)
 
                     // 如果目标地址存在多个则绑定权重路由条件
                     val first = if (isSingleton) {

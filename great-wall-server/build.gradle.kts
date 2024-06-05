@@ -59,7 +59,6 @@ dependencyManagement {
 
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-json")
 
     implementation("com.infobip:infobip-spring-data-r2dbc-querydsl-boot-starter:9.0.7")
@@ -78,7 +77,6 @@ dependencies {
     // quest db 时序数据库
     implementation("org.questdb:questdb:8.0.0")
 
-    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

@@ -3,8 +3,6 @@ package cc.shacocloud.greatwall.config
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteUrls
-import cc.shacocloud.greatwall.model.po.CookiesParamsMetrics
-import cc.shacocloud.greatwall.model.po.QueryParamsMetrics
 import cc.shacocloud.greatwall.model.po.converter.*
 import cc.shacocloud.greatwall.utils.AppUtil
 import com.querydsl.sql.H2Templates
@@ -87,10 +85,6 @@ class R2dbcConfiguration(
         return mutableListOf(
             DateToLongConverter(),
             LongToDateConverter(),
-            object : BeanToJsonStringConverter<QueryParamsMetrics>() {},
-            object : JsonStringToBeanConverter<QueryParamsMetrics>() {},
-            object : BeanToJsonStringConverter<CookiesParamsMetrics>() {},
-            object : JsonStringToBeanConverter<CookiesParamsMetrics>() {},
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
             object : BeanToJsonStringConverter<RouteUrls>() {},

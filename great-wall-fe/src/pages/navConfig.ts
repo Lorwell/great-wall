@@ -5,11 +5,10 @@ export const navConfig: NavLink[] = [
   {
     title: "监控指标",
     icon: CloudCog,
-    to: "/manage/as"
+    to: "/manage/monitor-metrics"
   },
   {
     title: "应用路由",
-    badge: "128",
     icon: LayoutPanelLeft,
     to: "/manage/app-routes"
   },

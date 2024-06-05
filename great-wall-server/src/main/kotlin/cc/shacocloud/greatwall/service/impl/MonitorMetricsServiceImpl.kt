@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.service.impl
 
-import cc.shacocloud.greatwall.model.po.MonitorMetricsRecordPo
+import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.MonitorMetricsService
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
@@ -21,8 +21,10 @@ import java.util.concurrent.Executors
 
 
 /**
+ * 使用 kotlin 协程的 [Channel] 作为队列，消费数据写入 questdb
  *
  * @author 思追(shaco)
+ * @see [https://questdb.io/]
  */
 @Slf4j
 @Service
@@ -30,7 +32,7 @@ class MonitorMetricsServiceImpl(
     val cairoEngine: CairoEngine
 ) : MonitorMetricsService, DisposableBean {
 
-    val channel = Channel<MonitorMetricsRecordPo>(
+    val channel = Channel<RouteMetricsRecordPo>(
         capacity = UNLIMITED
     )
 
@@ -57,7 +59,7 @@ class MonitorMetricsServiceImpl(
      * 添加监控记录
      */
     @OptIn(DelicateCoroutinesApi::class)
-    override suspend fun addRecord(record: MonitorMetricsRecordPo) {
+    override suspend fun addRouteRecord(record: RouteMetricsRecordPo) {
         try {
             if (channel.isClosedForSend) {
                 consumerData(record)
@@ -75,21 +77,23 @@ class MonitorMetricsServiceImpl(
     /**
      * 消费数据
      */
-    fun consumerData(record: MonitorMetricsRecordPo) {
+    fun consumerData(record: RouteMetricsRecordPo) {
         try {
             val tableToken = cairoEngine.getTableTokenIfExists("monitor_metrics_record")
             cairoEngine.getWalWriter(tableToken).use { writer ->
                 val row = writer.newRow(record.requestTime)
                 row.putSym(0, record.ip)
-                row.putSym(1, record.host)
+                row.putVarchar(1, Utf8String(record.host))
                 row.putSym(2, record.method)
-                row.putVarchar(3, Utf8String(record.contextPath))
-                row.putVarchar(4, Utf8String(record.appPath))
-                row.putVarchar(5, Utf8String(Json.encode(record.queryParams)))
-                row.putVarchar(6, Utf8String(Json.encode(record.cookies)))
-                row.putTimestamp(7, record.requestTime)
-                row.putTimestamp(8, record.responseTime)
-                row.putInt(9, record.statusCode)
+                row.putVarchar(3, Utf8String(record.appPath))
+                row.putVarchar(4, Utf8String(Json.encode(record.queryParams)))
+                row.putTimestamp(5, record.requestTime)
+                row.putTimestamp(6, record.responseTime)
+                row.putInt(7, record.statusCode)
+
+                record.appRouteId?.let { row.putLong(8, it) }
+                record.targetUrl?.let { row.putVarchar(9, Utf8String(it)) }
+
                 row.append()
 
                 writer.commit()

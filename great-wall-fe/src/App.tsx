@@ -13,6 +13,9 @@ const AppFrame = lazy(() => import("@/pages/AppFrame"));
 const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
 const AddAppRoutes = lazy(() => import("@/pages/app-routes/add"));
 const UpdateAppRoutes = lazy(() => import("@/pages/app-routes/update"));
+const MonitorMetrics = lazy(() => import("@/pages/monitor-metrics"));
+const RouteMetrics = lazy(() => import("@/pages/monitor-metrics/route-metrics"));
+const ServerMetrics = lazy(() => import("@/pages/monitor-metrics/server-metrics"));
 
 const App = () => {
 
@@ -35,7 +38,10 @@ const App = () => {
                 <Route path=":id" element={<UpdateAppRoutes/>}>
                   {configAppRoutesRoutes()}
                 </Route>
-
+              </Route>
+              <Route path="monitor-metrics" element={<MonitorMetrics/>}>
+                <Route path="route" element={<RouteMetrics/>}/>
+                <Route path="server" element={<ServerMetrics/>}/>
               </Route>
               <Route path="*" element={<Error404/>}/>
             </Route>
