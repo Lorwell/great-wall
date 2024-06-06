@@ -10,7 +10,7 @@ echarts.registerTheme('light',
       "#a5e7f0",
       "#cbb0e3"
     ],
-    "backgroundColor": "rgba(0,0,0,0)",
+    "backgroundColor": "hsl(var(--background))",
     "textStyle": {},
     "title": {
       "textStyle": {
@@ -183,9 +183,9 @@ echarts.registerTheme('light',
       "splitLine": {
         "show": true,
         "lineStyle": {
-          "color": [
-            "#eeeeee"
-          ]
+          "color": ['hsl(var(--secondary))'],
+          "width": 1,
+          "type": 'dashed'
         }
       },
       "splitArea": {
@@ -216,11 +216,11 @@ echarts.registerTheme('light',
         "color": "#999999"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#eeeeee"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -251,11 +251,11 @@ echarts.registerTheme('light',
         "color": "#999999"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#eeeeee"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -286,11 +286,11 @@ echarts.registerTheme('light',
         "color": "#999999"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#eeeeee"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -320,12 +320,15 @@ echarts.registerTheme('light',
     },
     "tooltip": {
       "axisPointer": {
+        "label": {
+          "color": "hsl(var(--background))",
+        },
         "lineStyle": {
-          "color": "#cccccc",
+          "color": "hsl(var(--primary))",
           "width": 1
         },
         "crossStyle": {
-          "color": "#cccccc",
+          "color": "hsl(var(--primary))",
           "width": 1
         }
       }
@@ -410,7 +413,7 @@ echarts.registerTheme('dark',
       "#91ca8c",
       "#f49f42"
     ],
-    "backgroundColor": "rgba(51,51,51,1)",
+    "backgroundColor": "hsl(var(--background))",
     "textStyle": {},
     "title": {
       "textStyle": {
@@ -429,7 +432,7 @@ echarts.registerTheme('dark',
       },
       "symbolSize": 4,
       "symbol": "circle",
-      "smooth": false
+      "smooth": true
     },
     "radar": {
       "itemStyle": {
@@ -440,7 +443,7 @@ echarts.registerTheme('dark',
       },
       "symbolSize": 4,
       "symbol": "circle",
-      "smooth": false
+      "smooth": true
     },
     "bar": {
       "itemStyle": {
@@ -510,7 +513,7 @@ echarts.registerTheme('dark',
       },
       "symbolSize": 4,
       "symbol": "circle",
-      "smooth": false,
+      "smooth": true,
       "color": [
         "#dd6b66",
         "#759aa0",
@@ -586,11 +589,11 @@ echarts.registerTheme('dark',
         "color": "#eeeeee"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#aaaaaa"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -620,11 +623,11 @@ echarts.registerTheme('dark',
         "color": "#eeeeee"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#aaaaaa"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -654,11 +657,11 @@ echarts.registerTheme('dark',
         "color": "#eeeeee"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#aaaaaa"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -688,11 +691,11 @@ echarts.registerTheme('dark',
         "color": "#eeeeee"
       },
       "splitLine": {
-        "show": true,
-        "lineStyle": {
-          "color": [
-            "#aaaaaa"
-          ]
+        show: true, // 显示网格线
+        lineStyle: {
+          color: ['hsl(var(--secondary))'],
+          width: 1,
+          type: 'dashed'
         }
       },
       "splitArea": {
@@ -721,12 +724,15 @@ echarts.registerTheme('dark',
     },
     "tooltip": {
       "axisPointer": {
+        "label": {
+          "color": "hsl(var(--background))",
+        },
         "lineStyle": {
-          "color": "#eeeeee",
+          "color": "hsl(var(--primary))",
           "width": "1"
         },
         "crossStyle": {
-          "color": "#eeeeee",
+          "color": "hsl(var(--primary))",
           "width": "1"
         }
       }

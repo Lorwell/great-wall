@@ -1,10 +1,11 @@
-import RequestCountMetrics from "@/pages/monitor-metrics/route-metrics/request-count-metrics.tsx";
-import AverageResponseTimeMetrics from "@/pages/monitor-metrics/route-metrics/average-response-time-metrics.tsx";
-import ErrorResponseCountMetrics from "@/pages/monitor-metrics/route-metrics/error-response-count-metrics.tsx";
-import MaxResponseTimeMetrics from "@/pages/monitor-metrics/route-metrics/max-response-time-metrics.tsx";
-import QpsLineChart from "@/pages/monitor-metrics/route-metrics/qps-line-chart.tsx";
-import ResponseDurationTimeLineChart from "@/pages/monitor-metrics/route-metrics/response-duration-time-line-chart.tsx";
-import TopApiQpsLineChart from "@/pages/monitor-metrics/route-metrics/top-api-qps-line-chart.tsx";
+import RequestCountMetrics from "./request-count-metrics.tsx";
+import AccessIpCountMetrics from "./access-ip-count-metrics.tsx";
+import Response5xxErrorCountMetrics from "./response5xx-error-count-metrics.tsx";
+import AccessTrafficMetrics from "./access-traffic-metrics.tsx";
+import QpsLineChart from "./qps-line-chart.tsx";
+import ResponseDurationTimeLineChart from "./response-duration-time-line-chart.tsx";
+import TopApiQpsLineChart from "./top-api-qps-line-chart.tsx";
+import Response4xxErrorCountMetrics from "./response4xx-error-count-metrics.tsx";
 
 /**
  * 路由指标
@@ -13,11 +14,12 @@ import TopApiQpsLineChart from "@/pages/monitor-metrics/route-metrics/top-api-qp
 export default function RouteMetrics() {
   return (
     <div className={"w-full h-full space-y-4"}>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <RequestCountMetrics/>
-        <ErrorResponseCountMetrics/>
-        <AverageResponseTimeMetrics/>
-        <MaxResponseTimeMetrics/>
+        <AccessIpCountMetrics/>
+        <AccessTrafficMetrics/>
+        <Response4xxErrorCountMetrics/>
+        <Response5xxErrorCountMetrics/>
       </div>
       <div className="grid gap-4 grid-cols-2">
         <QpsLineChart/>

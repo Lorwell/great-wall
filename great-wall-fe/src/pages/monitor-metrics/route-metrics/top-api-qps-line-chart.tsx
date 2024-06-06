@@ -4,33 +4,48 @@ import Charts from "@/components/custom-ui/charts.tsx";
 
 const options = {
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    axisPointer: {
+      type: 'cross'
+    }
+  },
+  legend: {
+    data: ['接口1', '接口2', '接口3'],
+    type: 'scroll',
+    orient: 'vertical',
+    right: 10,
+    top: 20,
+    bottom: 20,
+    selectedMode: 'multiple'
   },
   grid: {
-    left: '5%',
-    right: '15%',
-    bottom: '10%'
-  },
-  toolbox: {
-    right: 10,
+    top: "30",
+    left: '50',
+    right: '120',
+    bottom: '30',
   },
   xAxis: {
     type: 'category',
-    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    data: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
   },
   series: [
     {
-      data: [820, 932, 901, 934, 1290, 1330, 1320],
+      name: '接口1',
       type: 'line',
-      smooth: true
+      data: [120, 132, 101, 134, 90, 230, 210, 130, 220, 182, 191, 234, 290, 330, 310, 120, 101, 134, 90, 230, 210, 130, 220, 182, 191, 234, 290, 330, 330, 310]
     },
     {
-      data: [1, 932, 21, 934, 12, 21, 121],
+      name: '接口2',
       type: 'line',
-      smooth: true
+      data: [220, 182, 191, 234, 290, 330, 310, 120, 132, 101, 134, 90, 230, 210, 130, 220, 182, 191, 234, 290, 330, 330, 310, 120, 132, 101, 134, 90, 230, 210]
+    },
+    {
+      name: '接口3',
+      type: 'line',
+      data: [150, 232, 201, 154, 190, 330, 410, 370, 322, 361, 251, 153, 125, 122, 133, 124, 145, 122, 132, 134, 150, 232, 201, 154, 190, 330, 410, 370, 322]
     }
   ]
 }
@@ -49,7 +64,7 @@ export default function TopApiQpsLineChart() {
         <Spinner className={"w-4 h-4"}/>
       </CardHeader>
       <CardContent>
-        <Charts option={options}/>
+        <Charts style={{height: 280}} option={options}/>
       </CardContent>
     </Card>
   )
