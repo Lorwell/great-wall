@@ -90,12 +90,12 @@ class MonitorMetricsServiceImpl(
                 row.putTimestamp(5, record.requestTime)
                 row.putTimestamp(6, record.responseTime)
                 row.putInt(7, record.statusCode)
-
                 record.appRouteId?.let { row.putLong(8, it) }
                 record.targetUrl?.let { row.putVarchar(9, Utf8String(it)) }
+                row.putLong(10, record.requestBodySize)
+                row.putLong(11, record.responseBodySize)
 
                 row.append()
-
                 writer.commit()
             }
         } catch (e: Exception) {

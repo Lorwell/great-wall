@@ -57,7 +57,17 @@ data class RouteMetricsRecordPo(
     /**
      * 路由的目标地址
      */
-    val targetUrl: String?
+    val targetUrl: String?,
+
+    /**
+     * 请求主体长度，单位字节
+     */
+    val requestBodySize: Long,
+
+    /**
+     * 响应主体长度，单位字节
+     */
+    val responseBodySize: Long
 
 ) {
 

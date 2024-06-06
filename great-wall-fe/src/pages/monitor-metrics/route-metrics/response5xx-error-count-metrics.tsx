@@ -17,7 +17,7 @@ export default function Response5xxErrorCountMetrics() {
       <CardContent>
         <div className="text-2xl font-bold">120</div>
         <p className="text-xs text-muted-foreground">
-          选中时间内响应状态码大于等于 500 小于 600
+          500 &lt;= 状态码
         </p>
       </CardContent>
     </Card>

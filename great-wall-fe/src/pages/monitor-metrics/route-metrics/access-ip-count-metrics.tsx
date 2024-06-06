@@ -17,7 +17,7 @@ export default function AccessIpCountMetrics() {
       <CardContent>
         <div className="text-2xl font-bold">53</div>
         <p className="text-xs text-muted-foreground">
-          选中时间内访问的 ip 累计
+          访问的 ip 累计
         </p>
       </CardContent>
     </Card>

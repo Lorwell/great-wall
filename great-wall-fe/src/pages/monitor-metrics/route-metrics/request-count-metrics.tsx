@@ -17,7 +17,7 @@ export default function RequestCountMetrics() {
       <CardContent>
         <div className="text-2xl font-bold">45,231.89</div>
         <p className="text-xs text-muted-foreground">
-          选中时间内请求数累计
+          请求数累计
         </p>
       </CardContent>
     </Card>
