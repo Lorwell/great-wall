@@ -58,6 +58,8 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.boot:spring-boot-starter-json")
 
@@ -76,7 +78,6 @@ dependencies {
 
     // quest db 时序数据库
     implementation("org.questdb:questdb:8.0.0")
-
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

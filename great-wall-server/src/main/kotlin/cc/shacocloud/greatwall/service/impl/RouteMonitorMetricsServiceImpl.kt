@@ -1,12 +1,17 @@
 package cc.shacocloud.greatwall.service.impl
 
+import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.RouteMonitorMetricsOutput
 import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
-import cc.shacocloud.greatwall.service.MonitorMetricsService
+import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.json.Json
 import io.questdb.cairo.CairoEngine
+import io.questdb.cairo.security.AllowAllSecurityContext
 import io.questdb.cairo.wal.ApplyWal2TableJob
+import io.questdb.griffin.SqlExecutionContext
+import io.questdb.griffin.SqlExecutionContextImpl
 import io.questdb.std.str.Utf8String
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -28,9 +33,9 @@ import java.util.concurrent.Executors
  */
 @Slf4j
 @Service
-class MonitorMetricsServiceImpl(
+class RouteMonitorMetricsServiceImpl(
     val cairoEngine: CairoEngine
-) : MonitorMetricsService, DisposableBean {
+) : RouteMonitorMetricsService, DisposableBean {
 
     val channel = Channel<RouteMetricsRecordPo>(
         capacity = UNLIMITED
@@ -72,6 +77,20 @@ class MonitorMetricsServiceImpl(
                 log.warn("添加监控指标记录到队列发生例外！", e)
             }
         }
+    }
+
+    override suspend fun requestCountMetrics(input: RouteMonitorMetricsInput): RouteMonitorMetricsOutput {
+        val (from, to) = input.getDateRangeMs()
+
+        val ctx: SqlExecutionContext = SqlExecutionContextImpl(cairoEngine, 1)
+            .with(AllowAllSecurityContext.INSTANCE, null)
+
+        val compiledQuery = cairoEngine.sqlCompiler.compile(
+            "SELECT count(*) FROM monitor_metrics_record WHERE request_time between '2024-06-05 00:00:00' and '2024-06-07 00:00:00'",
+            ctx
+        )
+
+        return RouteMonitorMetricsOutput(1)
     }
 
     /**

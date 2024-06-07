@@ -2,7 +2,7 @@ package cc.shacocloud.greatwall.config.web
 
 import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.AppRouteLocator
-import cc.shacocloud.greatwall.service.MonitorMetricsService
+import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.getHost
 import cc.shacocloud.greatwall.utils.getRealIp
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class MonitorRouteMetricsWebHandler(
     webHandler: WebHandler,
-    private val monitorMetricsService: MonitorMetricsService
+    private val routeMonitorMetricsService: RouteMonitorMetricsService
 ) : WebHandlerDecorator(webHandler) {
 
     override fun handle(exchange: ServerWebExchange): Mono<Void> {
@@ -128,7 +128,7 @@ class MonitorRouteMetricsWebHandler(
 
             @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.Unconfined) {
-                monitorMetricsService.addRouteRecord(metricsRecord)
+                routeMonitorMetricsService.addRouteRecord(metricsRecord)
             }
 
         } catch (e: Throwable) {

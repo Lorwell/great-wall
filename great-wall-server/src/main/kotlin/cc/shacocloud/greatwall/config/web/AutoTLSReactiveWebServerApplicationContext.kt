@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.service.MonitorMetricsService
+import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry
 import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
@@ -43,7 +43,7 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         // 使用监控指标处理器来委托目标处理器
         MonitorRouteMetricsWebHandler(
             webHandler = dispatcherHandler,
-            monitorMetricsService = getBean(MonitorMetricsService::class.java)
+            routeMonitorMetricsService = getBean(RouteMonitorMetricsService::class.java)
         )
     }
 

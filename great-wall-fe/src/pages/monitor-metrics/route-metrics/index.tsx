@@ -7,19 +7,16 @@ import ResponseDurationTimeLineChart from "./response-duration-time-line-chart.t
 import TopApiQpsLineChart from "./top-api-qps-line-chart.tsx";
 import Response4xxErrorCountMetrics from "./response4xx-error-count-metrics.tsx";
 import ResponseTrafficMetrics from "@/pages/monitor-metrics/route-metrics/response-traffic-metrics.tsx";
-import {CalendarDateRangePicker} from "@/pages/monitor-metrics/date-range-picker.tsx";
 
 /**
  * 路由指标
  * @constructor
  */
 export default function RouteMetrics() {
+
+
   return (
     <div className={"w-full h-full space-y-4"}>
-      <div className={"flex flex-row justify-end space-x-2"}>
-        <CalendarDateRangePicker/>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         <RequestCountMetrics/>
         <AccessIpCountMetrics/>

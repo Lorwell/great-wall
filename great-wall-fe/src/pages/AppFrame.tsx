@@ -2,18 +2,10 @@ import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/component
 import {TooltipProvider} from "@/components/ui/tooltip.tsx";
 import {useState} from "react";
 import {cn} from "@/utils/shadcnUtils.ts";
-import {Link, Outlet} from "react-router-dom";
+import {Outlet} from "react-router-dom";
 import {Nav} from "@/components/nav.tsx";
 import {navConfig} from "@/pages/navConfig.ts";
 import {Separator} from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import {ModeToggle} from "@/components/mode-toggle.tsx";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
@@ -57,8 +49,7 @@ const AppFrame = () => {
 
           <div className={"flex flex-col gap-4 px-4 sm:py-3 h-full w-full box-border"}>
 
-            <div className={"flex flex-row justify-between"}>
-              <AppFrameBreadcrumb/>
+            <div className={"flex flex-row justify-end"}>
               <ModeToggle/>
             </div>
 
@@ -76,34 +67,6 @@ const AppFrame = () => {
         </ResizablePanel>
       </ResizablePanelGroup>
     </TooltipProvider>
-  )
-}
-
-/**
- * 应用面包屑
- * @constructor
- */
-const AppFrameBreadcrumb = () => {
-  return (
-    <Breadcrumb className="hidden md:flex">
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="#">Dashboard</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator/>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="#">Products</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator/>
-        <BreadcrumbItem>
-          <BreadcrumbPage>All Products</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
   )
 }
 
