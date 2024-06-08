@@ -35,7 +35,7 @@ export default defineConfig({
     // 配置代理
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8080', // 接口地址
+        target: 'http://127.0.0.1:443', // 接口地址
         changeOrigin: true, // 接口跨域
         secure: false, // 启用 https 服务时需要配置
       },

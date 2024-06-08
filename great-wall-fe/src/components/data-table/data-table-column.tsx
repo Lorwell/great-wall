@@ -33,7 +33,7 @@ export const dataTableCheckboxColumn = <TData extends RowData>(): ColumnDef<TDat
         className="translate-y-[2px]"
       />
     ),
-    size: 30,
+    size: 35,
     enableSorting: false,
     enableHiding: false,
     enableResizing: false

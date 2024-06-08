@@ -39,7 +39,7 @@ suspend fun <T> CairoEngine.findOne(
     return find(querySql, context) { cursor ->
         val size = cursor.size()
         if (size > 0) {
-            require(size != 1.toLong()) { "期望返回一条结果，实际返回 $size 条！" }
+            require(size == 1.toLong()) { "期望返回1条结果，实际返回 $size 条！" }
             cursor.hasNext()
             handler(cursor.record)
         } else null

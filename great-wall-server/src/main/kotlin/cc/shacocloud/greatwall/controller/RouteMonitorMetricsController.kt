@@ -49,5 +49,35 @@ class RouteMonitorMetricsController(
         return routeMonitorMetricsService.requestTrafficSumMetrics(input)
     }
 
+    /**
+     * 响应流量指标
+     */
+    @GetMapping("/sum/response-traffic")
+    suspend fun responseTrafficSumMetrics(
+        @Validated input: RouteMonitorMetricsInput
+    ): ValueMetricsOutput {
+        return routeMonitorMetricsService.responseTrafficSumMetrics(input)
+    }
+
+    /**
+     * 4xx响应状态码指标
+     */
+    @GetMapping("/count/status-4xx")
+    suspend fun status4xxCountMetrics(
+        @Validated input: RouteMonitorMetricsInput
+    ): ValueMetricsOutput {
+        return routeMonitorMetricsService.status4xxCountMetrics(input)
+    }
+
+    /**
+     * 5xx响应状态码指标
+     */
+    @GetMapping("/count/status-5xx")
+    suspend fun status5xxCountMetrics(
+        @Validated input: RouteMonitorMetricsInput
+    ): ValueMetricsOutput {
+        return routeMonitorMetricsService.status5xxCountMetrics(input)
+    }
+
 
 }

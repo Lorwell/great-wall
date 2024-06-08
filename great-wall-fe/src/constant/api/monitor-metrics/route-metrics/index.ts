@@ -23,3 +23,47 @@ export function ipCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMe
     resultSchema: CountMetricsSchema
   })
 }
+
+/**
+ * 请求流量指标
+ * @param input
+ */
+export function requestTrafficSumMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+  return Get(`/api/route-monitor-metrics/sum/request-traffic`, {
+    queryParam: input,
+    resultSchema: CountMetricsSchema
+  })
+}
+
+/**
+ * 响应流量指标
+ * @param input
+ */
+export function responseTrafficSumMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+  return Get(`/api/route-monitor-metrics/sum/response-traffic`, {
+    queryParam: input,
+    resultSchema: CountMetricsSchema
+  })
+}
+
+/**
+ * 4xx响应状态码指标
+ * @param input
+ */
+export function status4xxCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+  return Get(`/api/route-monitor-metrics/count/status-4xx`, {
+    queryParam: input,
+    resultSchema: CountMetricsSchema
+  })
+}
+
+/**
+ * 5xx响应状态码指标
+ * @param input
+ */
+export function status5xxCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+  return Get(`/api/route-monitor-metrics/count/status-5xx`, {
+    queryParam: input,
+    resultSchema: CountMetricsSchema
+  })
+}

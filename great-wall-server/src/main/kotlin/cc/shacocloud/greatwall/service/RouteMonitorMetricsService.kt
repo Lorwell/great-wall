@@ -30,4 +30,19 @@ interface RouteMonitorMetricsService {
      */
     suspend fun requestTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
 
+    /**
+     * 响应流量指标
+     */
+    suspend fun responseTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+
+    /**
+     * 状态码 4xx 统计指标
+     */
+    suspend fun status4xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+
+    /**
+     * 状态码 4xx 统计指标
+     */
+    suspend fun status5xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+
 }

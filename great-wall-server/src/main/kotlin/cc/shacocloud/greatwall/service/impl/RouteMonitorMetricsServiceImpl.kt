@@ -117,5 +117,41 @@ class RouteMonitorMetricsServiceImpl(
         return ValueMetricsOutput(count)
     }
 
+    /**
+     * 响应流量指标
+     */
+    override suspend fun responseTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+        val count = cairoEngine.findOne(
+            """
+                    SELECT sum(response_body_size) FROM monitor_metrics_record 
+                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                """.trimIndent()
+        ) { it.getLong(0) } ?: 0
 
+        return ValueMetricsOutput(count)
+    }
+
+    override suspend fun status4xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+        val count = cairoEngine.findOneNotNull(
+            """
+                    SELECT count FROM monitor_metrics_record 
+                    WHERE status_code >= 400 AND status_code < 500 
+                    AND ${input.getQuestDBDateFilterFragment("request_time")}
+                """.trimIndent()
+        ) { it.getLong(0) }
+
+        return ValueMetricsOutput(count)
+    }
+
+    override suspend fun status5xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+        val count = cairoEngine.findOneNotNull(
+            """
+                    SELECT count FROM monitor_metrics_record 
+                    WHERE status_code >= 500 
+                    AND ${input.getQuestDBDateFilterFragment("request_time")}
+                """.trimIndent()
+        ) { it.getLong(0) }
+
+        return ValueMetricsOutput(count)
+    }
 }
