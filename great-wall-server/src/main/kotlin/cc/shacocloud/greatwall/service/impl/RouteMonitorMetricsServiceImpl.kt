@@ -1,8 +1,9 @@
 package cc.shacocloud.greatwall.service.impl
 
+import cc.shacocloud.greatwall.config.questdb.findOne
 import cc.shacocloud.greatwall.config.questdb.findOneNotNull
 import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
-import cc.shacocloud.greatwall.model.dto.output.RouteMonitorMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.Slf4j
@@ -77,7 +78,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * 请求统计指标
      */
-    override suspend fun requestCountMetrics(input: RouteMonitorMetricsInput): RouteMonitorMetricsOutput {
+    override suspend fun requestCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
                     SELECT count(*) FROM monitor_metrics_record 
@@ -85,7 +86,35 @@ class RouteMonitorMetricsServiceImpl(
                 """.trimIndent()
         ) { it.getLong(0) }
 
-        return RouteMonitorMetricsOutput(count)
+        return ValueMetricsOutput(count)
+    }
+
+    /**
+     * ip 统计指标
+     */
+    override suspend fun ipCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+        val count = cairoEngine.findOneNotNull(
+            """
+                    SELECT count_distinct(ip) FROM monitor_metrics_record 
+                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                """.trimIndent()
+        ) { it.getLong(0) }
+
+        return ValueMetricsOutput(count)
+    }
+
+    /**
+     * 请求流量指标
+     */
+    override suspend fun requestTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+        val count = cairoEngine.findOne(
+            """
+                    SELECT sum(request_body_size) FROM monitor_metrics_record 
+                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                """.trimIndent()
+        ) { it.getLong(0) } ?: 0
+
+        return ValueMetricsOutput(count)
     }
 
 
