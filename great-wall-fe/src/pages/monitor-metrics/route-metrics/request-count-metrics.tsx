@@ -3,6 +3,7 @@ import {Users} from "lucide-react";
 import {useMonitorMetricsContext} from "@/pages/monitor-metrics/context.ts";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
+import {requestCountMetrics} from "@/constant/api/monitor-metrics/route-metrics";
 
 /**
  * 请求统计指标
@@ -11,9 +12,8 @@ import {Spinner} from "@/components/custom-ui/spinner.tsx";
 export default function RequestCountMetrics() {
   const {dateRange} = useMonitorMetricsContext();
 
-  const {data, loading} = useApiRequest(() => ({}), {
-    refreshDeps: [dateRange]
-  });
+  const {data, loading} = useApiRequest(() => requestCountMetrics(dateRange),
+    {refreshDeps: [dateRange]});
 
   return (
     <Card>
@@ -24,7 +24,7 @@ export default function RequestCountMetrics() {
         {loading ? (<Spinner className={"w-4 h-4"}/>) : (<Users className={"w-4 h-4"}/>)}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">45,231.89</div>
+        <div className="text-2xl font-bold">{data?.value || 0}</div>
         <p className="text-xs text-muted-foreground">
           请求数累计
         </p>

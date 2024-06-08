@@ -2,6 +2,7 @@ import _ from "lodash";
 import {isBlank} from "@/utils/Utils";
 import {errorMsgSchema, ErrorMsgValues} from "@/constant/api/schema.ts";
 import {ZodTypeAny} from "zod";
+import queryString from "query-string";
 
 /**
  * 发送 fetch 请求
@@ -363,26 +364,27 @@ export const uriQueryParamJoint = (uri: string, queryParam?: Record<string, any 
  * @param queryParam 查询参数对象
  */
 export const queryParamJoint = (queryParam?: Record<string, any | Array<any>>): string => {
-  const params = new Array<string>();
-
-  // 拼接参数
-  if (queryParam && Object.keys(queryParam).length > 0) {
-    for (let queryParamKey in queryParam) {
-      if (queryParam.hasOwnProperty(queryParamKey)) {
-        const valObj = queryParam[queryParamKey];
-        if (valObj == null) continue; // 过滤空值
-
-        if (valObj instanceof Array) {
-          for (let val of valObj) {
-            if (val == null) continue; // 过滤空值
-            params.push(`${queryParamKey}=${encodeURIComponent(String(val))}`);
-          }
-        } else {
-          params.push(`${queryParamKey}=${encodeURIComponent(String(valObj))}`);
-        }
-      }
-    }
-  }
-
-  return params.join("&");
+  return !!queryParam ? queryString.stringify(queryParam) : ""
+  // const params = new Array<string>();
+  //
+  // // 拼接参数
+  // if (queryParam && Object.keys(queryParam).length > 0) {
+  //   for (let queryParamKey in queryParam) {
+  //     if (queryParam.hasOwnProperty(queryParamKey)) {
+  //       const valObj = queryParam[queryParamKey];
+  //       if (valObj == null) continue; // 过滤空值
+  //
+  //       if (valObj instanceof Array) {
+  //         for (let val of valObj) {
+  //           if (val == null) continue; // 过滤空值
+  //           params.push(`${queryParamKey}=${encodeURIComponent(String(val))}`);
+  //         }
+  //       } else {
+  //         params.push(`${queryParamKey}=${encodeURIComponent(String(valObj))}`);
+  //       }
+  //     }
+  //   }
+  // }
+  //
+  // return params.join("&");
 };

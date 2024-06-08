@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.model.po
+package cc.shacocloud.greatwall.model.po.questdb
 
 /**
  * 请求指标记录
@@ -69,7 +69,7 @@ data class RouteMetricsRecordPo(
      */
     val responseBodySize: Long
 
-) {
+) : BaseMonitorMetricsPo(Type.ROUTE) {
 
     class QueryParamsMetrics : HashMap<String, List<String>>()
 

@@ -2,7 +2,7 @@ package cc.shacocloud.greatwall.service
 
 import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.RouteMonitorMetricsOutput
-import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
+import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 
 /**
  * 路由监控指标服务

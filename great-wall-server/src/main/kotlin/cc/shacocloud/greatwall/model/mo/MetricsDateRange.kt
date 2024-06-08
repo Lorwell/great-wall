@@ -3,8 +3,10 @@ package cc.shacocloud.greatwall.model.mo
 import cc.shacocloud.greatwall.controller.exception.BadRequestException
 import cc.shacocloud.greatwall.model.mo.MetricsDateRange.LastDateEnum.*
 import cc.shacocloud.greatwall.model.mo.MetricsDateRange.Type.lastDateEnum
+import cc.shacocloud.greatwall.utils.DATE_TIME_FORMAT
 import kotlinx.datetime.Clock
-import java.util.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.format
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -37,12 +39,12 @@ open class MetricsDateRange(
     /**
      * 获取时间范围的毫秒数
      */
-    fun getDateRangeMs(): Pair<Long, Long?> {
+    fun getDateRangeMs(): Pair<Instant, Instant?> {
         check()
         return when (type) {
             Type.dateRange -> {
                 val range = dateRange!!
-                range.from.time to range.to?.time
+                range.from to range.to
             }
 
             lastDateEnum -> {
@@ -59,14 +61,27 @@ open class MetricsDateRange(
                     last15Day -> Clock.System.now() - 15.days
                 }
 
-                from.toEpochMilliseconds() to null
+                from to null
             }
         }
     }
 
+    /**
+     * 获取 quest db 中时间查询片段
+     */
+    fun getQuestDBDateFilterFragment(field: String): String {
+        val (form, to) = getDateRangeMs()
+
+        return if (to != null) {
+            "$field between '${form.format(DATE_TIME_FORMAT)}' and '${to.format(DATE_TIME_FORMAT)}'"
+        } else {
+            "$field >= '${form.format(DATE_TIME_FORMAT)}'"
+        }
+    }
+
     data class DateRange(
-        val from: Date,
-        val to: Date?
+        val from: Instant,
+        val to: Instant?
     )
 
     enum class Type {

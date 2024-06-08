@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.config
+package cc.shacocloud.greatwall.config.questdb
 
 import cc.shacocloud.greatwall.utils.AppUtil
 import cc.shacocloud.greatwall.utils.ScriptUtils
@@ -83,15 +83,15 @@ class QuestDbConfiguration {
         }
 
         val cairoEngine = applicationContext.getBean(CairoEngine::class.java)
-        val ctx = SqlExecutionContextImpl(cairoEngine, 1)
-            .with(AllowAllSecurityContext.INSTANCE, null)
-
-        resources.forEach { resource ->
-            val scripts = ScriptUtils.splitSqlScript(EncodedResource(resource, Charsets.UTF_8))
-            scripts.forEach { script ->
-                cairoEngine.ddl(script, ctx)
+        SqlExecutionContextImpl(cairoEngine, 1).with(AllowAllSecurityContext.INSTANCE, null)
+            .use { ctx ->
+                resources.forEach { resource ->
+                    val scripts = ScriptUtils.splitSqlScript(EncodedResource(resource, Charsets.UTF_8))
+                    scripts.forEach { script ->
+                        cairoEngine.ddl(script, ctx)
+                    }
+                }
             }
-        }
     }
 
     /**
