@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.service
 
 import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 
@@ -41,8 +42,13 @@ interface RouteMonitorMetricsService {
     suspend fun status4xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
 
     /**
-     * 状态码 4xx 统计指标
+     * 状态码 5xx 统计指标
      */
     suspend fun status5xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+
+    /**
+     * qps 折线图指标
+     */
+    suspend fun qpsLineMetrics(input: RouteMonitorMetricsInput): List<LineMetricsOutput>
 
 }

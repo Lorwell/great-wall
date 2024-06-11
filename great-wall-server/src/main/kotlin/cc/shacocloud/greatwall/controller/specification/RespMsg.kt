@@ -7,7 +7,7 @@ import java.io.Serializable
  *
  * @author 思追(shaco)
  */
-data class RespMsg<T : Any>(
+data class RespMsg<T : Iterable<Any?>>(
 
     /**
      * 集合结果记录

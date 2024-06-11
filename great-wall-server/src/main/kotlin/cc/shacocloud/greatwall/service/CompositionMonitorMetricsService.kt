@@ -1,9 +1,9 @@
 package cc.shacocloud.greatwall.service
 
+import cc.shacocloud.greatwall.config.questdb.QUESTDB_WRITE_DISPATCHER
 import cc.shacocloud.greatwall.model.po.questdb.BaseMonitorMetricsPo
 import cc.shacocloud.greatwall.model.po.questdb.BaseMonitorMetricsPo.Type.ROUTE
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
-import cc.shacocloud.greatwall.service.impl.RouteMonitorMetricsServiceImpl.Companion.MONITOR_METRICS_WRITE_DISPATCHER
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import io.questdb.cairo.CairoEngine
 import io.questdb.cairo.wal.ApplyWal2TableJob
@@ -33,15 +33,13 @@ class CompositionMonitorMetricsService(
     init {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
-            repeat(2) {
-                launch(MONITOR_METRICS_WRITE_DISPATCHER) {
-                    try {
-                        while (!channel.isClosedForReceive) {
-                            val record = channel.receive()
-                            consumerData(record)
-                        }
-                    } catch (_: ClosedReceiveChannelException) {
+            launch(QUESTDB_WRITE_DISPATCHER) {
+                try {
+                    while (!channel.isClosedForReceive) {
+                        val record = channel.receive()
+                        consumerData(record)
                     }
+                } catch (_: ClosedReceiveChannelException) {
                 }
             }
         }

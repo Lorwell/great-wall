@@ -17,6 +17,9 @@ class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
 
         // 静态资源
         hints.resources().registerPattern("static/*")
+
+        // 配置文件
+        hints.resources().registerPattern("config/*")
     }
 
 }

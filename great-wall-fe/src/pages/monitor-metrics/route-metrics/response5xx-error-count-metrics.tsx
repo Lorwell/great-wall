@@ -2,7 +2,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx
 import {ShieldAlert} from "lucide-react";
 import {useMonitorMetricsContext} from "@/pages/monitor-metrics/context.ts";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
-import {status4xxCountMetrics} from "@/constant/api/monitor-metrics/route-metrics";
+import {status5xxCountMetrics} from "@/constant/api/monitor-metrics/route-metrics";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
 
 /**
@@ -12,7 +12,7 @@ import {Spinner} from "@/components/custom-ui/spinner.tsx";
 export default function Response5xxErrorCountMetrics() {
   const {dateRange} = useMonitorMetricsContext();
 
-  const {data, loading} = useApiRequest(() => status4xxCountMetrics(dateRange),
+  const {data, loading} = useApiRequest(() => status5xxCountMetrics(dateRange),
     {refreshDeps: [dateRange]});
 
   return (

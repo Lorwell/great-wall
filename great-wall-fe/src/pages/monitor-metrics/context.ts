@@ -12,8 +12,8 @@ export interface MonitorMetricsContext {
 
 export const monitorMetricsContext = createContext<MonitorMetricsContext>({
   dateRange: {
-    type: "lastDateEnum",
-    lastDataEnum: LastDateEnum.last30Minute
+    type: "LastDateEnum",
+    lastDataEnum: LastDateEnum.Last30Minute
   }
 });
 

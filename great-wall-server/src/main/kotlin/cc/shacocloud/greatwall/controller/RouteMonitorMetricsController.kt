@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import org.springframework.validation.annotation.Validated
@@ -77,6 +78,17 @@ class RouteMonitorMetricsController(
         @Validated input: RouteMonitorMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.status5xxCountMetrics(input)
+    }
+
+
+    /**
+     * qps 折线图指标
+     */
+    @GetMapping("/line/qps")
+    suspend fun qpsLineMetrics(
+        @Validated input: RouteMonitorMetricsInput
+    ): List<LineMetricsOutput> {
+        return routeMonitorMetricsService.qpsLineMetrics(input)
     }
 
 

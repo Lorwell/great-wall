@@ -1,21 +1,33 @@
 package cc.shacocloud.greatwall.config.questdb
 
-import cc.shacocloud.greatwall.service.impl.RouteMonitorMetricsServiceImpl.Companion.MONITOR_METRICS_QUERY_DISPATCHER
 import io.questdb.cairo.CairoEngine
 import io.questdb.cairo.security.AllowAllSecurityContext
 import io.questdb.cairo.sql.Record
 import io.questdb.cairo.sql.RecordCursor
 import io.questdb.griffin.SqlExecutionContextImpl
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
+/**
+ *  quest db 数据写入调度器
+ */
+val QUESTDB_WRITE_DISPATCHER = Executors.newFixedThreadPool(1)
+    .asCoroutineDispatcher()
+
+/**
+ * quest db 查询调度器
+ */
+val QUESTDB_METRICS_QUERY_DISPATCHER = Executors.newFixedThreadPool(2)
+    .asCoroutineDispatcher()
 
 /**
  * 查询结果
  */
 suspend fun <T> CairoEngine.find(
     querySql: String,
-    context: CoroutineContext = MONITOR_METRICS_QUERY_DISPATCHER,
+    context: CoroutineContext = QUESTDB_METRICS_QUERY_DISPATCHER,
     handler: suspend (RecordCursor) -> T
 ): T {
     val self = this
@@ -33,7 +45,7 @@ suspend fun <T> CairoEngine.find(
  */
 suspend fun <T> CairoEngine.findOne(
     querySql: String,
-    context: CoroutineContext = MONITOR_METRICS_QUERY_DISPATCHER,
+    context: CoroutineContext = QUESTDB_METRICS_QUERY_DISPATCHER,
     handler: suspend (Record) -> T
 ): T? {
     return find(querySql, context) { cursor ->
@@ -52,7 +64,7 @@ suspend fun <T> CairoEngine.findOne(
  */
 suspend fun <T> CairoEngine.findOneNotNull(
     querySql: String,
-    context: CoroutineContext = MONITOR_METRICS_QUERY_DISPATCHER,
+    context: CoroutineContext = QUESTDB_METRICS_QUERY_DISPATCHER,
     handler: suspend (Record) -> T
 ): T {
     return find(querySql, context) { cursor ->
@@ -68,13 +80,16 @@ suspend fun <T> CairoEngine.findOneNotNull(
  */
 suspend fun <T> CairoEngine.findAll(
     querySql: String,
-    context: CoroutineContext = MONITOR_METRICS_QUERY_DISPATCHER,
-    handler: (Record) -> T
+    context: CoroutineContext = QUESTDB_METRICS_QUERY_DISPATCHER,
+    handler: suspend (Record) -> T
 ): List<T> {
     return find(querySql, context) { cursor ->
-        MutableList(cursor.size().toInt()) {
-            cursor.hasNext()
-            handler(cursor.record)
+        val result = ArrayList<T>()
+
+        while (cursor.hasNext()) {
+            result.add(handler(cursor.record))
         }
+
+        result
     }
 }

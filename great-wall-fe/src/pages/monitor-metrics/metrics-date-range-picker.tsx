@@ -19,57 +19,57 @@ export interface MetricsDateRangePickerProps {
 }
 
 export enum LastDateEnum {
-  last15Minute = "last15Minute",
-  last30Minute = "last30Minute",
-  last1Hour = "last1Hour",
-  last3Hour = "last3Hour",
-  last6Hour = "last6Hour",
-  last12Hour = "last12Hour",
-  last1Day = "last1Day",
-  last3Day = "last3Day",
-  last7Day = "last7Day",
-  last15Day = "last15Day",
+  Last15Minute = "Last15Minute",
+  Last30Minute = "Last30Minute",
+  Last1Hour = "Last1Hour",
+  Last3Hour = "Last3Hour",
+  Last6Hour = "Last6Hour",
+  Last12Hour = "Last12Hour",
+  Last1Day = "Last1Day",
+  Last3Day = "Last3Day",
+  Last7Day = "Last7Day",
+  Last15Day = "Last15Day",
 }
 
 const lastDateRecords: Array<{ value: LastDateEnum, label: ReactNode | ReactElement }> = [
   {
-    value: LastDateEnum.last15Minute,
+    value: LastDateEnum.Last15Minute,
     label: "近 15 分钟",
   },
   {
-    value: LastDateEnum.last30Minute,
+    value: LastDateEnum.Last30Minute,
     label: "近 30 分钟",
   },
   {
-    value: LastDateEnum.last1Hour,
+    value: LastDateEnum.Last1Hour,
     label: "近 1 小时",
   },
   {
-    value: LastDateEnum.last3Hour,
+    value: LastDateEnum.Last3Hour,
     label: "近 3 小时",
   },
   {
-    value: LastDateEnum.last6Hour,
+    value: LastDateEnum.Last6Hour,
     label: "近 6 小时",
   },
   {
-    value: LastDateEnum.last12Hour,
+    value: LastDateEnum.Last12Hour,
     label: "近 12 小时",
   },
   {
-    value: LastDateEnum.last1Day,
+    value: LastDateEnum.Last1Day,
     label: "近 1 天",
   },
   {
-    value: LastDateEnum.last3Day,
+    value: LastDateEnum.Last3Day,
     label: "近 3 天",
   },
   {
-    value: LastDateEnum.last7Day,
+    value: LastDateEnum.Last7Day,
     label: "近 7 天",
   },
   {
-    value: LastDateEnum.last15Day,
+    value: LastDateEnum.Last15Day,
     label: "近 15 天",
   },
 ]
@@ -79,7 +79,7 @@ export interface MetricsDateRange {
   /**
    * 时间类型，指定类型的值不为空
    */
-  type: "dateRange" | "lastDateEnum"
+  type: "DateRange" | "LastDateEnum"
 
   /**
    * 最近时间枚举
@@ -108,8 +108,8 @@ export function MetricsDateRangePicker({className, ...props}: MetricsDateRangePi
   });
 
   const [_date, _setDate] = useState<MetricsDateRange>({
-    type: "lastDateEnum",
-    lastDataEnum: LastDateEnum.last30Minute
+    type: "LastDateEnum",
+    lastDataEnum: LastDateEnum.Last30Minute
   })
 
   function handleSubmit() {
@@ -142,7 +142,7 @@ export function MetricsDateRangePicker({className, ...props}: MetricsDateRangePi
 
             <DateTimeRangePicker
               selected={_date.dateRange}
-              onSelect={(dateRange) => _setDate({type: "dateRange", dateRange})}
+              onSelect={(dateRange) => _setDate({type: "DateRange", dateRange})}
             />
           </div>
           <div className={"pr-4 flex flex-col"}>
@@ -177,7 +177,7 @@ function LastDateButton({date, dateEnum, children, onClick}: LastDateButtonProps
   const active = date.lastDataEnum === dateEnum;
   return (
     <Button asChild variant={"ghost"} className={"justify-end cursor-pointer"}
-            onClick={() => onClick?.({type: "lastDateEnum", lastDataEnum: dateEnum})}>
+            onClick={() => onClick?.({type: "LastDateEnum", lastDataEnum: dateEnum})}>
       <div>
         <Check className={cn("w-4 h-4 mr-2", !active && "invisible")}/>
         {children}
@@ -188,7 +188,7 @@ function LastDateButton({date, dateEnum, children, onClick}: LastDateButtonProps
 
 function MetricsDateRangeLabel({date}: { date: MetricsDateRange }) {
   // 选择时间范围
-  if (date.type === "dateRange") {
+  if (date.type === "DateRange") {
     const dateRange = date.dateRange;
 
     return dateRange?.from ? (
@@ -211,25 +211,25 @@ function MetricsDateRangeLabel({date}: { date: MetricsDateRange }) {
   const lastDataEnum = date.lastDataEnum;
   if (lastDataEnum) {
     switch (lastDataEnum) {
-      case LastDateEnum.last15Minute:
+      case LastDateEnum.Last15Minute:
         return (<span>近15分钟</span>)
-      case LastDateEnum.last30Minute:
+      case LastDateEnum.Last30Minute:
         return (<span>近30分钟</span>)
-      case LastDateEnum.last1Hour:
+      case LastDateEnum.Last1Hour:
         return (<span>近1小时</span>)
-      case LastDateEnum.last3Hour:
+      case LastDateEnum.Last3Hour:
         return (<span>近3小时</span>)
-      case LastDateEnum.last6Hour:
+      case LastDateEnum.Last6Hour:
         return (<span>近6小时</span>)
-      case LastDateEnum.last12Hour:
+      case LastDateEnum.Last12Hour:
         return (<span>近12小时</span>)
-      case LastDateEnum.last1Day:
+      case LastDateEnum.Last1Day:
         return (<span>近1天</span>)
-      case LastDateEnum.last3Day:
+      case LastDateEnum.Last3Day:
         return (<span>近3天</span>)
-      case LastDateEnum.last7Day:
+      case LastDateEnum.Last7Day:
         return (<span>近7天</span>)
-      case LastDateEnum.last15Day:
+      case LastDateEnum.Last15Day:
         return (<span>近15天</span>)
     }
   }

@@ -1,20 +1,22 @@
 package cc.shacocloud.greatwall.service.impl
 
+import cc.shacocloud.greatwall.config.questdb.findAll
 import cc.shacocloud.greatwall.config.questdb.findOne
 import cc.shacocloud.greatwall.config.questdb.findOneNotNull
 import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
+import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.json.Json
 import io.questdb.cairo.CairoEngine
 import io.questdb.std.str.Utf8String
-import kotlinx.coroutines.asCoroutineDispatcher
+import io.questdb.std.str.Utf8StringSink
 import kotlinx.coroutines.channels.Channel
 import org.springframework.stereotype.Service
-import java.util.concurrent.Executors
 
 
 /**
@@ -28,21 +30,6 @@ import java.util.concurrent.Executors
 class RouteMonitorMetricsServiceImpl(
     val cairoEngine: CairoEngine
 ) : RouteMonitorMetricsService {
-
-    companion object {
-
-        /**
-         * 监控指标数据写入调度器
-         */
-        val MONITOR_METRICS_WRITE_DISPATCHER = Executors.newFixedThreadPool(2)
-            .asCoroutineDispatcher()
-
-        /**
-         * 监控指标查询调度器
-         */
-        val MONITOR_METRICS_QUERY_DISPATCHER = Executors.newFixedThreadPool(3)
-            .asCoroutineDispatcher()
-    }
 
     /**
      * 添加请求指标记录
@@ -131,6 +118,9 @@ class RouteMonitorMetricsServiceImpl(
         return ValueMetricsOutput(count)
     }
 
+    /**
+     * 状态码 4xx 统计指标
+     */
     override suspend fun status4xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
@@ -143,6 +133,9 @@ class RouteMonitorMetricsServiceImpl(
         return ValueMetricsOutput(count)
     }
 
+    /**
+     * 状态码 5xx 统计指标
+     */
     override suspend fun status5xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
@@ -153,5 +146,29 @@ class RouteMonitorMetricsServiceImpl(
         ) { it.getLong(0) }
 
         return ValueMetricsOutput(count)
+    }
+
+    /**
+     * qps 折线图指标
+     */
+    override suspend fun qpsLineMetrics(input: RouteMonitorMetricsInput): List<LineMetricsOutput> {
+        val result = cairoEngine.findAll(
+            """
+                    SELECT
+                        to_str(to_timezone(request_time, '${timeZoneOffset()}'), 'yyyy-MM-dd HH:mm:ss') as unit,
+                        count
+                    FROM monitor_metrics_record
+                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                    GROUP BY unit
+                    ORDER BY unit
+                """.trimIndent()
+        ) {
+            val utf8StrSink = Utf8StringSink()
+            it.getStr(0, utf8StrSink)
+            LineMetricsOutput(utf8StrSink.toString(), it.getLong(1))
+        }
+
+//        return dateRangeDataCompletion(DateRangeDurationUnit.SECONDS, input.getDateRangeMs(), result)
+        return result
     }
 }

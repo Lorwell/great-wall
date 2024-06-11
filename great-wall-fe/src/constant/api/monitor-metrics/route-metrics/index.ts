@@ -1,6 +1,10 @@
-import {CountMetricsOutput, RouteMonitorMetricsInput} from "@/constant/api/monitor-metrics/route-metrics/types.ts";
+import {
+  CountMetricsOutput,
+  LineMetricsRecordOutput,
+  RouteMonitorMetricsInput
+} from "@/constant/api/monitor-metrics/route-metrics/types.ts";
 import {Get} from "@/constant/api";
-import {CountMetricsSchema} from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
+import {CountMetricsSchema, LineMetricsRecordSchema} from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
 
 /**
  * 请求统计指标
@@ -65,5 +69,16 @@ export function status5xxCountMetrics(input: RouteMonitorMetricsInput): Promise<
   return Get(`/api/route-monitor-metrics/count/status-5xx`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
+  })
+}
+
+/**
+ * qps 折线图指标
+ * @param input
+ */
+export function qpsLineMetrics(input: RouteMonitorMetricsInput): Promise<LineMetricsRecordOutput> {
+  return Get(`/api/route-monitor-metrics/line/qps`, {
+    queryParam: input,
+    resultSchema: LineMetricsRecordSchema
   })
 }

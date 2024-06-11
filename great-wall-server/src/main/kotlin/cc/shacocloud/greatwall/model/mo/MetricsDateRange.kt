@@ -2,11 +2,10 @@ package cc.shacocloud.greatwall.model.mo
 
 import cc.shacocloud.greatwall.controller.exception.BadRequestException
 import cc.shacocloud.greatwall.model.mo.MetricsDateRange.LastDateEnum.*
-import cc.shacocloud.greatwall.model.mo.MetricsDateRange.Type.lastDateEnum
+import cc.shacocloud.greatwall.model.mo.MetricsDateRange.Type.LastDateEnum
+import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
 import cc.shacocloud.greatwall.utils.DATE_TIME_FORMAT
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.format
+import kotlinx.datetime.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -26,11 +25,11 @@ open class MetricsDateRange(
      */
     fun check() {
         when (type) {
-            Type.dateRange -> if (dateRange == null) {
-                throw BadRequestException("类型为 $type 的查询，dateRange 条件不可以为空！")
+            Type.DateRange -> if (dateRange == null) {
+                throw BadRequestException("类型为 $type 的查询，DateRange 条件不可以为空！")
             }
 
-            lastDateEnum -> if (lastDataEnum == null) {
+            LastDateEnum -> if (lastDataEnum == null) {
                 throw BadRequestException("类型为 $type 的查询，lastDataEnum 条件不可以为空！")
             }
         }
@@ -39,26 +38,37 @@ open class MetricsDateRange(
     /**
      * 获取时间范围的毫秒数
      */
+    fun getDateRange(): Pair<LocalDateTime, LocalDateTime?> {
+        val timeZone = TimeZone.currentSystemDefault()
+
+        val (from, to) = getDateRangeMs()
+        return from.toLocalDateTime(timeZone) to to?.toLocalDateTime(timeZone)
+    }
+
+    /**
+     * 获取时间范围的毫秒数
+     */
     fun getDateRangeMs(): Pair<Instant, Instant?> {
         check()
+
         return when (type) {
-            Type.dateRange -> {
+            Type.DateRange -> {
                 val range = dateRange!!
                 range.from to range.to
             }
 
-            lastDateEnum -> {
+            LastDateEnum -> {
                 val from = when (lastDataEnum!!) {
-                    last15Minute -> Clock.System.now() - 15.minutes
-                    last30Minute -> Clock.System.now() - 30.minutes
-                    last1Hour -> Clock.System.now() - 1.hours
-                    last3Hour -> Clock.System.now() - 3.hours
-                    last6Hour -> Clock.System.now() - 6.hours
-                    last12Hour -> Clock.System.now() - 12.hours
-                    last1Day -> Clock.System.now() - 1.days
-                    last3Day -> Clock.System.now() - 3.days
-                    last7Day -> Clock.System.now() - 7.days
-                    last15Day -> Clock.System.now() - 15.days
+                    Last15Minute -> Clock.System.now() - 15.minutes
+                    Last30Minute -> Clock.System.now() - 30.minutes
+                    Last1Hour -> Clock.System.now() - 1.hours
+                    Last3Hour -> Clock.System.now() - 3.hours
+                    Last6Hour -> Clock.System.now() - 6.hours
+                    Last12Hour -> Clock.System.now() - 12.hours
+                    Last1Day -> Clock.System.now() - 1.days
+                    Last3Day -> Clock.System.now() - 3.days
+                    Last7Day -> Clock.System.now() - 7.days
+                    Last15Day -> Clock.System.now() - 15.days
                 }
 
                 from to null
@@ -70,12 +80,14 @@ open class MetricsDateRange(
      * 获取 quest db 中时间查询片段
      */
     fun getQuestDBDateFilterFragment(field: String): String {
-        val (form, to) = getDateRangeMs()
+        val (form, to) = getDateRange()
 
+        val zoneOffset = timeZoneOffset()
         return if (to != null) {
-            "$field between '${form.format(DATE_TIME_FORMAT)}' and '${to.format(DATE_TIME_FORMAT)}'"
+            """to_timezone($field, '$zoneOffset') 
+                |between '${form.format(DATE_TIME_FORMAT)}' and '${to.format(DATE_TIME_FORMAT)}'""".trimMargin()
         } else {
-            "$field >= '${form.format(DATE_TIME_FORMAT)}'"
+            "to_timezone($field, '$zoneOffset')  >= '${form.format(DATE_TIME_FORMAT)}'"
         }
     }
 
@@ -85,21 +97,21 @@ open class MetricsDateRange(
     )
 
     enum class Type {
-        dateRange,
-        lastDateEnum
+        DateRange,
+        LastDateEnum
     }
 
     enum class LastDateEnum {
-        last15Minute,
-        last30Minute,
-        last1Hour,
-        last3Hour,
-        last6Hour,
-        last12Hour,
-        last1Day,
-        last3Day,
-        last7Day,
-        last15Day
+        Last15Minute,
+        Last30Minute,
+        Last1Hour,
+        Last3Hour,
+        Last6Hour,
+        Last12Hour,
+        Last1Day,
+        Last3Day,
+        Last7Day,
+        Last15Day
     }
 }
 

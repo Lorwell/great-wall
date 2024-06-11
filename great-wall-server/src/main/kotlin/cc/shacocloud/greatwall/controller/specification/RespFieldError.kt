@@ -1,5 +1,7 @@
 package cc.shacocloud.greatwall.controller.specification
 
+import java.io.Serializable
+
 /**
  * 字段错误封装对象
  * @author 思追(shaco)
@@ -20,4 +22,4 @@ data class RespFieldError(
      * 拒绝的值
      */
     var rejectedValue: Any? = null
-)
+) : ResponseMessage, Serializable

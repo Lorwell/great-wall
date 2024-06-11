@@ -3,11 +3,11 @@ package cc.shacocloud.greatwall.controller.advice
 import cc.shacocloud.greatwall.controller.specification.*
 import cc.shacocloud.greatwall.utils.MessageSourceHolder
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.core.MethodParameter
 import org.springframework.core.ReactiveAdapterRegistry
 import org.springframework.core.annotation.AnnotatedElementUtils
 import org.springframework.data.domain.Page
@@ -23,6 +23,7 @@ import org.springframework.web.reactive.result.method.annotation.ResponseBodyRes
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.lang.reflect.Type
 import java.net.URI
 
 /**
@@ -98,12 +99,23 @@ class RestfulResponseSpecification(
             is ResponseBusinessMessage -> resultValue
 
             // 可迭代对象
-            is Iterable<*> -> RespMsg<Any>(records = resultValue)
+            is Iterable<*> -> RespMsg(records = resultValue)
 
             else -> resultValue
         }
 
-        writeBody(resultValue, bodyTypeParameter, exchange).awaitSingleOrNull()
+        writeBody(resultValue, MethodAnyParameter(bodyTypeParameter), exchange).awaitSingleOrNull()
+    }
+
+    /**
+     * 指定结果类型为 Any
+     */
+    class MethodAnyParameter(methodParameter: MethodParameter) : MethodParameter(methodParameter) {
+
+        override fun getGenericParameterType(): Type {
+            return Any::class.java
+        }
+
     }
 
     /**

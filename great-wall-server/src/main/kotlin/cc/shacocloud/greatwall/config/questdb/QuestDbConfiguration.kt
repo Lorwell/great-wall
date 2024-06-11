@@ -1,12 +1,14 @@
 package cc.shacocloud.greatwall.config.questdb
 
 import cc.shacocloud.greatwall.utils.AppUtil
+import cc.shacocloud.greatwall.utils.AppUtil.resourceTransferToFile
 import cc.shacocloud.greatwall.utils.ScriptUtils
 import io.questdb.ServerMain
 import io.questdb.cairo.CairoEngine
 import io.questdb.cairo.DefaultCairoConfiguration
 import io.questdb.cairo.security.AllowAllSecurityContext
 import io.questdb.griffin.SqlExecutionContextImpl
+import io.questdb.std.Chars
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
@@ -16,6 +18,7 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.io.support.EncodedResource
 import org.springframework.core.io.support.ResourcePatternUtils
+import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -63,7 +66,13 @@ class QuestDbConfiguration {
      */
     @Bean(destroyMethod = "close")
     fun serverMain(): ServerMain {
-        val serverMain = ServerMain.create(root)
+        // 写入定制日志配置
+        resourceTransferToFile("classpath:config/questdb/log.conf", File(root, "conf/log.conf"))
+
+        // 写入服务配置
+        resourceTransferToFile("classpath:config/questdb/server.conf", File(root, "conf/server.conf"))
+
+        val serverMain = ServerMain("-d", Chars.toString(root))
         return serverMain
     }
 

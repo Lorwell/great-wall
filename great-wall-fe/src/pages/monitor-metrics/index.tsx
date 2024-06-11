@@ -19,8 +19,8 @@ export default function MonitorMetrics() {
   const [tabState, setTabState] = useState<"route" | "server" | string>("route");
 
   const [dateRange, setDateRange] = useState<MetricsDateRange>({
-    type: "lastDateEnum",
-    lastDataEnum: LastDateEnum.last30Minute
+    type: "LastDateEnum",
+    lastDataEnum: LastDateEnum.Last30Minute
   });
 
   useEffect(() => {

@@ -1,5 +1,7 @@
 package cc.shacocloud.greatwall.controller.specification
 
+import java.io.Serializable
+
 /**
  * 分页结果消息
  * @author 思追(shaco)
@@ -16,4 +18,4 @@ data class PageRespMsg<T : Any>(
      */
     val page: RespPage
 
-)
+) : ResponseMessage, Serializable

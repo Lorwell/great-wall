@@ -1,7 +1,9 @@
 package cc.shacocloud.greatwall.utils
 
 import org.jetbrains.annotations.Contract
+import org.springframework.util.ResourceUtils
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.JarURLConnection
 import java.net.URISyntaxException
@@ -9,6 +11,7 @@ import java.net.URL
 import java.security.CodeSource
 import java.util.*
 import java.util.jar.JarFile
+import kotlin.math.abs
 
 /**
  * 应用工具库
@@ -17,6 +20,36 @@ import java.util.jar.JarFile
  */
 @Slf4j
 object AppUtil {
+
+    /**
+     * 获取当前时区的偏移量字符串
+     */
+    fun timeZoneOffset(): String {
+        val rawOffset = TimeZone.getDefault().rawOffset
+        val offset = abs(rawOffset) / 1000
+        val hour = offset / 3600
+        val minute = (offset - 3600 * hour) / 60
+        val hour2 = if (hour > 9) hour.toString() else "0$hour"
+        val minute2 = if (minute > 9) minute.toString() else "0$minute"
+        return "${if (rawOffset > 0) "" else "-"}${hour2}:${minute2}"
+    }
+
+    /**
+     * 资源转换到文件
+     */
+    fun resourceTransferToFile(
+        resourceLocation: String,
+        target: File
+    ) {
+        ResourceUtils.getURL(resourceLocation)
+            .openStream()
+            .use { input ->
+                target.parentFile?.mkdirs()
+                FileOutputStream(target, false).use { output ->
+                    input.transferTo(output)
+                }
+            }
+    }
 
     /**
      * 获取应用启动文件目录
