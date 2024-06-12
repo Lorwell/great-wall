@@ -21,6 +21,8 @@ import io.questdb.std.str.Utf8String
 import io.questdb.std.str.Utf8StringSink
 import kotlinx.coroutines.channels.Channel
 import org.springframework.stereotype.Service
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 
 /**
@@ -166,8 +168,10 @@ class RouteMonitorMetricsServiceImpl(
      */
     override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<LineMetricsOutput> {
         val interval = input.interval
-        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[input.intervalType])
+        val intervalType = input.intervalType
+        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
 
+        val seconds = interval.toDuration(intervalType.unit).toLong(DurationUnit.MILLISECONDS)
         val result = cairoEngine.findAll(
             """
                     SELECT
@@ -179,8 +183,8 @@ class RouteMonitorMetricsServiceImpl(
                         END,
                         (${extractFunc}(trunc_time) / ${interval}) * $interval
                       ) as unit,
-                       CASE WHEN sum(value) % $interval > 0 THEN (sum(value) / ${interval}) + 1 
-                       ELSE sum(value) / $interval END as value
+                       CASE WHEN sum(value) % $seconds > 0 THEN (sum(value) / ${seconds}) + 1 
+                       ELSE sum(value) / $seconds END as value
                     FROM
                       (
                         SELECT
@@ -203,6 +207,6 @@ class RouteMonitorMetricsServiceImpl(
             LineMetricsOutput(utf8StrSink.toString(), it.getLong(1))
         }
 
-        return dateRangeDataCompletion(interval, input.intervalType, input.getDateRangeMs(), result)
+        return dateRangeDataCompletion(interval, intervalType, input.getDateRangeMs(), result)
     }
 }

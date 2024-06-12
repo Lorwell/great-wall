@@ -4,21 +4,19 @@ import Charts from "@/components/custom-ui/charts.tsx";
 import {useMonitorMetricsContext} from "@/pages/monitor-metrics/context.ts";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {qpsLineMetrics} from "@/constant/api/monitor-metrics/route-metrics";
-import {lineChartOptions} from "@/pages/monitor-metrics/utils.ts";
+import {lineChartOptions, maxPoint} from "@/pages/monitor-metrics/utils.ts";
 import {Timer} from "lucide-react";
 import AutoSizablePanel, {Size} from "@/components/custom-ui/auto-sizable-panel.tsx";
-import {IntervalType} from "@/constant/api/monitor-metrics/route-metrics/types.ts";
 
 /**
  * qps 折线图
  * @constructor
  */
 function QpsLineChart({size}: { size: Size }) {
-
   const {dateRange} = useMonitorMetricsContext();
 
   const {data, loading} = useApiRequest(
-    () => qpsLineMetrics({...dateRange, interval: 15, intervalType: IntervalType.SECONDS}),
+    () => qpsLineMetrics({...dateRange, ...maxPoint(size.width, dateRange)}),
     {refreshDeps: [dateRange, size]});
 
   return (

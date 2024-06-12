@@ -64,3 +64,57 @@ val DATE_TIME_DAY_FORMAT: DateTimeFormat<LocalDateTime> = Format {
     char('-')
     dayOfMonth()
 }
+
+
+/**
+ * HH:mm
+ * @author 思追(shaco)
+ */
+val TIME_MINUTE_FORMAT: DateTimeFormat<LocalDateTime> = Format {
+    hour()
+    char(':')
+    minute()
+}
+
+/**
+ * HH:mm:ss
+ * @author 思追(shaco)
+ */
+val TIME_SECOND_FORMAT: DateTimeFormat<LocalDateTime> = Format {
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+}
+
+
+/**
+ * MM-dd HH:mm
+ * @author 思追(shaco)
+ */
+val TIME_DAY_MINUTE_FORMAT: DateTimeFormat<LocalDateTime> = Format {
+    monthNumber()
+    char('-')
+    dayOfMonth()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+}
+
+/**
+ * MM-dd HH
+ * @author 思追(shaco)
+ */
+val TIME_DAY_HOUR_FORMAT: DateTimeFormat<LocalDateTime> = Format {
+    monthNumber()
+    char('-')
+    dayOfMonth()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+}

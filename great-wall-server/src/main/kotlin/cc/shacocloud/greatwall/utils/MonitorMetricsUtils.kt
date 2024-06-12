@@ -8,12 +8,13 @@ import kotlin.time.toDuration
 
 enum class DateRangeDurationUnit(
     val unit: DurationUnit,
-    val format: DateTimeFormat<LocalDateTime>
+    val format: DateTimeFormat<LocalDateTime>,
+    val outputFormat: DateTimeFormat<LocalDateTime>
 ) {
-    SECONDS(DurationUnit.SECONDS, DATE_TIME_FORMAT),
-    MINUTES(DurationUnit.MINUTES, DATE_TIME_HOUR_FORMAT),
-    HOURS(DurationUnit.HOURS, DATE_TIME_MINUTE_FORMAT),
-    DAYS(DurationUnit.DAYS, DATE_TIME_DAY_FORMAT);
+    SECONDS(DurationUnit.SECONDS, DATE_TIME_FORMAT, TIME_SECOND_FORMAT),
+    MINUTES(DurationUnit.MINUTES, DATE_TIME_MINUTE_FORMAT, TIME_MINUTE_FORMAT),
+    HOURS(DurationUnit.HOURS, DATE_TIME_HOUR_FORMAT, TIME_DAY_HOUR_FORMAT),
+    DAYS(DurationUnit.DAYS, DATE_TIME_DAY_FORMAT, DATE_TIME_DAY_FORMAT);
 }
 
 data class LineMetricsIntervalConf(
@@ -42,17 +43,30 @@ object MonitorMetricsUtils {
         sourceData: List<LineMetricsOutput>
     ): List<LineMetricsOutput> {
         val timeZone = TimeZone.currentSystemDefault()
+        val durationUnit = unit.unit
 
         // 计算差值
-        val (from, to) = range
+        var (from, to) = range
+        to = to ?: Clock.System.now()
 
-        val number = ((to ?: Clock.System.now()) - from).toLong(unit.unit) / interval
+        val modulusDurationUnit =
+            if (DurationUnit.DAYS == durationUnit) {
+                durationUnit
+            } else {
+                DurationUnit.entries[durationUnit.ordinal + 1]
+            }
+
+        val modulus = 1.toDuration(modulusDurationUnit).toLong(DurationUnit.MILLISECONDS)
+        from = Instant.fromEpochMilliseconds(from.toEpochMilliseconds() / modulus * modulus)
+        val gap = (to - from).toLong(durationUnit)
+        val number = gap / interval + if (gap % interval > 0) 1 else 0
 
         val unitMap = sourceData.associateBy { it.unit }
         return (0..number).map { i ->
-            val time = (from + (i * interval).toDuration(unit.unit)).toLocalDateTime(timeZone)
+            val time = (from + (i * interval).toDuration(durationUnit)).toLocalDateTime(timeZone)
             val valueUnit = time.format(unit.format)
-            unitMap[valueUnit] ?: LineMetricsOutput(valueUnit, 0)
+            val value = unitMap[valueUnit]?.value ?: 0
+            LineMetricsOutput(time.format(unit.outputFormat), value)
         }
     }
 

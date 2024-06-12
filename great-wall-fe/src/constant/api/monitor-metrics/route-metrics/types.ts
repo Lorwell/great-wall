@@ -5,15 +5,18 @@ export interface RouteCountMetricsInput extends MetricsDateRange {
 
 }
 
-export interface RouteLineMetricsInput extends MetricsDateRange {
+export interface RouteLineMetricsInput extends IntervalMetrics, MetricsDateRange {
+}
+
+export interface IntervalMetrics {
   interval: number
   intervalType: IntervalType
 }
 
-export enum IntervalType{
-  SECONDS ="SECONDS",
-  MINUTES ="MINUTES",
-  HOURS ="HOURS",
+export enum IntervalType {
+  SECONDS = "SECONDS",
+  MINUTES = "MINUTES",
+  HOURS = "HOURS",
   DAYS = "DAYS"
 }
 
