@@ -1,10 +1,14 @@
 package cc.shacocloud.greatwall.utils
 
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.annotations.Contract
 import org.springframework.util.ResourceUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.lang.management.ManagementFactory
 import java.net.JarURLConnection
 import java.net.URISyntaxException
 import java.net.URL
@@ -20,6 +24,14 @@ import kotlin.math.abs
  */
 @Slf4j
 object AppUtil {
+
+    /**
+     *  获取app 启动时间
+     */
+    val appStartTime: LocalDateTime by lazy {
+        val time = ManagementFactory.getRuntimeMXBean().startTime
+        Instant.fromEpochMilliseconds(time).toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+    }
 
     /**
      * 获取当前时区的偏移量字符串

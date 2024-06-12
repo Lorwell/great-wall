@@ -11,16 +11,23 @@ enum class DateRangeDurationUnit(
     val format: DateTimeFormat<LocalDateTime>
 ) {
     SECONDS(DurationUnit.SECONDS, DATE_TIME_FORMAT),
-    HOURS(DurationUnit.HOURS, DATE_TIME_MINUTE_FORMAT),
     MINUTES(DurationUnit.MINUTES, DATE_TIME_HOUR_FORMAT),
+    HOURS(DurationUnit.HOURS, DATE_TIME_MINUTE_FORMAT),
     DAYS(DurationUnit.DAYS, DATE_TIME_DAY_FORMAT);
 }
 
+data class LineMetricsIntervalConf(
+    val prefixFormat: String,
+    val extractFunc: String,
+    val truncFunc: String,
+)
+
 /**
- * 时间工具
+ * 监控指标工具
  * @author 思追(shaco)
  */
-object DateUtil {
+object MonitorMetricsUtils {
+
 
     /**
      * 时间范围数据补全
@@ -29,18 +36,22 @@ object DateUtil {
      * @param sourceData 源数据
      */
     fun dateRangeDataCompletion(
+        interval: Int,
         unit: DateRangeDurationUnit,
         range: Pair<Instant, Instant?>,
         sourceData: List<LineMetricsOutput>
     ): List<LineMetricsOutput> {
+        val timeZone = TimeZone.currentSystemDefault()
+
         // 计算差值
         val (from, to) = range
-        val duration = (to ?: Clock.System.now()) - from
 
-        val timeZone = TimeZone.currentSystemDefault()
+        val number = ((to ?: Clock.System.now()) - from).toLong(unit.unit) / interval
+
         val unitMap = sourceData.associateBy { it.unit }
-        return (0..duration.toLong(unit.unit)).map { i ->
-            val valueUnit = (from + i.toDuration(unit.unit)).toLocalDateTime(timeZone).format(unit.format)
+        return (0..number).map { i ->
+            val time = (from + (i * interval).toDuration(unit.unit)).toLocalDateTime(timeZone)
+            val valueUnit = time.format(unit.format)
             unitMap[valueUnit] ?: LineMetricsOutput(valueUnit, 0)
         }
     }

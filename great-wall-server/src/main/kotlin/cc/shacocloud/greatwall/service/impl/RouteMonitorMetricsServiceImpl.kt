@@ -3,12 +3,16 @@ package cc.shacocloud.greatwall.service.impl
 import cc.shacocloud.greatwall.config.questdb.findAll
 import cc.shacocloud.greatwall.config.questdb.findOne
 import cc.shacocloud.greatwall.config.questdb.findOneNotNull
-import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
+import cc.shacocloud.greatwall.utils.DateRangeDurationUnit
+import cc.shacocloud.greatwall.utils.LineMetricsIntervalConf
+import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.json.Json
@@ -65,7 +69,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * 请求统计指标
      */
-    override suspend fun requestCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+    override suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
                     SELECT count(*) FROM monitor_metrics_record 
@@ -79,7 +83,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * ip 统计指标
      */
-    override suspend fun ipCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+    override suspend fun ipCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
                     SELECT count_distinct(ip) FROM monitor_metrics_record 
@@ -93,7 +97,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * 请求流量指标
      */
-    override suspend fun requestTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+    override suspend fun requestTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOne(
             """
                     SELECT sum(request_body_size) FROM monitor_metrics_record 
@@ -107,7 +111,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * 响应流量指标
      */
-    override suspend fun responseTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+    override suspend fun responseTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOne(
             """
                     SELECT sum(response_body_size) FROM monitor_metrics_record 
@@ -121,7 +125,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * 状态码 4xx 统计指标
      */
-    override suspend fun status4xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+    override suspend fun status4xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
                     SELECT count FROM monitor_metrics_record 
@@ -136,7 +140,7 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * 状态码 5xx 统计指标
      */
-    override suspend fun status5xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput {
+    override suspend fun status5xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
                     SELECT count FROM monitor_metrics_record 
@@ -148,19 +152,50 @@ class RouteMonitorMetricsServiceImpl(
         return ValueMetricsOutput(count)
     }
 
+    companion object {
+        val qpsLineMetricsMap = mapOf(
+            DateRangeDurationUnit.SECONDS to LineMetricsIntervalConf("yyyy-MM-dd HH:mm:", "second", "second"),
+            DateRangeDurationUnit.MINUTES to LineMetricsIntervalConf("yyyy-MM-dd HH:", "minute", "minute"),
+            DateRangeDurationUnit.HOURS to LineMetricsIntervalConf("yyyy-MM-dd ", "hour", "hour"),
+            DateRangeDurationUnit.DAYS to LineMetricsIntervalConf("yyyy-MM-", "days_in_month", "day"),
+        )
+    }
+
     /**
      * qps 折线图指标
      */
-    override suspend fun qpsLineMetrics(input: RouteMonitorMetricsInput): List<LineMetricsOutput> {
+    override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<LineMetricsOutput> {
+        val interval = input.interval
+        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[input.intervalType])
+
         val result = cairoEngine.findAll(
             """
                     SELECT
-                        to_str(to_timezone(request_time, '${timeZoneOffset()}'), 'yyyy-MM-dd HH:mm:ss') as unit,
-                        count
-                    FROM monitor_metrics_record
-                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                    GROUP BY unit
-                    ORDER BY unit
+                      concat(
+                        to_str(trunc_time, '${prefixFormat}'),
+                        CASE
+                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) > 10 THEN ''
+                          ELSE '0'
+                        END,
+                        (${extractFunc}(trunc_time) / ${interval}) * $interval
+                      ) as unit,
+                       CASE WHEN sum(value) % $interval > 0 THEN (sum(value) / ${interval}) + 1 
+                       ELSE sum(value) / $interval END as value
+                    FROM
+                      (
+                        SELECT
+                          date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
+                          count as value
+                        FROM
+                          monitor_metrics_record
+                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                        GROUP BY
+                          trunc_time
+                        ORDER BY
+                          trunc_time
+                      ) timestamp(trunc_time)
+                    GROUP BY
+                      unit
                 """.trimIndent()
         ) {
             val utf8StrSink = Utf8StringSink()
@@ -168,7 +203,6 @@ class RouteMonitorMetricsServiceImpl(
             LineMetricsOutput(utf8StrSink.toString(), it.getLong(1))
         }
 
-//        return dateRangeDataCompletion(DateRangeDurationUnit.SECONDS, input.getDateRangeMs(), result)
-        return result
+        return dateRangeDataCompletion(interval, input.intervalType, input.getDateRangeMs(), result)
     }
 }

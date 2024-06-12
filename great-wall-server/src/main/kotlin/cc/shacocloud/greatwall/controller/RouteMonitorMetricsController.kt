@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.controller
 
-import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
@@ -25,7 +26,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/count/request")
     suspend fun requestCountMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.requestCountMetrics(input)
     }
@@ -35,7 +36,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/count/ip")
     suspend fun ipCountMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.ipCountMetrics(input)
     }
@@ -45,7 +46,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/sum/request-traffic")
     suspend fun requestTrafficSumMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.requestTrafficSumMetrics(input)
     }
@@ -55,7 +56,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/sum/response-traffic")
     suspend fun responseTrafficSumMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.responseTrafficSumMetrics(input)
     }
@@ -65,7 +66,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/count/status-4xx")
     suspend fun status4xxCountMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.status4xxCountMetrics(input)
     }
@@ -75,7 +76,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/count/status-5xx")
     suspend fun status5xxCountMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.status5xxCountMetrics(input)
     }
@@ -86,7 +87,7 @@ class RouteMonitorMetricsController(
      */
     @GetMapping("/line/qps")
     suspend fun qpsLineMetrics(
-        @Validated input: RouteMonitorMetricsInput
+        @Validated input: RouteLineMetricsInput
     ): List<LineMetricsOutput> {
         return routeMonitorMetricsService.qpsLineMetrics(input)
     }

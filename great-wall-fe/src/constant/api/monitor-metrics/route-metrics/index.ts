@@ -1,7 +1,8 @@
 import {
   CountMetricsOutput,
   LineMetricsRecordOutput,
-  RouteMonitorMetricsInput
+  RouteCountMetricsInput,
+  RouteLineMetricsInput
 } from "@/constant/api/monitor-metrics/route-metrics/types.ts";
 import {Get} from "@/constant/api";
 import {CountMetricsSchema, LineMetricsRecordSchema} from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
@@ -10,7 +11,7 @@ import {CountMetricsSchema, LineMetricsRecordSchema} from "@/constant/api/monito
  * 请求统计指标
  * @param input
  */
-export function requestCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+export function requestCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
   return Get(`/api/route-monitor-metrics/count/request`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
@@ -21,7 +22,7 @@ export function requestCountMetrics(input: RouteMonitorMetricsInput): Promise<Co
  * ip统计指标
  * @param input
  */
-export function ipCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+export function ipCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
   return Get(`/api/route-monitor-metrics/count/ip`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
@@ -32,7 +33,7 @@ export function ipCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMe
  * 请求流量指标
  * @param input
  */
-export function requestTrafficSumMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+export function requestTrafficSumMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
   return Get(`/api/route-monitor-metrics/sum/request-traffic`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
@@ -43,7 +44,7 @@ export function requestTrafficSumMetrics(input: RouteMonitorMetricsInput): Promi
  * 响应流量指标
  * @param input
  */
-export function responseTrafficSumMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+export function responseTrafficSumMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
   return Get(`/api/route-monitor-metrics/sum/response-traffic`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
@@ -54,7 +55,7 @@ export function responseTrafficSumMetrics(input: RouteMonitorMetricsInput): Prom
  * 4xx响应状态码指标
  * @param input
  */
-export function status4xxCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+export function status4xxCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
   return Get(`/api/route-monitor-metrics/count/status-4xx`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
@@ -65,7 +66,7 @@ export function status4xxCountMetrics(input: RouteMonitorMetricsInput): Promise<
  * 5xx响应状态码指标
  * @param input
  */
-export function status5xxCountMetrics(input: RouteMonitorMetricsInput): Promise<CountMetricsOutput> {
+export function status5xxCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
   return Get(`/api/route-monitor-metrics/count/status-5xx`, {
     queryParam: input,
     resultSchema: CountMetricsSchema
@@ -76,7 +77,7 @@ export function status5xxCountMetrics(input: RouteMonitorMetricsInput): Promise<
  * qps 折线图指标
  * @param input
  */
-export function qpsLineMetrics(input: RouteMonitorMetricsInput): Promise<LineMetricsRecordOutput> {
+export function qpsLineMetrics(input: RouteLineMetricsInput): Promise<LineMetricsRecordOutput> {
   return Get(`/api/route-monitor-metrics/line/qps`, {
     queryParam: input,
     resultSchema: LineMetricsRecordSchema

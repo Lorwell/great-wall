@@ -6,18 +6,20 @@ import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {qpsLineMetrics} from "@/constant/api/monitor-metrics/route-metrics";
 import {lineChartOptions} from "@/pages/monitor-metrics/utils.ts";
 import {Timer} from "lucide-react";
+import AutoSizablePanel, {Size} from "@/components/custom-ui/auto-sizable-panel.tsx";
+import {IntervalType} from "@/constant/api/monitor-metrics/route-metrics/types.ts";
 
 /**
  * qps 折线图
  * @constructor
  */
-export default function QpsLineChart() {
+function QpsLineChart({size}: { size: Size }) {
 
   const {dateRange} = useMonitorMetricsContext();
 
-  const {data, loading} = useApiRequest(() => qpsLineMetrics(dateRange),
-    {refreshDeps: [dateRange]});
-
+  const {data, loading} = useApiRequest(
+    () => qpsLineMetrics({...dateRange, interval: 15, intervalType: IntervalType.SECONDS}),
+    {refreshDeps: [dateRange, size]});
 
   return (
     <Card>
@@ -31,5 +33,17 @@ export default function QpsLineChart() {
         <Charts style={{height: 200}} option={lineChartOptions(data)}/>
       </CardContent>
     </Card>
+  )
+}
+
+export default function () {
+  return (
+    <AutoSizablePanel>
+      {
+        (size) => (
+          <QpsLineChart size={size}/>
+        )
+      }
+    </AutoSizablePanel>
   )
 }

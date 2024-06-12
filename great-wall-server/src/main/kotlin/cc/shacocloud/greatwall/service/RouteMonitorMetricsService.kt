@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.model.dto.input.RouteMonitorMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
@@ -19,36 +20,36 @@ interface RouteMonitorMetricsService {
     /**
      * 请求统计指标
      */
-    suspend fun requestCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+    suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput
 
     /**
      * ip 统计指标
      */
-    suspend fun ipCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+    suspend fun ipCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput
 
     /**
      * 请求流量指标
      */
-    suspend fun requestTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+    suspend fun requestTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput
 
     /**
      * 响应流量指标
      */
-    suspend fun responseTrafficSumMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+    suspend fun responseTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput
 
     /**
      * 状态码 4xx 统计指标
      */
-    suspend fun status4xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+    suspend fun status4xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput
 
     /**
      * 状态码 5xx 统计指标
      */
-    suspend fun status5xxCountMetrics(input: RouteMonitorMetricsInput): ValueMetricsOutput
+    suspend fun status5xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput
 
     /**
      * qps 折线图指标
      */
-    suspend fun qpsLineMetrics(input: RouteMonitorMetricsInput): List<LineMetricsOutput>
+    suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<LineMetricsOutput>
 
 }
