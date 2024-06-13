@@ -65,6 +65,10 @@ site:
         user: 1679924785@qq.com
         auto-id: 5r8r9e
         domain: "*.shacocloud.cc"
+  auth:
+    admin:
+      password: 123456789
+
 
 logging:
   level:

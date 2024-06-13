@@ -5,8 +5,12 @@ import cc.shacocloud.greatwall.config.questdb.findOne
 import cc.shacocloud.greatwall.config.questdb.findOneNotNull
 import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
-import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.DurationLineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.TopQpsLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
+import cc.shacocloud.greatwall.model.mo.TopQpsLineMetricsMo
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
@@ -42,7 +46,7 @@ class RouteMonitorMetricsServiceImpl(
      */
     override suspend fun addRouteRecord(record: RouteMetricsRecordPo) {
         try {
-            val tableToken = cairoEngine.getTableTokenIfExists("monitor_metrics_record")
+            val tableToken = cairoEngine.getTableTokenIfExists("route_metrics_record")
             cairoEngine.getWalWriter(tableToken).use { writer ->
                 val row = writer.newRow(record.requestTime)
                 row.putSym(0, record.ip)
@@ -74,7 +78,7 @@ class RouteMonitorMetricsServiceImpl(
     override suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
-                    SELECT count(*) FROM monitor_metrics_record 
+                    SELECT count(*) FROM route_metrics_record 
                     WHERE ${input.getQuestDBDateFilterFragment("request_time")}
                 """.trimIndent()
         ) { it.getLong(0) }
@@ -88,7 +92,7 @@ class RouteMonitorMetricsServiceImpl(
     override suspend fun ipCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
-                    SELECT count_distinct(ip) FROM monitor_metrics_record 
+                    SELECT count_distinct(ip) FROM route_metrics_record 
                     WHERE ${input.getQuestDBDateFilterFragment("request_time")}
                 """.trimIndent()
         ) { it.getLong(0) }
@@ -102,8 +106,17 @@ class RouteMonitorMetricsServiceImpl(
     override suspend fun requestTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOne(
             """
-                    SELECT sum(request_body_size) FROM monitor_metrics_record 
-                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                    SELECT
+                     case when value > 0 then total else 0 end
+                    FROM
+                      (
+                        SELECT
+                          sum(request_body_size) as total,
+                          count as value
+                        FROM
+                          route_metrics_record
+                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                      )
                 """.trimIndent()
         ) { it.getLong(0) } ?: 0
 
@@ -116,8 +129,17 @@ class RouteMonitorMetricsServiceImpl(
     override suspend fun responseTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOne(
             """
-                    SELECT sum(response_body_size) FROM monitor_metrics_record 
-                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                    SELECT
+                     case when value > 0 then total else 0 end
+                    FROM
+                      (
+                        SELECT
+                          sum(response_body_size) as total,
+                          count as value
+                        FROM
+                          route_metrics_record
+                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                      )
                 """.trimIndent()
         ) { it.getLong(0) } ?: 0
 
@@ -130,7 +152,7 @@ class RouteMonitorMetricsServiceImpl(
     override suspend fun status4xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
-                    SELECT count FROM monitor_metrics_record 
+                    SELECT count FROM route_metrics_record 
                     WHERE status_code >= 400 AND status_code < 500 
                     AND ${input.getQuestDBDateFilterFragment("request_time")}
                 """.trimIndent()
@@ -145,7 +167,7 @@ class RouteMonitorMetricsServiceImpl(
     override suspend fun status5xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
         val count = cairoEngine.findOneNotNull(
             """
-                    SELECT count FROM monitor_metrics_record 
+                    SELECT count FROM route_metrics_record 
                     WHERE status_code >= 500 
                     AND ${input.getQuestDBDateFilterFragment("request_time")}
                 """.trimIndent()
@@ -166,47 +188,159 @@ class RouteMonitorMetricsServiceImpl(
     /**
      * qps 折线图指标
      */
-    override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<LineMetricsOutput> {
+    override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<QpsLineMetricsOutput> {
         val interval = input.interval
         val intervalType = input.intervalType
         val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
+        val dateRangeMs = input.getDateRangeMs()
 
-        val seconds = interval.toDuration(intervalType.unit).toLong(DurationUnit.MILLISECONDS)
+        val second = interval.toDuration(intervalType.unit).toLong(DurationUnit.SECONDS)
         val result = cairoEngine.findAll(
             """
                     SELECT
                       concat(
                         to_str(trunc_time, '${prefixFormat}'),
                         CASE
-                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) > 10 THEN ''
+                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) >= 10 THEN ''
                           ELSE '0'
                         END,
                         (${extractFunc}(trunc_time) / ${interval}) * $interval
                       ) as unit,
-                       CASE WHEN sum(value) % $seconds > 0 THEN (sum(value) / ${seconds}) + 1 
-                       ELSE sum(value) / $seconds END as value
+                       CASE WHEN sum(value) % $second > 0 THEN (sum(value) / ${second}) + 1 
+                       ELSE sum(value) / $second END as value
                     FROM
                       (
                         SELECT
                           date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
                           count as value
                         FROM
-                          monitor_metrics_record
+                          route_metrics_record
                         WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                        GROUP BY
-                          trunc_time
-                        ORDER BY
-                          trunc_time
+                        GROUP BY trunc_time
                       ) timestamp(trunc_time)
-                    GROUP BY
-                      unit
+                    GROUP BY  unit
                 """.trimIndent()
         ) {
             val utf8StrSink = Utf8StringSink()
             it.getStr(0, utf8StrSink)
-            LineMetricsOutput(utf8StrSink.toString(), it.getLong(1))
+            QpsLineMetricsOutput(utf8StrSink.toString(), it.getLong(1))
         }
 
-        return dateRangeDataCompletion(interval, intervalType, input.getDateRangeMs(), result)
+        return dateRangeDataCompletion(interval, intervalType, dateRangeMs, result) { it, unit ->
+            QpsLineMetricsOutput(unit, it?.value ?: 0)
+        }
+    }
+
+    /**
+     * duration 折线图指标
+     */
+    override suspend fun durationLineMetrics(input: RouteLineMetricsInput): List<DurationLineMetricsOutput> {
+        val interval = input.interval
+        val intervalType = input.intervalType
+        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
+        val dateRangeMs = input.getDateRangeMs()
+
+        val result = cairoEngine.findAll(
+            """
+                    SELECT
+                      concat(
+                        to_str(trunc_time, '${prefixFormat}'),
+                        CASE
+                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) >= 10 THEN ''
+                          ELSE '0'
+                        END,
+                        (${extractFunc}(trunc_time) / ${interval}) * $interval
+                      ) as unit,
+                       sum(total_time) / sum(total)  as avg_value,
+                       max(max_time)  as max_value
+                    FROM
+                      (
+                        SELECT
+                          date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
+                          count as total,
+                          sum((response_time - request_time) / 1000) as total_time,
+                          max((response_time - request_time) / 1000) as max_time
+                        FROM
+                          route_metrics_record
+                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                        GROUP BY trunc_time 
+                      ) timestamp(trunc_time)
+                    GROUP BY unit
+                """.trimIndent()
+        ) {
+            val utf8StrSink = Utf8StringSink()
+            it.getStr(0, utf8StrSink)
+            DurationLineMetricsOutput(utf8StrSink.toString(), it.getLong(1), it.getLong(2))
+        }
+
+        return dateRangeDataCompletion(interval, intervalType, dateRangeMs, result) { it, unit ->
+            DurationLineMetricsOutput(unit, it?.avgValue ?: 0, it?.maxValue ?: 0)
+        }
+    }
+
+    /**
+     * top qps 折线图
+     */
+    override suspend fun topQpsLineMetrics(input: TopRouteLineMetricsInput): List<TopQpsLineMetricsOutput> {
+        val interval = input.interval
+        val intervalType = input.intervalType
+        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
+
+        val dateRangeMs = input.getDateRangeMs()
+
+        val second = interval.toDuration(intervalType.unit).toLong(DurationUnit.SECONDS)
+        val result = cairoEngine.findAll(
+            """
+                    SELECT
+                      concat(
+                        to_str(trunc_time, '${prefixFormat}'),
+                        CASE
+                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) >= 10 THEN ''
+                          ELSE '0'
+                        END,
+                        (${extractFunc}(trunc_time) / ${interval}) * $interval
+                      ) as unit,
+                       d.api,
+                       CASE WHEN sum(d.value) % $second > 0 THEN (sum(d.value) / ${second}) + 1 
+                       ELSE sum(d.value) / $second END as value
+                    FROM
+                      (
+                        SELECT
+                          date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
+                          concat(method, ' ', app_path) as api,
+                          count as value
+                        FROM
+                          route_metrics_record
+                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
+                        GROUP BY api,trunc_time
+                      ) as d timestamp(trunc_time),
+                      (
+                          SELECT
+                            concat(method, ' ', app_path) as api,
+                            count() as value
+                          FROM  route_metrics_record
+                          GROUP BY api
+                          ORDER BY value desc
+                          LIMIT ${input.top}
+                        ) as t
+                    WHERE t.api = d.api 
+                    GROUP BY d.api, d.trunc_time;
+                """.trimIndent()
+        ) {
+            val unitStrSink = Utf8StringSink()
+            it.getStr(0, unitStrSink)
+            val apiStrSink = Utf8StringSink()
+            it.getStr(1, apiStrSink)
+            TopQpsLineMetricsMo(unitStrSink.toString(), apiStrSink.toString(), it.getLong(2))
+        }
+
+        return result.groupBy { it.api }
+            .map { entry ->
+                val data =
+                    dateRangeDataCompletion(interval, intervalType, dateRangeMs, entry.value) { it, unit ->
+                        QpsLineMetricsOutput(unit, it?.value ?: 0)
+                    }
+                TopQpsLineMetricsOutput(entry.key, data)
+            }
     }
 }

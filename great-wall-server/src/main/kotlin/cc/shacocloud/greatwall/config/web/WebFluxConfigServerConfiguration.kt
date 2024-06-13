@@ -1,5 +1,7 @@
 package cc.shacocloud.greatwall.config.web
 
+import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
+import cc.shacocloud.greatwall.service.SessionService
 import cc.shacocloud.greatwall.utils.Slf4j
 import jakarta.annotation.PostConstruct
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -12,7 +14,9 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
+import org.springframework.web.reactive.HandlerAdapter
 import org.springframework.web.reactive.HandlerMapping
+import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerAdapter
 import reactor.netty.http.server.HttpServer
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -60,7 +64,7 @@ class WebFluxConfigServerConfiguration(
      * 配置web服务
      */
     @Bean(destroyMethod = "stop")
-    fun configWebServer(): ConfigWebServer {
+    fun configWebServer(sessionService: SessionService): ConfigWebServer {
         configPostInit.set(true)
         try {
             val dispatcherHandler = object : WebFluxDispatcherHandler(applicationContext) {
@@ -68,6 +72,18 @@ class WebFluxConfigServerConfiguration(
                 override fun handlerMapping(mappings: List<HandlerMapping>) {
                     val handlers = mappings.filter { it !is RoutePredicateHandlerMapping }
                     super.handlerMapping(handlers)
+                }
+
+                // 拓展用户认证
+                override fun handlerAdapters(adapters: List<HandlerAdapter>) {
+                    val handlers = adapters.map {
+                        if (it is RequestMappingHandlerAdapter) {
+                            AuthenticationInterceptor(it, sessionService)
+                        } else {
+                            it
+                        }
+                    }
+                    super.handlerAdapters(handlers)
                 }
             }
 

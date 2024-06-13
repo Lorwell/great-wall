@@ -7,8 +7,9 @@ import {
   MetricsDateRange,
   MetricsDateRangePicker
 } from "@/pages/monitor-metrics/metrics-date-range-picker.tsx";
-import {monitorMetricsContext} from "@/pages/monitor-metrics/context.ts";
-
+import {monitorMetricsContext, RefreshMetricsParams} from "@/pages/monitor-metrics/context.ts";
+import RefreshSelectPicker from "@/pages/monitor-metrics/refresh-select-picker.tsx";
+import {useEventEmitter} from "ahooks";
 
 /**
  * 监控指标
@@ -18,6 +19,8 @@ export default function MonitorMetrics() {
   const navigate = useNavigate();
   const [tabState, setTabState] = useState<"route" | "server" | string>("route");
 
+  const event$ = useEventEmitter<RefreshMetricsParams>();
+
   const [dateRange, setDateRange] = useState<MetricsDateRange>({
     type: "LastDateEnum",
     lastDataEnum: LastDateEnum.Last30Minute
@@ -26,6 +29,15 @@ export default function MonitorMetrics() {
   useEffect(() => {
     navigate(tabState)
   }, [tabState]);
+
+  useEffect(emitEvent, [dateRange])
+
+  /**
+   * 发布事件
+   */
+  function emitEvent() {
+    event$.emit({dateRange});
+  }
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -40,12 +52,13 @@ export default function MonitorMetrics() {
             <TabsTrigger className={"cursor-pointer"} value="server">服务指标</TabsTrigger>
           </TabsList>
 
-          <div>
+          <div className={"flex flex-row space-x-2"}>
             <MetricsDateRangePicker value={dateRange} onChange={setDateRange}/>
+            <RefreshSelectPicker onRefresh={emitEvent}/>
           </div>
         </div>
 
-        <monitorMetricsContext.Provider value={{dateRange}}>
+        <monitorMetricsContext.Provider value={{event$, dateRange}}>
           <AutoSizablePanel className={"flex-auto overflow-hidden"}>
             {
               (size) => (

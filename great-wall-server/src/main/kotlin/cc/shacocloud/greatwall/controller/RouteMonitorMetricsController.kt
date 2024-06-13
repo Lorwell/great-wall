@@ -1,12 +1,17 @@
 package cc.shacocloud.greatwall.controller
 
+import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
-import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.DurationLineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.TopQpsLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
  *
  * @author 思追(shaco)
  */
+@UserAuth
 @Validated
 @RestController
 @RequestMapping("/api/route-monitor-metrics")
@@ -24,9 +30,9 @@ class RouteMonitorMetricsController(
     /**
      * 请求统计指标
      */
-    @GetMapping("/count/request")
+    @PostMapping("/count/request")
     suspend fun requestCountMetrics(
-        @Validated input: RouteCountMetricsInput
+        @RequestBody @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.requestCountMetrics(input)
     }
@@ -34,9 +40,9 @@ class RouteMonitorMetricsController(
     /**
      * ip统计指标
      */
-    @GetMapping("/count/ip")
+    @PostMapping("/count/ip")
     suspend fun ipCountMetrics(
-        @Validated input: RouteCountMetricsInput
+        @RequestBody @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.ipCountMetrics(input)
     }
@@ -44,9 +50,9 @@ class RouteMonitorMetricsController(
     /**
      * 请求流量指标
      */
-    @GetMapping("/sum/request-traffic")
+    @PostMapping("/sum/request-traffic")
     suspend fun requestTrafficSumMetrics(
-        @Validated input: RouteCountMetricsInput
+        @RequestBody @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.requestTrafficSumMetrics(input)
     }
@@ -54,9 +60,9 @@ class RouteMonitorMetricsController(
     /**
      * 响应流量指标
      */
-    @GetMapping("/sum/response-traffic")
+    @PostMapping("/sum/response-traffic")
     suspend fun responseTrafficSumMetrics(
-        @Validated input: RouteCountMetricsInput
+        @RequestBody @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.responseTrafficSumMetrics(input)
     }
@@ -64,9 +70,9 @@ class RouteMonitorMetricsController(
     /**
      * 4xx响应状态码指标
      */
-    @GetMapping("/count/status-4xx")
+    @PostMapping("/count/status-4xx")
     suspend fun status4xxCountMetrics(
-        @Validated input: RouteCountMetricsInput
+        @RequestBody @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.status4xxCountMetrics(input)
     }
@@ -74,9 +80,9 @@ class RouteMonitorMetricsController(
     /**
      * 5xx响应状态码指标
      */
-    @GetMapping("/count/status-5xx")
+    @PostMapping("/count/status-5xx")
     suspend fun status5xxCountMetrics(
-        @Validated input: RouteCountMetricsInput
+        @RequestBody @Validated input: RouteCountMetricsInput
     ): ValueMetricsOutput {
         return routeMonitorMetricsService.status5xxCountMetrics(input)
     }
@@ -85,11 +91,32 @@ class RouteMonitorMetricsController(
     /**
      * qps 折线图指标
      */
-    @GetMapping("/line/qps")
+    @PostMapping("/line/qps")
     suspend fun qpsLineMetrics(
-        @Validated input: RouteLineMetricsInput
-    ): List<LineMetricsOutput> {
+        @RequestBody @Validated input: RouteLineMetricsInput
+    ): List<QpsLineMetricsOutput> {
         return routeMonitorMetricsService.qpsLineMetrics(input)
+    }
+
+    /**
+     * duration 折线图指标
+     */
+    @PostMapping("/line/duration")
+    suspend fun durationLineMetrics(
+        @RequestBody @Validated input: RouteLineMetricsInput
+    ): List<DurationLineMetricsOutput> {
+        return routeMonitorMetricsService.durationLineMetrics(input)
+    }
+
+
+    /**
+     * top qps 折线图指标
+     */
+    @PostMapping("/line/top-qps")
+    suspend fun topQpsLineMetrics(
+        @RequestBody @Validated input: TopRouteLineMetricsInput
+    ): List<TopQpsLineMetricsOutput> {
+        return routeMonitorMetricsService.topQpsLineMetrics(input)
     }
 
 

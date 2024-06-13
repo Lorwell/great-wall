@@ -1,71 +1,120 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
 import Charts from "@/components/custom-ui/charts.tsx";
-
-const options = {
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      type: 'cross'
-    }
-  },
-  legend: {
-    data: ['接口1', '接口2', '接口3'],
-    type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
-    bottom: 20,
-    selectedMode: 'multiple'
-  },
-  grid: {
-    top: "30",
-    left: '50',
-    right: '120',
-    bottom: '30',
-  },
-  xAxis: {
-    type: 'category',
-    data: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
-  },
-  yAxis: {
-    type: 'value',
-  },
-  series: [
-    {
-      name: '接口1',
-      type: 'line',
-      data: [120, 132, 101, 134, 90, 230, 210, 130, 220, 182, 191, 234, 290, 330, 310, 120, 101, 134, 90, 230, 210, 130, 220, 182, 191, 234, 290, 330, 330, 310]
-    },
-    {
-      name: '接口2',
-      type: 'line',
-      data: [220, 182, 191, 234, 290, 330, 310, 120, 132, 101, 134, 90, 230, 210, 130, 220, 182, 191, 234, 290, 330, 330, 310, 120, 132, 101, 134, 90, 230, 210]
-    },
-    {
-      name: '接口3',
-      type: 'line',
-      data: [150, 232, 201, 154, 190, 330, 410, 370, 322, 361, 251, 153, 125, 122, 133, 124, 145, 122, 132, 134, 150, 232, 201, 154, 190, 330, 410, 370, 322]
-    }
-  ]
-}
+import {TopQpsLineMetricsRecordOutput} from "@/constant/api/monitor-metrics/route-metrics/types.ts";
+import {EChartsOption} from "echarts-for-react";
+import AutoSizablePanel, {Size} from "@/components/custom-ui/auto-sizable-panel.tsx";
+import {useApiRequestMetrics} from "@/pages/monitor-metrics/context.ts";
+import {topQpsLineMetrics} from "@/constant/api/monitor-metrics/route-metrics";
+import {isEmpty} from "lodash";
+import {maxPoint} from "@/pages/monitor-metrics/utils.ts";
+import {GitCommitHorizontal} from "lucide-react";
 
 /**
  * 请求量前 n 的api qps 折线图
  * @constructor
  */
-export default function TopApiQpsLineChart() {
+function TopApiQpsLineChartCard({size}: { size: Size, }) {
+
+  const {data, loading} = useApiRequestMetrics(({dateRange}) => topQpsLineMetrics(
+    {
+      ...dateRange,
+      ...maxPoint(size.width - 70, dateRange),
+      top: 20
+    }));
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
-          Top API QPS
+          Top Api QPS
         </CardTitle>
-        <Spinner className={"w-4 h-4"}/>
+        {loading ? (<Spinner className={"w-4 h-4"}/>) : (<GitCommitHorizontal className={"w-4 h-4"}/>)}
       </CardHeader>
       <CardContent>
-        <Charts style={{height: 280}} option={options}/>
+        <Charts option={chartOptions(data)}/>
       </CardContent>
     </Card>
+  )
+}
+
+/**
+ * 图标配置
+ * @param record
+ */
+function chartOptions(record?: TopQpsLineMetricsRecordOutput): EChartsOption {
+  if (!record || !record.records || record.records.length === 0) {
+    return {
+      title: {
+        text: '暂无数据',
+        x: 'center',
+        y: 'center',
+        textStyle: {
+          fontSize: 14,
+          fontWeight: 'normal',
+        }
+      }
+    }
+  }
+
+  const records = record.records;
+  // const legendData = records.map(item => item.api)
+  const xData = !isEmpty(records) ? records[0].data.map(item => item.unit) : []
+  const series = (records || []).map((record) => ({
+    type: 'line',
+    name: record.api,
+    data: record.data.map((item) => item.value)
+  }));
+
+
+  return {
+    title: {
+      text: ""
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross',
+      },
+    },
+    // legend: {
+    //   data: legendData,
+    //   type: 'scroll',
+    //   orient: 'vertical',
+    //   right: 0,
+    //   top: 10,
+    //   width: '300px',
+    //   selectedMode: 'multiple',
+    // },
+    grid: {
+      top: "20",
+      left: '10',
+      bottom: '5',
+      right: "20",
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: xData,
+      boundaryGap: ['5%', '5%']
+    },
+    yAxis: {
+      type: 'value',
+      boundaryGap: ['0', '20%'],
+      axisLabel: {formatter: '{value}/s'},
+    },
+    series: series
+  }
+}
+
+export default function () {
+  return (
+    <AutoSizablePanel>
+      {
+        (size) => (
+          <TopApiQpsLineChartCard size={size}/>
+        )
+      }
+    </AutoSizablePanel>
   )
 }

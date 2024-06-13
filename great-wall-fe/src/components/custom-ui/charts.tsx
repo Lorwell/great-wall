@@ -1,6 +1,7 @@
 import {EChartsReactProps} from "echarts-for-react/src/types.ts";
 import ReactECharts from "echarts-for-react";
 import {useTheme} from "@/components/theme-provider.tsx";
+import {forwardRef, Ref} from "react";
 
 export interface ChartsProps extends Omit<EChartsReactProps, "theme"> {
 
@@ -11,11 +12,13 @@ export interface ChartsProps extends Omit<EChartsReactProps, "theme"> {
  * @param props
  * @constructor
  */
-export default function Charts(props: ChartsProps) {
+const Charts = forwardRef((props: ChartsProps, ref: Ref<any>) => {
   const {opts, ...rest} = props;
   const {rawTheme} = useTheme();
 
   return (
-    <ReactECharts {...rest} theme={rawTheme} opts={{renderer: "svg", locale: "zh", ...opts}}/>
+    <ReactECharts {...rest} ref={ref} theme={rawTheme} opts={{renderer: "svg", locale: "zh", ...opts}}/>
   )
-}
+})
+
+export default Charts

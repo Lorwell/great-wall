@@ -1,19 +1,27 @@
 import {
   CountMetricsOutput,
-  LineMetricsRecordOutput,
+  DurationLineMetricsRecordOutput,
+  QpsLineMetricsRecordOutput,
   RouteCountMetricsInput,
-  RouteLineMetricsInput
+  RouteLineMetricsInput,
+  TopQpsLineMetricsRecordOutput,
+  TopRouteLineMetricsInput
 } from "@/constant/api/monitor-metrics/route-metrics/types.ts";
-import {Get} from "@/constant/api";
-import {CountMetricsSchema, LineMetricsRecordSchema} from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
+import {PostJson} from "@/constant/api";
+import {
+  CountMetricsSchema,
+  DurationLineMetricsRecordSchema,
+  QpsLineMetricsRecordSchema,
+  TopQpsLineMetricsRecordSchema
+} from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
 
 /**
  * 请求统计指标
  * @param input
  */
 export function requestCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return Get(`/api/route-monitor-metrics/count/request`, {
-    queryParam: input,
+  return PostJson(`/api/route-monitor-metrics/count/request`, {
+    body: input,
     resultSchema: CountMetricsSchema
   })
 }
@@ -23,8 +31,8 @@ export function requestCountMetrics(input: RouteCountMetricsInput): Promise<Coun
  * @param input
  */
 export function ipCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return Get(`/api/route-monitor-metrics/count/ip`, {
-    queryParam: input,
+  return PostJson(`/api/route-monitor-metrics/count/ip`, {
+    body: input,
     resultSchema: CountMetricsSchema
   })
 }
@@ -34,8 +42,8 @@ export function ipCountMetrics(input: RouteCountMetricsInput): Promise<CountMetr
  * @param input
  */
 export function requestTrafficSumMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return Get(`/api/route-monitor-metrics/sum/request-traffic`, {
-    queryParam: input,
+  return PostJson(`/api/route-monitor-metrics/sum/request-traffic`, {
+    body: input,
     resultSchema: CountMetricsSchema
   })
 }
@@ -45,8 +53,8 @@ export function requestTrafficSumMetrics(input: RouteCountMetricsInput): Promise
  * @param input
  */
 export function responseTrafficSumMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return Get(`/api/route-monitor-metrics/sum/response-traffic`, {
-    queryParam: input,
+  return PostJson(`/api/route-monitor-metrics/sum/response-traffic`, {
+    body: input,
     resultSchema: CountMetricsSchema
   })
 }
@@ -56,8 +64,8 @@ export function responseTrafficSumMetrics(input: RouteCountMetricsInput): Promis
  * @param input
  */
 export function status4xxCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return Get(`/api/route-monitor-metrics/count/status-4xx`, {
-    queryParam: input,
+  return PostJson(`/api/route-monitor-metrics/count/status-4xx`, {
+    body: input,
     resultSchema: CountMetricsSchema
   })
 }
@@ -67,8 +75,8 @@ export function status4xxCountMetrics(input: RouteCountMetricsInput): Promise<Co
  * @param input
  */
 export function status5xxCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return Get(`/api/route-monitor-metrics/count/status-5xx`, {
-    queryParam: input,
+  return PostJson(`/api/route-monitor-metrics/count/status-5xx`, {
+    body: input,
     resultSchema: CountMetricsSchema
   })
 }
@@ -77,9 +85,31 @@ export function status5xxCountMetrics(input: RouteCountMetricsInput): Promise<Co
  * qps 折线图指标
  * @param input
  */
-export function qpsLineMetrics(input: RouteLineMetricsInput): Promise<LineMetricsRecordOutput> {
-  return Get(`/api/route-monitor-metrics/line/qps`, {
-    queryParam: input,
-    resultSchema: LineMetricsRecordSchema
+export function qpsLineMetrics(input: RouteLineMetricsInput): Promise<QpsLineMetricsRecordOutput> {
+  return PostJson(`/api/route-monitor-metrics/line/qps`, {
+    body: input,
+    resultSchema: QpsLineMetricsRecordSchema
+  })
+}
+
+/**
+ * duration 折线图指标
+ * @param input
+ */
+export function durationLineMetrics(input: RouteLineMetricsInput): Promise<DurationLineMetricsRecordOutput> {
+  return PostJson(`/api/route-monitor-metrics/line/duration`, {
+    body: input,
+    resultSchema: DurationLineMetricsRecordSchema
+  })
+}
+
+/**
+ * top qps 折线图指标
+ * @param input
+ */
+export function topQpsLineMetrics(input: TopRouteLineMetricsInput): Promise<TopQpsLineMetricsRecordOutput> {
+  return PostJson(`/api/route-monitor-metrics/line/top-qps`, {
+    body: input,
+    resultSchema: TopQpsLineMetricsRecordSchema
   })
 }

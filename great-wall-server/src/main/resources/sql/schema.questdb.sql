@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS monitor_metrics_record
+CREATE TABLE IF NOT EXISTS route_metrics_record
 (
     ip                 symbol,
     host               varchar,

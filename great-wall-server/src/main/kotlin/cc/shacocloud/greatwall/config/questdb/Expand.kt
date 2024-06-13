@@ -49,11 +49,10 @@ suspend fun <T> CairoEngine.findOne(
     handler: suspend (Record) -> T
 ): T? {
     return find(querySql, context) { cursor ->
-        val size = cursor.size()
-        if (size > 0) {
-            require(size == 1.toLong()) { "期望返回1条结果，实际返回 $size 条！" }
-            cursor.hasNext()
-            handler(cursor.record)
+        if (cursor.hasNext()) {
+            val result = handler(cursor.record)
+            require(!cursor.hasNext()) { "期望返回1条结果，实际返回 ${cursor.size()} 条！" }
+            result
         } else null
     }
 }
@@ -68,10 +67,11 @@ suspend fun <T> CairoEngine.findOneNotNull(
     handler: suspend (Record) -> T
 ): T {
     return find(querySql, context) { cursor ->
-        val size = cursor.size()
-        require(size == 1.toLong()) { "期望返回1条结果，实际返回 $size 条！" }
-        cursor.hasNext()
-        handler(cursor.record)
+        if (cursor.hasNext()) {
+            val result = handler(cursor.record)
+            require(!cursor.hasNext()) { "期望返回1条结果，实际返回 ${cursor.size()} 条！" }
+            result
+        } else throw IllegalArgumentException("期望返回1条结果，实际返回 0 条！")
     }
 }
 

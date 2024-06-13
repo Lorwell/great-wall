@@ -12,7 +12,7 @@ enum class DateRangeDurationUnit(
     val outputFormat: DateTimeFormat<LocalDateTime>
 ) {
     SECONDS(DurationUnit.SECONDS, DATE_TIME_FORMAT, TIME_SECOND_FORMAT),
-    MINUTES(DurationUnit.MINUTES, DATE_TIME_MINUTE_FORMAT, TIME_MINUTE_FORMAT),
+    MINUTES(DurationUnit.MINUTES, DATE_TIME_MINUTE_FORMAT, TIME_DAY_MINUTE_FORMAT),
     HOURS(DurationUnit.HOURS, DATE_TIME_HOUR_FORMAT, TIME_DAY_HOUR_FORMAT),
     DAYS(DurationUnit.DAYS, DATE_TIME_DAY_FORMAT, DATE_TIME_DAY_FORMAT);
 }
@@ -36,12 +36,13 @@ object MonitorMetricsUtils {
      * @param range 时间范围
      * @param sourceData 源数据
      */
-    fun dateRangeDataCompletion(
+    fun <T : LineMetricsOutput, R> dateRangeDataCompletion(
         interval: Int,
         unit: DateRangeDurationUnit,
         range: Pair<Instant, Instant?>,
-        sourceData: List<LineMetricsOutput>
-    ): List<LineMetricsOutput> {
+        sourceData: List<T>,
+        transform: (T?, String) -> R
+    ): List<R> {
         val timeZone = TimeZone.currentSystemDefault()
         val durationUnit = unit.unit
 
@@ -65,8 +66,7 @@ object MonitorMetricsUtils {
         return (0..number).map { i ->
             val time = (from + (i * interval).toDuration(durationUnit)).toLocalDateTime(timeZone)
             val valueUnit = time.format(unit.format)
-            val value = unitMap[valueUnit]?.value ?: 0
-            LineMetricsOutput(time.format(unit.outputFormat), value)
+            transform(unitMap[valueUnit], time.format(unit.outputFormat))
         }
     }
 

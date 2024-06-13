@@ -86,59 +86,24 @@ export const removeSuffix = (str: string, suffix: string) => {
 
 
 /**
- * 数字字符
- */
-const NUMBER_CHAR = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-
-/**
- * 字母字符
- */
-const CHARACTER = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "z", "x", "c", "v", "b", "n", "m"]
-
-/**
- * 普通的字符，即不包含标点符号的字符
- */
-const NORMAL_CHARACTERS = [...NUMBER_CHAR, ...CHARACTER]
-
-/**
- * 获取随机长度的字符串
+ *  大小转换
  * @param size
+ * @param defaultValue 默认值
  */
-export const randomStr = (size: number): string => {
-  let str = ""
-  for (let i = 0; i < size; i++) {
-    const index = _.random(0, NORMAL_CHARACTERS.length - 1, false);
-    str += NORMAL_CHARACTERS[index];
-  }
+export const byteSizeToUnitStr = (size: number,
+                          defaultValue?: string): string => {
+  if (!size)
+    return defaultValue || "";
 
-  return str
-}
+  const num = 1024.00; //byte
 
-/**
- * 在 img src 的路径中添加随机的查询参数
- * @param src
- * @param paramsKey
- */
-export const randomImgSrcQueryParams = (src: string,
-                                        paramsKey: string = "_randomKey"): string => {
-  const params = new Array<string>();
-
-  // 如果 src 上带了查询参数
-  const i = src.indexOf("?");
-  if (i > 0) {
-    const param = src.substring(i + 1, src.length);
-    for (let str of _.split(param, "&")) {
-      params.push(str);
-    }
-    src = src.substring(0, i);
-  }
-
-  params.push(`${encodeURIComponent(paramsKey)}=${encodeURIComponent(randomStr(6))}`)
-
-  if (params.length > 0) {
-    src = src + "?" + params.join("&");
-  }
-
-  return src;
-
+  if (size < num)
+    return size + "B";
+  if (size < Math.pow(num, 2))
+    return (size / num).toFixed(2) + "K"; //kb
+  if (size < Math.pow(num, 3))
+    return (size / Math.pow(num, 2)).toFixed(2) + "M"; //M
+  if (size < Math.pow(num, 4))
+    return (size / Math.pow(num, 3)).toFixed(2) + "G"; //G
+  return (size / Math.pow(num, 4)).toFixed(2) + "T"; //T
 }

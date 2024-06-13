@@ -1,16 +1,11 @@
-CREATE TABLE IF NOT EXISTS monitor_metrics_record
+CREATE TABLE IF NOT EXISTS cache
 (
-    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-    ip            VARCHAR(50)  NOT NULL,
-    host          VARCHAR(100) NOT NULL,
-    method        VARCHAR(20)  NOT NULL,
-    context_path  VARCHAR(100) NOT NULL,
-    app_path      VARCHAR(255) NOT NULL,
-    query_params  text         NOT NULL,
-    cookies       text         NOT NULL,
-    request_time  BIGINT       NOT NULL,
-    response_time BIGINT       NOT NULL,
-    status_code   INT          NOT NULL
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name            VARCHAR(50)  NOT NULL,
+    cache_key       VARCHAR(128) NOT NULL,
+    cache_value     LONGTEXT     NULL,
+    expiration_time BIGINT       NOT NULL,
+    constraint uk_cache unique (name, cache_key)
 );
 
 CREATE TABLE IF NOT EXISTS app_route
