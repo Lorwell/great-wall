@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS cache
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     name            VARCHAR(50)  NOT NULL,
     cache_key       VARCHAR(128) NOT NULL,
-    cache_value     LONGTEXT     NULL,
+    cache_value     LONGTEXT     NOT NULL,
     expiration_time BIGINT       NOT NULL,
     constraint uk_cache unique (name, cache_key)
 );

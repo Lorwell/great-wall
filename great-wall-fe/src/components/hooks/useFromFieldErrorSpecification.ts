@@ -40,7 +40,9 @@ function useFromFieldErrorSpecification<TFieldValues extends FieldValues = Field
         // 其他状态码
         else if (notice) {
           let detail = getErrorMessage(e)
-          toast.warning(detail)
+          toast.warning(detail, {
+            position: "top-right",
+          })
         }
       }
       // 其他异常！
@@ -54,7 +56,9 @@ function useFromFieldErrorSpecification<TFieldValues extends FieldValues = Field
           detail = `未知的异常!`
         }
 
-        toast.warning(detail)
+        toast.warning(detail, {
+          position: "top-right",
+        })
       }
 
       throw e;

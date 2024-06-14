@@ -4,17 +4,25 @@ package cc.shacocloud.greatwall.controller.interceptor
  * 用于认证时判定当前角色是否被包含，如果不包含则抛出例外
  * @author 思追(shaco)
  */
-enum class UserAuthRoleEnum {
+enum class UserAuthRoleEnum(
+
+    /**
+     * 角色级别，高级别包含低级别
+     *
+     * 级别值越小，级别越高
+     */
+    val level: Int
+) {
 
     /**
      * 管理员
      */
-    ADMIN,
+    ADMIN(0),
 
     /**
      * 游客
      */
-    VISITOR,
+    VISITOR(10),
 }
 
 /**

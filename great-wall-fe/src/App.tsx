@@ -9,6 +9,7 @@ import SuspenseFallback from "@/pages/SuspenseFallback.tsx";
 import {Toaster} from "@/components/ui/sonner.tsx";
 import configAppRoutesRoutes from "@/pages/app-routes/components/app-routes/routes.tsx";
 
+const Login = lazy(() => import("@/pages/login"));
 const AppFrame = lazy(() => import("@/pages/AppFrame"));
 const AppRouteList = lazy(() => import("@/pages/app-routes/list"));
 const AddAppRoutes = lazy(() => import("@/pages/app-routes/add"));
@@ -25,7 +26,7 @@ const App = () => {
         {/* 路由管理 */}
         <Routes>
           {/* 登录页面 */}
-          {/*<Route path="login" element={<Login/>}/>*/}
+          <Route path="login" element={<Login/>}/>
           {/* 应用登录守卫 */}
           <Route path="" element={<LoginStatusGuard/>}>
             <Route path="manage" element={<AppFrame/>}>

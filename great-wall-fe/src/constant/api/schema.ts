@@ -26,13 +26,10 @@ export const msgSchema = z.object({
   message: z.string()
 })
 
-export type MsgValues = z.infer<typeof msgSchema>
 
 // 错误消息
-export const errorMsgSchema = z.object({
-  code: z.string(),
-  message: z.string()
-})
+export const errorMsgSchema = msgSchema
+
 export type ErrorMsgValues = z.infer<typeof errorMsgSchema>
 
 export const fieldErrorSchema = msgSchema.merge(z.object({

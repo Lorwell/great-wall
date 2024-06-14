@@ -4,6 +4,9 @@ import cc.shacocloud.greatwall.model.po.CachePo
 import cc.shacocloud.greatwall.repository.CacheRepository
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.json.Json
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -36,20 +39,29 @@ class DBCache(
      *
      * @param key      缓存的键
      */
-    override suspend fun <T> get(key: String): T? {
+    override suspend fun <T : Any> get(
+        key: String,
+        deserializer: DeserializationStrategy<T>
+    ): T? {
         val cachePo = cacheRepository.findByNameAndCacheKey(name, key).awaitSingleOrNull()
-        return cachePo?.let { getCacheValue<T>(it) }
+        return cachePo?.let { getCacheValue(it, deserializer) }
     }
 
-    override suspend fun <T> put(key: String, value: T, ttl: Duration): T {
+    override suspend fun <T : Any> put(
+        key: String,
+        serializer: SerializationStrategy<T>,
+        value: T,
+        ttl: Duration
+    ): T {
         val expirationTime = Date().time + ttl.toLong(DurationUnit.MILLISECONDS)
+        val strValue = Json.encodeToString(serializer, value)
         val cachePo = (cacheRepository.findByNameAndCacheKey(name, key).awaitSingleOrNull()
             ?.let {
-                it.cacheValue = value
+                it.cacheValue = strValue
                 it.expirationTime = expirationTime
                 it
             }
-            ?: CachePo(name = name, cacheKey = key, cacheValue = value, expirationTime = expirationTime))
+            ?: CachePo(name = name, cacheKey = key, cacheValue = strValue, expirationTime = expirationTime))
 
         cacheRepository.save(cachePo).awaitSingle()
 
@@ -63,8 +75,9 @@ class DBCache(
     /**
      * 获取缓存值，如果过期则返回 null
      */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> getCacheValue(cachePo: CachePo): T? {
-        return if (cachePo.expirationTime >= Date().time) cachePo.cacheValue as T? else null
+    private fun <T : Any> getCacheValue(cachePo: CachePo, serializer: DeserializationStrategy<T>): T? {
+        return if (cachePo.expirationTime >= Date().time) {
+            Json.decodeFromString(serializer, cachePo.cacheValue)
+        } else null
     }
 }

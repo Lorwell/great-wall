@@ -1,11 +1,13 @@
 package cc.shacocloud.greatwall.model.mo
 
 import cc.shacocloud.greatwall.controller.interceptor.UserAuthRoleEnum
+import kotlinx.serialization.Serializable
 
 /**
  * 管理员会话模型
  * @author 思追(shaco)
  */
+@Serializable
 data class AdminSessionMo(
 
     /**

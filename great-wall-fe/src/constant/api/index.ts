@@ -1,6 +1,6 @@
 import _ from "lodash";
 import {isBlank} from "@/utils/Utils";
-import {errorMsgSchema, ErrorMsgValues} from "@/constant/api/schema.ts";
+import {errorMsgSchema, ErrorMsgValues, fieldsErrorSchema} from "@/constant/api/schema.ts";
 import {ZodTypeAny} from "zod";
 import queryString from "query-string";
 
@@ -321,13 +321,18 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
   }
 
   try {
-    body = errorMsgSchema.parse(body)
+    if (status === 422) {
+      body = fieldsErrorSchema.parse(body);
+    } else {
+      body = errorMsgSchema.parse(body)
+    }
   } catch (e) {
     body = {
       code: "response.invalid",
       message: `未知的响应值：${body}`
     }
   }
+
   throw new HttpException(url, status, statusText, body);
 };
 

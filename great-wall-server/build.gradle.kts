@@ -8,6 +8,7 @@ plugins {
     kotlin("jvm") version "2.0.0"
     kotlin("kapt") version "2.0.0"
     kotlin("plugin.spring") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 group = "cc.shacocloud"
@@ -59,6 +60,7 @@ dependencyManagement {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.boot:spring-boot-starter-json")

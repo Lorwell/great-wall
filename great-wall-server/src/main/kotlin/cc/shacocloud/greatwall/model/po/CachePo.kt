@@ -31,7 +31,7 @@ class CachePo(
      * 缓存的唯一键
      */
     @Column("cache_value")
-    var cacheValue: Any?,
+    var cacheValue: String,
 
     /**
      * 过期时间

@@ -1,8 +1,6 @@
 package cc.shacocloud.greatwall.utils.json
 
 import cc.shacocloud.greatwall.config.serializer.DateDeserializer
-import com.fasterxml.jackson.annotation.JsonAutoDetect
-import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.core.type.TypeReference
@@ -10,11 +8,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.IOException
 import java.util.*
 
@@ -25,19 +21,16 @@ import java.util.*
  */
 object Json {
 
-    private val mapper = ObjectMapper()
+    private val mapper = jacksonObjectMapper()
 
-    private val prettyMapper = ObjectMapper()
-
-    private val typeMapper = ObjectMapper()
-
-    private const val CLASS_KEY: String = "@type"
+    private val prettyMapper = jacksonObjectMapper()
 
     init {
         initialize()
     }
 
     private fun initialize() {
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
         // 非标准JSON，但我们允许在JSON中使用C风格的注释
         mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true)
         // 忽略Bean中不存在属性的匹配
@@ -45,7 +38,6 @@ object Json {
         mapper.setTimeZone(TimeZone.getDefault())
         // 支持注解处理
         mapper.setAnnotationIntrospector(JacksonAnnotationIntrospector())
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 
         prettyMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true)
         prettyMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
@@ -54,25 +46,11 @@ object Json {
         prettyMapper.setTimeZone(TimeZone.getDefault())
         prettyMapper.setAnnotationIntrospector(JacksonAnnotationIntrospector())
 
-        typeMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-        typeMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-        typeMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        typeMapper.setTimeZone(TimeZone.getDefault())
-        typeMapper.setAnnotationIntrospector(JacksonAnnotationIntrospector())
-        typeMapper.activateDefaultTypingAsProperty(
-            LaissezFaireSubTypeValidator.instance,
-            ObjectMapper.DefaultTyping.NON_FINAL, CLASS_KEY
-        )
-        typeMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
-
         // 自定义时间反序列器
         val simpleModule = SimpleModule()
         simpleModule.addDeserializer(Date::class.java, DateDeserializer())
 
         val modules = arrayOf(
-            KotlinModule.Builder()
-                .enable(KotlinFeature.StrictNullChecks)
-                .build(),
             simpleModule,
             JavaTimeModule()
         )
@@ -80,7 +58,6 @@ object Json {
         for (module in modules) {
             mapper.registerModule(module)
             prettyMapper.registerModule(module)
-            typeMapper.registerModule(module)
         }
     }
 
@@ -96,13 +73,6 @@ object Json {
      */
     fun prettyMapper(): ObjectMapper {
         return prettyMapper
-    }
-
-    /**
-     * @return 返回带有对应类型格式的 [ObjectMapper]
-     */
-    fun typeMapper(): ObjectMapper {
-        return typeMapper
     }
 
     /**
@@ -136,21 +106,6 @@ object Json {
     }
 
     /**
-     * 使用底层Jackson映射器将POJO编码为JSON，并带有对象类型。
-     *
-     * @param obj 模型
-     * @throws EncodeException 如果无法对属性进行编码
-     */
-    @Throws(EncodeException::class)
-    fun encodeType(obj: Any): String {
-        try {
-            return typeMapper().writeValueAsString(obj)
-        } catch (e: Exception) {
-            throw EncodeException("未能编码为JSON: " + e.message)
-        }
-    }
-
-    /**
      * @see convertValue
      */
     fun <T> convertValue(obj: Any, clazz: Class<T>): T {
@@ -162,24 +117,6 @@ object Json {
      */
     fun <T> convertValue(obj: Any, type: TypeReference<T>): T {
         return convertValue(mapper(), obj, type)
-    }
-
-    /**
-     * 使用 [typeMapper] 进行转换
-     *
-     * @see convertValue
-     */
-    fun <T> convertTypeValue(obj: Any, clazz: Class<T>): T {
-        return convertValue(typeMapper(), obj, clazz)
-    }
-
-    /**
-     * 使用 [typeMapper] 进行转换
-     *
-     * @see .convertValue
-     */
-    fun <T> convertTypeValue(obj: Any, type: TypeReference<T>): T {
-        return convertValue(typeMapper(), obj, type)
     }
 
     /**
@@ -223,35 +160,6 @@ object Json {
     @Throws(DecodeException::class)
     fun <T> decodeValue(str: String, type: TypeReference<T>): T {
         return fromParser(mapper(), createParser(mapper(), str), type)
-    }
-
-
-    /**
-     * 使用 [typeMapper] 将给定的JSON字符串解码为给定类类型的模型
-     *
-     * @param str   JSON字符串
-     * @param clazz 要映射到的类
-     * @param <T>   泛型类型
-     * @return T的一个实例
-     * @throws DecodeException 当存在解析或无效映射时
-    </T> */
-    @Throws(DecodeException::class)
-    fun <T> decodeTypeValue(str: String, clazz: Class<T>): T {
-        return fromParser(typeMapper(), createParser(typeMapper(), str), clazz)
-    }
-
-    /**
-     * 使用 [typeMapper] 将给定的JSON字符串解码为给定类型模型
-     *
-     * @param str  JSON字符串
-     * @param type 要映射到的类
-     * @param <T>  泛型类型
-     * @return T的一个实例
-     * @throws DecodeException 当存在解析或无效映射时
-    </T> */
-    @Throws(DecodeException::class)
-    fun <T> decodeTypeValue(str: String, type: TypeReference<T>): T {
-        return fromParser(typeMapper(), createParser(typeMapper(), str), type)
     }
 
     private fun createParser(objectMapper: ObjectMapper, str: String): JsonParser {

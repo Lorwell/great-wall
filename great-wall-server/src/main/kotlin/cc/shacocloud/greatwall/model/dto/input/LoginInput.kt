@@ -12,7 +12,7 @@ data class LoginInput(
      * 账号
      */
     @field:NotBlank
-    @field:Length(max = 20)
+    @field:Length(max = 20, min = 2)
     val username: String,
 
     /**

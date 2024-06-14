@@ -7,8 +7,8 @@ import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.input.LoginInput
 import cc.shacocloud.greatwall.model.mo.AdminSessionMo
 import cc.shacocloud.greatwall.service.SessionService
+import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.BindException
-import org.springframework.validation.BindingResult
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,19 +35,21 @@ class LoginController(
     @PostMapping("/api/login")
     suspend fun login(
         @Validated @RequestBody input: LoginInput,
-        bindingResult: BindingResult,
         exchange: ServerWebExchange
     ) {
+        val bindingResult = BeanPropertyBindingResult(input, "input")
+
         if (ADMIN_USER == input.username) {
             if (adminAuthProperties.password != input.password) {
                 bindingResult.rejectValue("password", "密码无效")
                 throw BindException(bindingResult)
             }
             sessionService.saveSession(exchange.response, AdminSessionMo(UUID.randomUUID().toString()))
+            return
         }
 
 
-        bindingResult.rejectValue("username", "user.login.username.not-found")
+        bindingResult.rejectValue("username", "用户不存在")
         throw BindException(bindingResult)
     }
 

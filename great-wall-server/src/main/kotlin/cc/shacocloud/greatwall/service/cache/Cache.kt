@@ -1,5 +1,7 @@
 package cc.shacocloud.greatwall.service.cache
 
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerializationStrategy
 import java.util.function.Supplier
 import kotlin.time.Duration
 
@@ -21,7 +23,10 @@ interface Cache {
      *
      * @param key      缓存的键
      */
-    suspend fun <T> get(key: String): T?
+    suspend fun <T : Any> get(
+        key: String,
+        deserializer: DeserializationStrategy<T>
+    ): T?
 
     /**
      * 根据指定的缓存键获取缓存数据
@@ -29,8 +34,12 @@ interface Cache {
      * @param key      缓存的键
      * @param supplier 当键不存在时使用该值返回
      */
-    suspend fun <T> get(key: String, supplier: Supplier<T>): T {
-        return get(key) ?: supplier.get()
+    suspend fun <T : Any> get(
+        key: String,
+        deserializer: DeserializationStrategy<T>,
+        supplier: Supplier<T>
+    ): T {
+        return get(key, deserializer) ?: supplier.get()
     }
 
     /**
@@ -40,7 +49,7 @@ interface Cache {
      * @param value   缓存的值
      * @param ttl     过期时间
      */
-    suspend fun <T> put(key: String, value: T, ttl: Duration): T
+    suspend fun <T : Any> put(key: String, serializer: SerializationStrategy<T>, value: T, ttl: Duration): T
 
     /**
      * 根据指定的缓存键删除缓存数据

@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.controller.exception.NotFoundException
+import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.dto.convert.toListOutput
 import cc.shacocloud.greatwall.model.dto.convert.toOutput
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*
  *
  * @author 思追(shaco)
  */
+@UserAuth
 @Validated
 @RestController
 @RequestMapping("/api/app-route")

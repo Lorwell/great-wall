@@ -41,7 +41,7 @@ class AuthenticationInterceptor(
         val currentUserRole = currentSession?.role ?: UserAuthRoleEnum.VISITOR
 
         // 包含则认证通过
-        if (userAuthRole == currentUserRole) {
+        if (currentUserRole.level <= userAuthRole.level) {
             requestMappingHandlerAdapter.handle(exchange, handler).awaitSingleOrNull()
         } else {
             // 如果未登录用户则抛出未登录异常
