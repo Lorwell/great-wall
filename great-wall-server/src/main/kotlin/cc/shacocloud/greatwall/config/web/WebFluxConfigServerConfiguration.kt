@@ -1,9 +1,8 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
-import cc.shacocloud.greatwall.service.SessionService
 import cc.shacocloud.greatwall.utils.Slf4j
 import jakarta.annotation.PostConstruct
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
@@ -64,7 +63,7 @@ class WebFluxConfigServerConfiguration(
      * 配置web服务
      */
     @Bean(destroyMethod = "stop")
-    fun configWebServer(sessionService: SessionService): ConfigWebServer {
+    fun configWebServer(interceptorProvider: ObjectProvider<RequestMappingHandlerInterceptor>): ConfigWebServer {
         configPostInit.set(true)
         try {
             val dispatcherHandler = object : WebFluxDispatcherHandler(applicationContext) {
@@ -78,7 +77,7 @@ class WebFluxConfigServerConfiguration(
                 override fun handlerAdapters(adapters: List<HandlerAdapter>) {
                     val handlers = adapters.map {
                         if (it is RequestMappingHandlerAdapter) {
-                            AuthenticationInterceptor(it, sessionService)
+                            RequestMappingHandlerInterceptorAdapter(it, interceptorProvider)
                         } else {
                             it
                         }

@@ -48,7 +48,6 @@ class LoginController(
             return
         }
 
-
         bindingResult.rejectValue("username", "用户不存在")
         throw BindException(bindingResult)
     }
