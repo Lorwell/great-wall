@@ -45,7 +45,6 @@ spring:
       initial-size: 10
       max-size: 10
       validation-query: select 1
-
   # 初始化sql
   sql:
     init:
@@ -53,6 +52,9 @@ spring:
       schema-locations:
         - classpath*:sql/schema.sql
       encoding: UTF-8
+  web:
+    resources:
+      static-locations: classpath:/static/
 
 
 site:
@@ -67,7 +69,7 @@ site:
         domain: "*.shacocloud.cc"
   auth:
     admin:
-      password: 123456789
+      password: ${ADMIN_PASSWORD:123456789}
 
 
 logging:

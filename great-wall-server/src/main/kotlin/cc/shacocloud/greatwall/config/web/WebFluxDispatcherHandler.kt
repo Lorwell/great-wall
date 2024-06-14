@@ -88,8 +88,11 @@ open class WebFluxDispatcherHandler() : WebHandler, PreFlightRequestHandler, App
             return handlePreFlight(exchange)
         }
 
-        return Flux.fromIterable(handlerMappings).concatMap { it.getHandler(exchange) }.next()
-            .switchIfEmpty(createNotFoundError()).onErrorResume { ex -> handleResultMono(exchange, Mono.error(ex)) }
+        return Flux.fromIterable(handlerMappings)
+            .concatMap { it.getHandler(exchange) }
+            .next()
+            .switchIfEmpty(createNotFoundError())
+            .onErrorResume { ex -> handleResultMono(exchange, Mono.error(ex)) }
             .flatMap { handler -> handleRequestWith(exchange, handler) }
     }
 
@@ -101,7 +104,8 @@ open class WebFluxDispatcherHandler() : WebHandler, PreFlightRequestHandler, App
     }
 
     open fun handleResultMono(
-        exchange: ServerWebExchange, resultMono: Mono<HandlerResult>
+        exchange: ServerWebExchange,
+        resultMono: Mono<HandlerResult>
     ): Mono<Void> {
         var handlerResultMono = resultMono
 

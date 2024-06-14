@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.RandomAccessFile
+import java.nio.file.Files
 
 plugins {
     id("java")
@@ -96,4 +98,99 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+// 处理资源之前先将前端资源复制到指定目录
+tasks.withType<ProcessResources> {
+    // 如果不想在构建时编译前端项目，可以将此行注释，在打包项目时解开注释即可
+    dependsOn("copyFeBuildResultToBe")
+}
+
+
+// 构建前端项目
+task("buildFe") {
+
+    doFirst {
+        val rootProjectDir = rootProject.projectDir.absoluteFile
+        val feDir = File(rootProjectDir, "great-wall-fe").absoluteFile
+
+        // 执行构建命令
+        val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()
+        logFile.deleteOnExit()
+        val process = ProcessBuilder()
+            .directory(feDir)
+            .command("pnpm", "run", "build")
+            .redirectErrorStream(true)
+            .redirectOutput(ProcessBuilder.Redirect.to(logFile))
+            .start()
+
+        println()
+        println("开始构建前端项目...")
+        println()
+
+        // 打印日志
+        printProcessLogFile(logFile, process)
+
+        val exitCode = process.waitFor()
+
+        println()
+        println("构建前端项目结束，退出状态码：${exitCode}")
+        println()
+
+        if (exitCode != 0) {
+            throw RuntimeException("构建前端项目失败，退出状态码为：${exitCode}！")
+        }
+    }
+}
+
+// 复制前端构建结果到后端项目中
+task("copyFeBuildResultToBe") {
+
+    doFirst {
+        val rootProjectDir = rootProject.projectDir.absoluteFile
+
+        // 前端项目目录
+        val feDir = File(rootProjectDir, "great-wall-fe").absoluteFile
+        val distDir = File(feDir, "dist").absoluteFile
+
+        // 后端项目目录
+        val beDir = File(rootProjectDir, "great-wall-server").absoluteFile
+        val targetDir = File(beDir, "src/main/resources/static").absoluteFile
+        targetDir.deleteRecursively()
+
+        // 复制
+        distDir.copyRecursively(targetDir, true)
+    }
+}.dependsOn("buildFe")
+
+
+// ---------------  函数 ------------
+
+// 打印进程日志文件
+fun printProcessLogFile(
+    logFile: File,
+    process: Process
+) {
+    RandomAccessFile(logFile, "r").use { accessFile ->
+        while (true) {
+            val line = accessFile.readLine()
+
+            if (line.isNullOrEmpty()) {
+                val filePointer: Long = accessFile.filePointer
+                val length: Long = accessFile.length()
+
+                // 到达尾行
+                if (filePointer >= length) {
+
+                    if (process.isAlive) {
+                        Thread.sleep(1000)
+                    } else {
+                        break
+                    }
+                }
+            } else {
+                println(line)
+            }
+        }
+    }
 }

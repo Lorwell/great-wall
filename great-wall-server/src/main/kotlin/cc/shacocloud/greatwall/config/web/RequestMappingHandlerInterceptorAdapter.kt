@@ -7,6 +7,7 @@ import kotlinx.coroutines.reactor.mono
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.core.annotation.AnnotationAwareOrderComparator
 import org.springframework.web.method.HandlerMethod
+import org.springframework.web.reactive.DispatchExceptionHandler
 import org.springframework.web.reactive.HandlerAdapter
 import org.springframework.web.reactive.HandlerResult
 import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerAdapter
@@ -23,7 +24,7 @@ import java.util.stream.Collectors
 class RequestMappingHandlerInterceptorAdapter(
     private val requestMappingHandlerAdapter: RequestMappingHandlerAdapter,
     private val interceptorProvider: ObjectProvider<RequestMappingHandlerInterceptor>
-) : HandlerAdapter {
+) : HandlerAdapter, DispatchExceptionHandler {
 
     // 拦截器
     private val interceptors: List<RequestMappingHandlerInterceptor> by lazy {
@@ -97,6 +98,10 @@ class RequestMappingHandlerInterceptorAdapter(
                 }
             }
         }
+    }
+
+    override fun handleError(exchange: ServerWebExchange, ex: Throwable): Mono<HandlerResult> {
+        return requestMappingHandlerAdapter.handleError(exchange, ex)
     }
 
 }

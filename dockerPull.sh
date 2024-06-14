@@ -1,4 +1,7 @@
-version=1.4
+version=1.7
+
+# 构建后端
+bash gradlew clean bootJar || exit
 
 # 构建
 docker build -t great-wall:"$version" . || exit
