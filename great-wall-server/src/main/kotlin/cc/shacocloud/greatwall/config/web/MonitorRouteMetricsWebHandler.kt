@@ -11,6 +11,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.reactivestreams.Publisher
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.core.io.buffer.DataBuffer
@@ -35,8 +37,10 @@ class MonitorRouteMetricsWebHandler(
     private val monitorMetricsService: CompositionMonitorMetricsService
 ) : WebHandlerDecorator(webHandler) {
 
+    class QueryParamsMetrics : HashMap<String, List<String>>()
+
     override fun handle(exchange: ServerWebExchange): Mono<Void> {
-        val requestTime = Os.currentTimeMicros()
+        val requestTime = Clock.System.now()
 
         // 流量统计委托器
         val requestDecorator = TrafficStatisticsHttpRequestDecorator(exchange.request)
@@ -71,7 +75,7 @@ class MonitorRouteMetricsWebHandler(
      */
     private fun filterCompleteCallback(
         exchange: ServerWebExchange,
-        requestTime: Long,
+        requestTime: Instant,
         requestBodySize: AtomicLong,
         responseBodySize: AtomicLong
     ) {
@@ -93,7 +97,7 @@ class MonitorRouteMetricsWebHandler(
      */
     private fun metricsRecordCommit(
         exchange: ServerWebExchange,
-        requestTime: Long,
+        requestTime: Instant,
         route: Route?,
         requestBodySize: Long,
         responseBodySize: Long
@@ -109,19 +113,15 @@ class MonitorRouteMetricsWebHandler(
 
             // 查询参数
             val queryParamsMetrics = request.queryParams
-                .map { it.key to it.value }.toMap(RouteMetricsRecordPo.QueryParamsMetrics())
+                .map { it.key to it.value }.toMap(QueryParamsMetrics())
 
             val metricsRecord = RouteMetricsRecordPo(
                 ip = request.getRealIp(),
-                host = request.getHost(),
                 method = request.method.name(),
-                appPath = path.pathWithinApplication().value(),
-                queryParams = queryParamsMetrics,
+                endpoint = path.pathWithinApplication().value(),
                 requestTime = requestTime,
-                responseTime = Os.currentTimeMicros(),
+                responseTime = Clock.System.now(),
                 statusCode = response.statusCode?.value() ?: 500,
-                appRouteId = appRouteId,
-                targetUrl = targetUrl,
                 requestBodySize = requestBodySize,
                 responseBodySize = responseBodySize
             )

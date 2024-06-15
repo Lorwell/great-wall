@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
  *
  * @author 思追(shaco)
  */
-@Service
+//@Service
 class AutoRefreshTLSScheduled {
 
     private var expirationTime: Date? = null

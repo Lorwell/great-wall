@@ -1,5 +1,7 @@
 package cc.shacocloud.greatwall.model.po.questdb
 
+import kotlinx.datetime.Instant
+
 /**
  * 请求指标记录
  *
@@ -13,11 +15,6 @@ data class RouteMetricsRecordPo(
     val ip: String,
 
     /**
-     * 请求的 host
-     */
-    val host: String,
-
-    /**
      * 请求方式
      */
     val method: String,
@@ -27,37 +24,22 @@ data class RouteMetricsRecordPo(
      *
      * 上下文路径之后的请求路径部分，通常用于应用程序内的请求映射。
      */
-    val appPath: String,
+    val endpoint: String,
 
     /**
-     * 查询参数
+     * 请求时间，单位 毫秒
      */
-    val queryParams: QueryParamsMetrics,
+    val requestTime: Instant,
 
     /**
-     * 请求时间
+     * 响应时间，单位 毫秒
      */
-    val requestTime: Long,
-
-    /**
-     * 响应时间
-     */
-    val responseTime: Long,
+    val responseTime: Instant,
 
     /**
      * 状态码
      */
     val statusCode: Int,
-
-    /**
-     * 当前请求匹配上的路由id
-     */
-    val appRouteId: Long?,
-
-    /**
-     * 路由的目标地址
-     */
-    val targetUrl: String?,
 
     /**
      * 请求主体长度，单位字节
@@ -69,11 +51,6 @@ data class RouteMetricsRecordPo(
      */
     val responseBodySize: Long
 
-) : BaseMonitorMetricsPo(Type.ROUTE) {
-
-    class QueryParamsMetrics : HashMap<String, List<String>>()
-
-}
-
+) : BaseMonitorMetricsPo(Type.ROUTE)
 
 

@@ -1,5 +1,4 @@
-import {EChartsReactProps} from "echarts-for-react/src/types.ts";
-import ReactECharts from "echarts-for-react";
+import ReactECharts, {EChartsReactProps} from "echarts-for-react";
 import {useTheme} from "@/components/theme-provider.tsx";
 import {forwardRef, Ref} from "react";
 

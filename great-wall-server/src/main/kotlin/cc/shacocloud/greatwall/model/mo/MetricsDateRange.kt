@@ -1,7 +1,6 @@
 package cc.shacocloud.greatwall.model.mo
 
 import cc.shacocloud.greatwall.controller.exception.BadRequestException
-import cc.shacocloud.greatwall.model.mo.MetricsDateRange.LastDateEnum.*
 import cc.shacocloud.greatwall.model.mo.MetricsDateRange.Type.LastDateEnum
 import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
 import cc.shacocloud.greatwall.utils.DATE_TIME_FORMAT
@@ -38,40 +37,32 @@ open class MetricsDateRange(
     /**
      * 获取时间范围的毫秒数
      */
-    fun getDateRange(): Pair<LocalDateTime, LocalDateTime?> {
+    fun getDateRange(): Pair<LocalDateTime, LocalDateTime> {
         val timeZone = TimeZone.currentSystemDefault()
 
         val (from, to) = getDateRangeMs()
-        return from.toLocalDateTime(timeZone) to to?.toLocalDateTime(timeZone)
+        return from.toLocalDateTime(timeZone) to to.toLocalDateTime(timeZone)
     }
 
     /**
      * 获取时间范围的毫秒数
      */
-    fun getDateRangeMs(): Pair<Instant, Instant?> {
+    fun getDateRangeMs(): Pair<Instant, Instant> {
         check()
-
+        val timeZone = TimeZone.currentSystemDefault()
         return when (type) {
             Type.DateRange -> {
                 val range = dateRange!!
-                range.from to range.to
+                val form = range.from.toLocalDateTime(timeZone).toInstant(timeZone)
+                val to = (range.to ?: Clock.System.now()).toLocalDateTime(timeZone).toInstant(timeZone)
+                form to to
+
             }
 
             LastDateEnum -> {
-                val from = when (lastDataEnum!!) {
-                    Last15Minute -> Clock.System.now() - 15.minutes
-                    Last30Minute -> Clock.System.now() - 30.minutes
-                    Last1Hour -> Clock.System.now() - 1.hours
-                    Last3Hour -> Clock.System.now() - 3.hours
-                    Last6Hour -> Clock.System.now() - 6.hours
-                    Last12Hour -> Clock.System.now() - 12.hours
-                    Last1Day -> Clock.System.now() - 1.days
-                    Last3Day -> Clock.System.now() - 3.days
-                    Last7Day -> Clock.System.now() - 7.days
-                    Last15Day -> Clock.System.now() - 15.days
-                }
-
-                from to null
+                val from = lastDataEnum!!.toInstant()
+                val to = Clock.System.now().toLocalDateTime(timeZone).toInstant(timeZone)
+                from to to
             }
         }
     }
@@ -111,7 +102,28 @@ open class MetricsDateRange(
         Last1Day,
         Last3Day,
         Last7Day,
-        Last15Day
+        Last15Day;
+
+        /**
+         * 转为时间
+         */
+        fun toInstant(): Instant {
+            val time = when (this) {
+                Last15Minute -> Clock.System.now() - 15.minutes
+                Last30Minute -> Clock.System.now() - 30.minutes
+                Last1Hour -> Clock.System.now() - 1.hours
+                Last3Hour -> Clock.System.now() - 3.hours
+                Last6Hour -> Clock.System.now() - 6.hours
+                Last12Hour -> Clock.System.now() - 12.hours
+                Last1Day -> Clock.System.now() - 1.days
+                Last3Day -> Clock.System.now() - 3.days
+                Last7Day -> Clock.System.now() - 7.days
+                Last15Day -> Clock.System.now() - 15.days
+            }
+
+            val timeZone = TimeZone.currentSystemDefault()
+            return time.toLocalDateTime(timeZone).toInstant(timeZone)
+        }
     }
 }
 

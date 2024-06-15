@@ -2,6 +2,8 @@ package cc.shacocloud.greatwall.utils
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDateTime.Companion.Format
+import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.format.DateTimeComponents.Companion.Format as ComponentFormat
 import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.format.char
 
@@ -117,4 +119,25 @@ val TIME_DAY_HOUR_FORMAT: DateTimeFormat<LocalDateTime> = Format {
     hour()
     char(':')
     minute()
+}
+
+
+/**
+ * yyyyMMdd
+ * @author 思追(shaco)
+ */
+val DATE_TIME_DAY_NO_SEP_FORMAT: DateTimeFormat<LocalDateTime> = Format {
+    year()
+    monthNumber()
+    dayOfMonth()
+}
+
+/**
+ * yyyyMMdd
+ * @author 思追(shaco)
+ */
+val DATE_TIME_DAY_NO_SEP_COMPONENTS_FORMAT: DateTimeFormat<DateTimeComponents> = ComponentFormat {
+    year()
+    monthNumber()
+    dayOfMonth()
 }

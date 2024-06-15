@@ -76,7 +76,9 @@ dependencies {
     kapt("com.querydsl:querydsl-apt:5.1.0:general")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
@@ -103,7 +105,7 @@ tasks.withType<Test> {
 // 处理资源之前先将前端资源复制到指定目录
 tasks.withType<ProcessResources> {
     // 如果不想在构建时编译前端项目，可以将此行注释，在打包项目时解开注释即可
-    dependsOn("copyFeBuildResultToBe")
+//    dependsOn("copyFeBuildResultToBe")
 }
 
 

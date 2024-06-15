@@ -12,12 +12,15 @@ import io.r2dbc.h2.H2ConnectionFactory
 import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.spi.ConnectionFactory
+import io.r2dbc.spi.Parameters
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.r2dbc.core.bind
 import org.springframework.transaction.ReactiveTransactionManager
 import java.io.File
 import java.nio.file.Paths
@@ -37,6 +40,14 @@ class R2dbcConfiguration(
 
     companion object {
         const val FILE_PROTOCOL = "file:"
+
+        inline fun <reified T : Any> DatabaseClient.GenericExecuteSpec.bindByIndex(index: Int, value: T?) =
+            bind(index, if (value != null) Parameters.`in`(value) else Parameters.`in`(T::class.java))
+
+        inline fun <reified T : Any> DatabaseClient.GenericExecuteSpec.bindByName(name: String, value: T?) =
+            bind(name, if (value != null) Parameters.`in`(value) else Parameters.`in`(T::class.java))
+
+
     }
 
     @Bean

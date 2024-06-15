@@ -39,7 +39,7 @@ object MonitorMetricsUtils {
     fun <T : LineMetricsOutput, R> dateRangeDataCompletion(
         interval: Int,
         unit: DateRangeDurationUnit,
-        range: Pair<Instant, Instant?>,
+        range: Pair<Instant, Instant>,
         sourceData: List<T>,
         transform: (T?, String) -> R
     ): List<R> {
@@ -48,7 +48,6 @@ object MonitorMetricsUtils {
 
         // 计算差值
         var (from, to) = range
-        to = to ?: Clock.System.now()
 
         val modulusDurationUnit =
             if (DurationUnit.DAYS == durationUnit) {

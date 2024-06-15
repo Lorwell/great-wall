@@ -13,58 +13,147 @@ import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.model.mo.TopQpsLineMetricsMo
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
+import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
-import cc.shacocloud.greatwall.utils.DateRangeDurationUnit
-import cc.shacocloud.greatwall.utils.LineMetricsIntervalConf
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
-import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import cc.shacocloud.greatwall.utils.json.Json
 import io.questdb.cairo.CairoEngine
-import io.questdb.std.str.Utf8String
 import io.questdb.std.str.Utf8StringSink
-import kotlinx.coroutines.channels.Channel
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.format.DateTimeComponents.Companion.Format
+import kotlinx.datetime.format.DateTimeFormat
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.r2dbc.core.await
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-
+import io.r2dbc.spi.Readable
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 
 /**
- * 使用 kotlin 协程的 [Channel] 作为队列，消费数据写入 questdb
+ * 基于 h2 实现的 [RouteMonitorMetricsService]
  *
  * @author 思追(shaco)
  * @see [https://questdb.io/]
  */
 @Slf4j
 @Service
-class RouteMonitorMetricsServiceImpl(
-    val cairoEngine: CairoEngine
+@Transactional(rollbackFor = [Exception::class])
+class RouteMonitorMetricsServiceByH2Impl(
+    val cairoEngine: CairoEngine,
+    val databaseClient: DatabaseClient
 ) : RouteMonitorMetricsService {
+
+    companion object {
+
+        val qpsLineMetricsMap = mapOf(
+            DateRangeDurationUnit.SECONDS to LineMetricsIntervalConf("yyyy-MM-dd HH:mm:", "second", "second"),
+            DateRangeDurationUnit.MINUTES to LineMetricsIntervalConf("yyyy-MM-dd HH:", "minute", "minute"),
+            DateRangeDurationUnit.HOURS to LineMetricsIntervalConf("yyyy-MM-dd ", "hour", "hour"),
+            DateRangeDurationUnit.DAYS to LineMetricsIntervalConf("yyyy-MM-", "days_in_month", "day"),
+        )
+
+        private val tableNameSet = mutableSetOf<String>()
+    }
+
+    /**
+     * 获取表名称
+     */
+    suspend fun getTableName(day: String): String {
+        return "route_metrics_record_${day}"
+    }
+
+    /**
+     * 获取表名 如果真实存在则为 true，反正 false
+     */
+    suspend fun getTableNameOfExists(day: String): String? {
+        val tableName = getTableName(day)
+        if (tableNameSet.contains(tableName)) return tableName
+        return null
+    }
+
+    /**
+     * 创建指定天的表，数据按天存储写在不同的表中
+     */
+    suspend fun createTable(day: String): String {
+        val tableName = getTableName(day)
+        if (tableNameSet.contains(tableName)) return tableName
+
+        val createTableSql: String = """
+            CREATE TABLE IF NOT EXISTS $tableName
+            (
+                id                 BIGINT PRIMARY KEY AUTO_INCREMENT,
+                ip                 VARCHAR(45)  NOT NULL,
+                method             VARCHAR(20)  NOT NULL,
+                endpoint           VARCHAR(255) NOT NULL,
+                request_time       BIGINT       NOT NULL,
+                handle_time        BIGINT       NOT NULL,
+                status_code        INT          NOT NULL,
+                request_body_size  BIGINT       NOT NULL,
+                response_body_size BIGINT       NOT NULL,
+                request_count      INT          NOT NULL,
+                constraint uk_${tableName.replace("_", "")} unique (request_time, status_code, ip, method, endpoint)
+            )
+        """.trimIndent()
+        databaseClient.sql(createTableSql).await()
+
+        // 添加表
+        tableNameSet.add(tableName)
+
+        return tableName
+    }
+
 
     /**
      * 添加请求指标记录
      */
     override suspend fun addRouteRecord(record: RouteMetricsRecordPo) {
         try {
-            val tableToken = cairoEngine.getTableTokenIfExists("route_metrics_record")
-            cairoEngine.getWalWriter(tableToken).use { writer ->
-                val row = writer.newRow(record.requestTime)
-                row.putSym(0, record.ip)
-                row.putVarchar(1, Utf8String(record.host))
-                row.putSym(2, record.method)
-                row.putVarchar(3, Utf8String(record.appPath))
-                row.putVarchar(4, Utf8String(Json.encode(record.queryParams)))
-                row.putTimestamp(5, record.requestTime)
-                row.putTimestamp(6, record.responseTime)
-                row.putInt(7, record.statusCode)
-                record.appRouteId?.let { row.putLong(8, it) }
-                record.targetUrl?.let { row.putVarchar(9, Utf8String(it)) }
-                row.putLong(10, record.requestBodySize)
-                row.putLong(11, record.responseBodySize)
+            val requestTime = record.requestTime
+            val requestLocalDateTime = requestTime.toLocalDateTime(TimeZone.currentSystemDefault())
 
-                row.append()
-                writer.commit()
-            }
+            val day = requestLocalDateTime.format(DATE_TIME_DAY_NO_SEP_FORMAT)
+            val tableName = createTable(day)
+
+            // 计算部分数据
+            val handleTime = (record.responseTime - requestTime).toLong(DurationUnit.MILLISECONDS)
+            val requestSecondTime = requestLocalDateTime.toInstant(TimeZone.currentSystemDefault()).epochSeconds
+
+            databaseClient.sql(
+                """
+                    MERGE INTO $tableName t
+                    USING (
+                        SELECT '${record.ip}' AS ip, '${record.method}' AS method, '${record.endpoint}' AS endpoint, 
+                        $requestSecondTime AS request_time, $handleTime AS handle_time, ${record.statusCode} AS status_code,
+                        ${record.requestBodySize} AS request_body_size, ${record.responseBodySize} AS response_body_size
+                    ) s
+                    ON (
+                        t.request_time = s.request_time AND t.status_code = s.status_code AND t.ip = s.ip
+                        AND t.method = s.method AND t.endpoint = s.endpoint
+                    )
+                    WHEN MATCHED THEN
+                        UPDATE SET t.handle_time = s.handle_time + t.handle_time, 
+                        t.request_body_size = t.request_body_size + s.request_body_size,
+                        t.response_body_size = t.response_body_size + s.response_body_size, 
+                        t.request_count = t.request_count + 1
+                    WHEN NOT MATCHED THEN
+                        INSERT (
+                            ip, method, endpoint, request_time, handle_time, status_code, 
+                            request_body_size, response_body_size, request_count 
+                        ) 
+                        VALUES (
+                            s.ip, s.method, s.endpoint, s.request_time, s.handle_time, s.status_code, s.request_body_size, 
+                            s.response_body_size, 1
+                        )
+            """.trimIndent()
+            )
+                .await()
         } catch (e: Exception) {
             if (log.isErrorEnabled) {
                 log.error("保存监控指标记录发生例外！", e)
@@ -76,14 +165,28 @@ class RouteMonitorMetricsServiceImpl(
      * 请求统计指标
      */
     override suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val count = cairoEngine.findOneNotNull(
-            """
-                    SELECT count(*) FROM route_metrics_record 
-                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                """.trimIndent()
-        ) { it.getLong(0) }
+        val dateRangeMs = input.getDateRangeMs()
+        val (form, to) = dateRangeMs
 
-        return ValueMetricsOutput(count)
+        val value = (0..dateRangeMs.diffDay()).sumOf {
+            val day = (form + it.toDuration(DurationUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_COMPONENTS_FORMAT)
+
+            val count = getTableNameOfExists(day)?.let { tableName ->
+                databaseClient.sql(
+                    """
+                    SELECT count(*) FROM $tableName 
+                    WHERE request_time between ${form.epochSeconds} and ${to.epochSeconds}
+                """.trimIndent()
+                )
+                    .map { readable: Readable -> readable.get(0) as Long }
+                    .one()
+                    .awaitSingle()
+            }
+
+            count ?: 0
+        }
+
+        return ValueMetricsOutput(value)
     }
 
     /**
@@ -174,15 +277,6 @@ class RouteMonitorMetricsServiceImpl(
         ) { it.getLong(0) }
 
         return ValueMetricsOutput(count)
-    }
-
-    companion object {
-        val qpsLineMetricsMap = mapOf(
-            DateRangeDurationUnit.SECONDS to LineMetricsIntervalConf("yyyy-MM-dd HH:mm:", "second", "second"),
-            DateRangeDurationUnit.MINUTES to LineMetricsIntervalConf("yyyy-MM-dd HH:", "minute", "minute"),
-            DateRangeDurationUnit.HOURS to LineMetricsIntervalConf("yyyy-MM-dd ", "hour", "hour"),
-            DateRangeDurationUnit.DAYS to LineMetricsIntervalConf("yyyy-MM-", "days_in_month", "day"),
-        )
     }
 
     /**

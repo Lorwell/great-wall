@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GreatWallApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <option name="ALTERNATIVE_JRE_PATH" value="$USER_HOME$/.jdks/graalvm-jdk-21.0.1+12.1" />
+    <option name="ALTERNATIVE_JRE_PATH" value="graalvm-21" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="SCHEDULED_DEBUGGER" value="true" />
     <module name="great-wall.great-wall-server.main" />
