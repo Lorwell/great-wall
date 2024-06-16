@@ -90,8 +90,8 @@ export const removeSuffix = (str: string, suffix: string) => {
  * @param size
  * @param defaultValue 默认值
  */
-export const byteSizeToUnitStr = (size: number,
-                          defaultValue?: string): string => {
+export const byteSizeToUnitStr = (size?: number,
+                                  defaultValue?: string): string => {
   if (!size)
     return defaultValue || "";
 

@@ -19,13 +19,9 @@ import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import io.questdb.cairo.CairoEngine
 import io.questdb.std.str.Utf8StringSink
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.DateTimeComponents.Companion.Format
 import kotlinx.datetime.format.DateTimeFormat
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.await
 import org.springframework.stereotype.Service
@@ -33,8 +29,12 @@ import org.springframework.transaction.annotation.Transactional
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import io.r2dbc.spi.Readable
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.*
+import org.springframework.scheduling.annotation.Scheduled
 
 /**
  * 基于 h2 实现的 [RouteMonitorMetricsService]
@@ -58,8 +58,19 @@ class RouteMonitorMetricsServiceByH2Impl(
             DateRangeDurationUnit.HOURS to LineMetricsIntervalConf("yyyy-MM-dd ", "hour", "hour"),
             DateRangeDurationUnit.DAYS to LineMetricsIntervalConf("yyyy-MM-", "days_in_month", "day"),
         )
+    }
 
-        private val tableNameSet = mutableSetOf<String>()
+    // 表名集合
+    private val tableNameSet: MutableSet<String> by lazy {
+        runBlocking {
+            databaseClient.sql("show tables")
+                .map { readable: Readable -> readable.get(0) as String }
+                .all()
+                .collectList()
+                .awaitSingle()
+                .filter { it.startsWith("route_metrics_record_") }
+                .toMutableSet()
+        }
     }
 
     /**
@@ -165,118 +176,54 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 请求统计指标
      */
     override suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val dateRangeMs = input.getDateRangeMs()
-        val (form, to) = dateRangeMs
-
-        val value = (0..dateRangeMs.diffDay()).sumOf {
-            val day = (form + it.toDuration(DurationUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_COMPONENTS_FORMAT)
-
-            val count = getTableNameOfExists(day)?.let { tableName ->
-                databaseClient.sql(
-                    """
-                    SELECT count(*) FROM $tableName 
-                    WHERE request_time between ${form.epochSeconds} and ${to.epochSeconds}
-                """.trimIndent()
-                )
-                    .map { readable: Readable -> readable.get(0) as Long }
-                    .one()
-                    .awaitSingle()
-            }
-
-            count ?: 0
+        return input.countMetrics { tableName, requestTimeFragment ->
+            "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment"
         }
-
-        return ValueMetricsOutput(value)
     }
 
     /**
      * ip 统计指标
      */
     override suspend fun ipCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val count = cairoEngine.findOneNotNull(
-            """
-                    SELECT count_distinct(ip) FROM route_metrics_record 
-                    WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                """.trimIndent()
-        ) { it.getLong(0) }
-
-        return ValueMetricsOutput(count)
+        return input.countMetrics { tableName, requestTimeFragment ->
+            "SELECT count(distinct ip) FROM $tableName WHERE $requestTimeFragment"
+        }
     }
 
     /**
      * 请求流量指标
      */
     override suspend fun requestTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val count = cairoEngine.findOne(
-            """
-                    SELECT
-                     case when value > 0 then total else 0 end
-                    FROM
-                      (
-                        SELECT
-                          sum(request_body_size) as total,
-                          count as value
-                        FROM
-                          route_metrics_record
-                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                      )
-                """.trimIndent()
-        ) { it.getLong(0) } ?: 0
-
-        return ValueMetricsOutput(count)
+        return input.countMetrics { tableName, requestTimeFragment ->
+            "SELECT sum(request_body_size) FROM $tableName WHERE $requestTimeFragment"
+        }
     }
 
     /**
      * 响应流量指标
      */
     override suspend fun responseTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val count = cairoEngine.findOne(
-            """
-                    SELECT
-                     case when value > 0 then total else 0 end
-                    FROM
-                      (
-                        SELECT
-                          sum(response_body_size) as total,
-                          count as value
-                        FROM
-                          route_metrics_record
-                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                      )
-                """.trimIndent()
-        ) { it.getLong(0) } ?: 0
-
-        return ValueMetricsOutput(count)
+        return input.countMetrics { tableName, requestTimeFragment ->
+            "SELECT sum(response_body_size) FROM $tableName WHERE $requestTimeFragment"
+        }
     }
 
     /**
      * 状态码 4xx 统计指标
      */
     override suspend fun status4xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val count = cairoEngine.findOneNotNull(
-            """
-                    SELECT count FROM route_metrics_record 
-                    WHERE status_code >= 400 AND status_code < 500 
-                    AND ${input.getQuestDBDateFilterFragment("request_time")}
-                """.trimIndent()
-        ) { it.getLong(0) }
-
-        return ValueMetricsOutput(count)
+        return input.countMetrics { tableName, requestTimeFragment ->
+            "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment AND status_code >= 400 AND status_code < 500"
+        }
     }
 
     /**
      * 状态码 5xx 统计指标
      */
     override suspend fun status5xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        val count = cairoEngine.findOneNotNull(
-            """
-                    SELECT count FROM route_metrics_record 
-                    WHERE status_code >= 500 
-                    AND ${input.getQuestDBDateFilterFragment("request_time")}
-                """.trimIndent()
-        ) { it.getLong(0) }
-
-        return ValueMetricsOutput(count)
+        return input.countMetrics { tableName, requestTimeFragment ->
+            "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment AND status_code >= 500"
+        }
     }
 
     /**
@@ -436,5 +383,32 @@ class RouteMonitorMetricsServiceByH2Impl(
                     }
                 TopQpsLineMetricsOutput(entry.key, data)
             }
+    }
+
+
+    /**
+     * 统计指标
+     */
+    suspend fun RouteCountMetricsInput.countMetrics(
+        sqlProvider: (tableName: String, requestTimeFragment: String) -> String
+    ): ValueMetricsOutput {
+        val dateRangeMs = getDateRangeMs()
+        val (form, to) = dateRangeMs
+
+        val value = (0..dateRangeMs.diffDay()).sumOf {
+            val day = (form + it.toDuration(DurationUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_COMPONENTS_FORMAT)
+
+            val count = getTableNameOfExists(day)?.let { tableName ->
+                val fragment = "request_time between ${form.epochSeconds} and ${to.epochSeconds}"
+                databaseClient.sql(sqlProvider(tableName, fragment))
+                    .map { readable: Readable -> (readable.get(0) as Number?)?.toLong() ?: 0 }
+                    .one()
+                    .awaitSingle()
+            }
+
+            count ?: 0
+        }
+
+        return ValueMetricsOutput(value)
     }
 }

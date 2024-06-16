@@ -21,7 +21,7 @@ export default function RequestTrafficMetrics() {
         {loading ? (<Spinner className={"w-4 h-4"}/>) : (<Clock11 className={"w-4 h-4"}/>)}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{byteSizeToUnitStr(data?.value || 0)}</div>
+        <div className="text-2xl font-bold">{byteSizeToUnitStr(data?.value, "0B")}</div>
         <p className="text-xs text-muted-foreground">
           请求流量累加之和
         </p>

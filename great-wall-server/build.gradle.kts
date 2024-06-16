@@ -105,7 +105,7 @@ tasks.withType<Test> {
 // 处理资源之前先将前端资源复制到指定目录
 tasks.withType<ProcessResources> {
     // 如果不想在构建时编译前端项目，可以将此行注释，在打包项目时解开注释即可
-//    dependsOn("copyFeBuildResultToBe")
+    dependsOn("copyFeBuildResultToBe")
 }
 
 
