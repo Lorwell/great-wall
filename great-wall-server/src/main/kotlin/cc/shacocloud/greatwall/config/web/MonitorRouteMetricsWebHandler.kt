@@ -4,9 +4,7 @@ import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import cc.shacocloud.greatwall.utils.getHost
 import cc.shacocloud.greatwall.utils.getRealIp
-import io.questdb.std.Os
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

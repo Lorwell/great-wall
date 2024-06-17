@@ -16,7 +16,7 @@ data class TopQpsLineMetricsMo(
     /**
      * api 请求地址
      */
-    val api: String,
+    val endpoint: String,
 
     /**
      * 值

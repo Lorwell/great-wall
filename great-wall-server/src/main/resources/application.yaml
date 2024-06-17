@@ -75,5 +75,4 @@ site:
 logging:
   level:
     root: info
-    "reactor.netty.http.server.AccessLog": info
-    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug
+#    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug

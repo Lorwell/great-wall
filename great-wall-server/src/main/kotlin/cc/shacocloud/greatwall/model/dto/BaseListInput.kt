@@ -1,9 +1,5 @@
 package cc.shacocloud.greatwall.model.dto
 
-import com.querydsl.core.types.Predicate
-import com.querydsl.core.types.dsl.BooleanExpression
-import com.querydsl.core.types.dsl.Expressions
-import com.querydsl.core.types.dsl.StringPath
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import org.springframework.data.domain.PageRequest
@@ -17,11 +13,6 @@ import org.springframework.data.domain.Sort
  * @author 思追(shaco)
  */
 open class BaseListInput {
-
-    companion object {
-
-        val NOTHING: BooleanExpression = Expressions.booleanTemplate("1=1")
-    }
 
     // ---------------------
 
@@ -73,43 +64,6 @@ open class BaseListInput {
     fun toSort(): Sort {
         val orderList = orderBy?.map { Sort.Order(orderDirection, it, orderNullHandling) } ?: emptyList()
         return if (orderList.isEmpty()) Sort.unsorted() else Sort.by(orderList)
-    }
-
-    /**
-     * 关键字模糊匹配，多个使用 and 拼接
-     */
-    fun likeKeyWordAnd(vararg paths: StringPath): Predicate {
-        if (keyword.isNullOrBlank() || paths.isEmpty()) return NOTHING
-
-        var expression: BooleanExpression? = null
-        for (path in paths) {
-            expression = if (expression == null) {
-                path.like("%!$keyword%", '!')
-            } else {
-                expression.and(path.like("%!$keyword%", '!'))
-            }
-        }
-
-        return expression!!
-    }
-
-
-    /**
-     * 关键字模糊匹配，多个使用 or 拼接
-     */
-    fun likeKeyWordOr(vararg paths: StringPath): Predicate {
-        if (keyword.isNullOrBlank() || paths.isEmpty()) return NOTHING
-
-        var expression: BooleanExpression? = null
-        for (path in paths) {
-            expression = if (expression == null) {
-                path.like("%!$keyword%", '!')
-            } else {
-                expression.or(path.like("%!$keyword%", '!'))
-            }
-        }
-
-        return expression!!
     }
 
 }

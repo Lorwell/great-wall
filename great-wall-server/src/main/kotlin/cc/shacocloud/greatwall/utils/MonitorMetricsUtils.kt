@@ -1,7 +1,10 @@
 package cc.shacocloud.greatwall.utils
 
+import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
-import kotlinx.datetime.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format
 import kotlinx.datetime.format.DateTimeFormat
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -9,12 +12,11 @@ import kotlin.time.toDuration
 enum class DateRangeDurationUnit(
     val unit: DurationUnit,
     val format: DateTimeFormat<LocalDateTime>,
-    val outputFormat: DateTimeFormat<LocalDateTime>
 ) {
-    SECONDS(DurationUnit.SECONDS, DATE_TIME_FORMAT, TIME_SECOND_FORMAT),
-    MINUTES(DurationUnit.MINUTES, DATE_TIME_MINUTE_FORMAT, TIME_DAY_MINUTE_FORMAT),
-    HOURS(DurationUnit.HOURS, DATE_TIME_HOUR_FORMAT, TIME_DAY_HOUR_FORMAT),
-    DAYS(DurationUnit.DAYS, DATE_TIME_DAY_FORMAT, DATE_TIME_DAY_FORMAT);
+    SECONDS(DurationUnit.SECONDS, TIME_SECOND_FORMAT),
+    MINUTES(DurationUnit.MINUTES, TIME_DAY_MINUTE_FORMAT),
+    HOURS(DurationUnit.HOURS, TIME_DAY_HOUR_FORMAT),
+    DAYS(DurationUnit.DAYS, DATE_TIME_DAY_FORMAT);
 }
 
 data class LineMetricsIntervalConf(
@@ -32,40 +34,33 @@ object MonitorMetricsUtils {
 
     /**
      * 时间范围数据补全
-     * @param unit 时间单位
-     * @param range 时间范围
      * @param sourceData 源数据
      */
     fun <T : LineMetricsOutput, R> dateRangeDataCompletion(
-        interval: Int,
-        unit: DateRangeDurationUnit,
-        range: Pair<Instant, Instant>,
+        input: RouteLineMetricsInput,
         sourceData: List<T>,
         transform: (T?, String) -> R
     ): List<R> {
-        val timeZone = TimeZone.currentSystemDefault()
+        val interval = input.rawInterval
+        val unit = input.rawIntervalType
         val durationUnit = unit.unit
 
         // 计算差值
-        var (from, to) = range
+        var (from, to) = input.getDateRangeMs()
 
-        val modulusDurationUnit =
-            if (DurationUnit.DAYS == durationUnit) {
-                durationUnit
-            } else {
-                DurationUnit.entries[durationUnit.ordinal + 1]
-            }
+        val furtherUnit = input.getFurtherUnit()
+        val modulus = 1.toDuration(furtherUnit.unit).toLong(DurationUnit.MILLISECONDS)
 
-        val modulus = 1.toDuration(modulusDurationUnit).toLong(DurationUnit.MILLISECONDS)
         from = Instant.fromEpochMilliseconds(from.toEpochMilliseconds() / modulus * modulus)
         val gap = (to - from).toLong(durationUnit)
         val number = gap / interval + if (gap % interval > 0) 1 else 0
 
         val unitMap = sourceData.associateBy { it.unit }
         return (0..number).map { i ->
-            val time = (from + (i * interval).toDuration(durationUnit)).toLocalDateTime(timeZone)
-            val valueUnit = time.format(unit.format)
-            transform(unitMap[valueUnit], time.format(unit.outputFormat))
+            val time = (from + (i * interval).toDuration(durationUnit))
+            val valueUnit = time.toLocalDateTime().format(unit.format)
+            val t = unitMap[valueUnit]
+            transform(t, valueUnit)
         }
     }
 

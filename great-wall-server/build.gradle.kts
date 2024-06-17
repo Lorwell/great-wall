@@ -67,13 +67,8 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.boot:spring-boot-starter-json")
 
-    implementation("com.infobip:infobip-spring-data-r2dbc-querydsl-boot-starter:9.0.7")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("io.r2dbc:r2dbc-h2")
-    implementation("com.querydsl:querydsl-kotlin:5.1.0")
-    implementation("com.querydsl:querydsl-apt:5.1.0")
-    implementation("com.infobip:infobip-spring-data-r2dbc-querydsl-boot-starter:9.0.7")
-    kapt("com.querydsl:querydsl-apt:5.1.0:general")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
@@ -81,9 +76,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-
-    // quest db 时序数据库
-    implementation("org.questdb:questdb:8.0.0")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -105,9 +97,15 @@ tasks.withType<Test> {
 // 处理资源之前先将前端资源复制到指定目录
 tasks.withType<ProcessResources> {
     // 如果不想在构建时编译前端项目，可以将此行注释，在打包项目时解开注释即可
-    dependsOn("copyFeBuildResultToBe")
+//    dependsOn("copyFeBuildResultToBe")
 }
 
+graalvmNative {
+    binaries.all {
+        buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
+        buildArgs.add("--initialize-at-build-time=kotlin.DeprecationLevel")
+    }
+}
 
 // 构建前端项目
 task("buildFe") {

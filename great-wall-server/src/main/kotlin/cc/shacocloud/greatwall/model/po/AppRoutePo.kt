@@ -2,9 +2,7 @@ package cc.shacocloud.greatwall.model.po
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
-import cc.shacocloud.greatwall.model.mo.RouteUrl
 import cc.shacocloud.greatwall.model.mo.RouteUrls
-import com.querydsl.core.annotations.QueryEntity
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table

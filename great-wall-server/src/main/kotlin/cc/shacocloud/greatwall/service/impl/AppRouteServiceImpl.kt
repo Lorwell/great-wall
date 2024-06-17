@@ -4,13 +4,13 @@ import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
 import cc.shacocloud.greatwall.model.po.AppRoutePo
-import cc.shacocloud.greatwall.model.po.QAppRoutePo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
-import cc.shacocloud.greatwall.repository.queryPage
 import cc.shacocloud.greatwall.service.AppRouteService
 import cc.shacocloud.greatwall.utils.Slf4j
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -24,6 +24,7 @@ import java.util.*
 @Transactional(rollbackFor = [Exception::class])
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
+    val databaseClient: DatabaseClient
 ) : AppRouteService {
 
     /**
@@ -55,12 +56,29 @@ class AppRouteServiceImpl(
      * 列表查询
      */
     override suspend fun list(input: AppRouteListInput): Page<AppRoutePo> {
+
+        val keyword = input.keyword
+
+        val total =
+            if (keyword.isNullOrBlank()) {
+                appRouteRepository.count().awaitSingle()
+            } else {
+                appRouteRepository.countByNameOrDescribe(keyword, keyword).awaitSingle()
+            }
+
         val pageable = input.toPageable()
+        if (total == 0.toLong()) {
+            return PageImpl(emptyList(), pageable, total)
+        }
 
-        val qAppRoutePo = QAppRoutePo.appRoutePo
-        val predicate = input.likeKeyWordOr(qAppRoutePo.name, qAppRoutePo.describe)
+        val contents =
+            if (keyword.isNullOrBlank()) {
+                appRouteRepository.findAllBy(pageable).collectList().awaitSingle()
+            } else {
+                appRouteRepository.findAllByNameOrDescribe(keyword, keyword, pageable).collectList().awaitSingle()
+            }
 
-        return appRouteRepository.queryPage(predicate, pageable)
+        return PageImpl(contents, pageable, total)
     }
 
     /**

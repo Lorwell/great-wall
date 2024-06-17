@@ -82,7 +82,7 @@ open class WebFluxDispatcherHandler() : WebHandler, PreFlightRequestHandler, App
 
 
     override fun handle(exchange: ServerWebExchange): Mono<Void> {
-        val handlerMappings = this.handlerMappings ?: return createNotFoundError()
+        val handlerMappings = this.handlerMappings
 
         if (CorsUtils.isPreFlightRequest(exchange.request)) {
             return handlePreFlight(exchange)

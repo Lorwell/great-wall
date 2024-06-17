@@ -14,7 +14,7 @@ data class DurationLineMetricsOutput(
     /**
      * 平均值
      */
-    val avgValue: Long,
+    val avgValue: Double,
 
     /**
      * 最大值

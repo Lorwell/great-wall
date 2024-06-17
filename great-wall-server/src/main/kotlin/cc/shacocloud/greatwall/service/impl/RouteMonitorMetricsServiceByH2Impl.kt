@@ -1,40 +1,27 @@
 package cc.shacocloud.greatwall.service.impl
 
-import cc.shacocloud.greatwall.config.questdb.findAll
-import cc.shacocloud.greatwall.config.questdb.findOne
-import cc.shacocloud.greatwall.config.questdb.findOneNotNull
 import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
-import cc.shacocloud.greatwall.model.dto.output.DurationLineMetricsOutput
-import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
-import cc.shacocloud.greatwall.model.dto.output.TopQpsLineMetricsOutput
-import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.*
 import cc.shacocloud.greatwall.model.mo.TopQpsLineMetricsMo
 import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.*
-import cc.shacocloud.greatwall.utils.AppUtil.timeZoneOffset
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import io.questdb.cairo.CairoEngine
-import io.questdb.std.str.Utf8StringSink
-import kotlinx.datetime.format.DateTimeComponents
-import kotlinx.datetime.format.DateTimeComponents.Companion.Format
-import kotlinx.datetime.format.DateTimeFormat
-import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.r2dbc.core.await
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 import io.r2dbc.spi.Readable
-import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.*
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.r2dbc.core.await
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * 基于 h2 实现的 [RouteMonitorMetricsService]
@@ -46,35 +33,54 @@ import org.springframework.scheduling.annotation.Scheduled
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class RouteMonitorMetricsServiceByH2Impl(
-    val cairoEngine: CairoEngine,
     val databaseClient: DatabaseClient
 ) : RouteMonitorMetricsService {
-
-    companion object {
-
-        val qpsLineMetricsMap = mapOf(
-            DateRangeDurationUnit.SECONDS to LineMetricsIntervalConf("yyyy-MM-dd HH:mm:", "second", "second"),
-            DateRangeDurationUnit.MINUTES to LineMetricsIntervalConf("yyyy-MM-dd HH:", "minute", "minute"),
-            DateRangeDurationUnit.HOURS to LineMetricsIntervalConf("yyyy-MM-dd ", "hour", "hour"),
-            DateRangeDurationUnit.DAYS to LineMetricsIntervalConf("yyyy-MM-", "days_in_month", "day"),
-        )
-    }
 
     // 表名集合
     private val tableNameSet: MutableSet<String> by lazy {
         runBlocking {
-            databaseClient.sql("show tables")
-                .map { readable: Readable -> readable.get(0) as String }
-                .all()
-                .collectList()
-                .awaitSingle()
-                .filter { it.startsWith("route_metrics_record_") }
-                .toMutableSet()
+            getAllRouteMonitorMetricsTables()
         }
     }
 
     /**
+     * 删除30天之前的表信息
+     */
+    @Scheduled(cron = "1 0 0 * * *")
+    suspend fun deleteExpirationTables() {
+        val current = Clock.System.now().toLocalDateTime()
+        val needDelTables = getAllRouteMonitorMetricsTables()
+            .filter {
+                val day = it.removePrefix("route_metrics_record_")
+                val dayDate = DATE_TIME_DAY_NO_SEP_FORMAT.parse(day)
+                (current to dayDate).diffDayByLocalDateTime() > 30
+            }
+
+        for (table in needDelTables) {
+            databaseClient.sql("drop table if exists $table")
+                .await()
+        }
+
+        tableNameSet.clear()
+        tableNameSet.addAll(getAllRouteMonitorMetricsTables())
+    }
+
+    /**
+     * 获取所有路由指标记录表
+     */
+    suspend fun getAllRouteMonitorMetricsTables(): MutableSet<String> {
+        return databaseClient.sql("show tables")
+            .map { readable: Readable -> readable.get(0) as String }
+            .all()
+            .collectList()
+            .awaitSingle()
+            .filter { it.startsWith("route_metrics_record_") }
+            .toMutableSet()
+    }
+
+    /**
      * 获取表名称
+     * @param day [DATE_TIME_DAY_NO_SEP_FORMAT]
      */
     suspend fun getTableName(day: String): String {
         return "route_metrics_record_${day}"
@@ -82,6 +88,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 
     /**
      * 获取表名 如果真实存在则为 true，反正 false
+     * @param day [DATE_TIME_DAY_NO_SEP_FORMAT]
      */
     suspend fun getTableNameOfExists(day: String): String? {
         val tableName = getTableName(day)
@@ -91,6 +98,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 
     /**
      * 创建指定天的表，数据按天存储写在不同的表中
+     * @param day [DATE_TIME_DAY_NO_SEP_FORMAT]
      */
     suspend fun createTable(day: String): String {
         val tableName = getTableName(day)
@@ -105,6 +113,7 @@ class RouteMonitorMetricsServiceByH2Impl(
                 endpoint           VARCHAR(255) NOT NULL,
                 request_time       BIGINT       NOT NULL,
                 handle_time        BIGINT       NOT NULL,
+                max_time           INT          NOT NULL,
                 status_code        INT          NOT NULL,
                 request_body_size  BIGINT       NOT NULL,
                 response_body_size BIGINT       NOT NULL,
@@ -152,15 +161,16 @@ class RouteMonitorMetricsServiceByH2Impl(
                         UPDATE SET t.handle_time = s.handle_time + t.handle_time, 
                         t.request_body_size = t.request_body_size + s.request_body_size,
                         t.response_body_size = t.response_body_size + s.response_body_size, 
-                        t.request_count = t.request_count + 1
+                        t.request_count = t.request_count + 1,
+                        t.max_time = GREATEST(t.max_time, s.handle_time)
                     WHEN NOT MATCHED THEN
                         INSERT (
                             ip, method, endpoint, request_time, handle_time, status_code, 
-                            request_body_size, response_body_size, request_count 
+                            request_body_size, response_body_size, request_count, max_time
                         ) 
                         VALUES (
                             s.ip, s.method, s.endpoint, s.request_time, s.handle_time, s.status_code, s.request_body_size, 
-                            s.response_body_size, 1
+                            s.response_body_size, 1, s.handle_time
                         )
             """.trimIndent()
             )
@@ -176,7 +186,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 请求统计指标
      */
     override suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return input.countMetrics { tableName, requestTimeFragment ->
+        return countMetrics(input) { tableName, requestTimeFragment ->
             "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment"
         }
     }
@@ -185,7 +195,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * ip 统计指标
      */
     override suspend fun ipCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return input.countMetrics { tableName, requestTimeFragment ->
+        return countMetrics(input) { tableName, requestTimeFragment ->
             "SELECT count(distinct ip) FROM $tableName WHERE $requestTimeFragment"
         }
     }
@@ -194,7 +204,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 请求流量指标
      */
     override suspend fun requestTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return input.countMetrics { tableName, requestTimeFragment ->
+        return countMetrics(input) { tableName, requestTimeFragment ->
             "SELECT sum(request_body_size) FROM $tableName WHERE $requestTimeFragment"
         }
     }
@@ -203,7 +213,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 响应流量指标
      */
     override suspend fun responseTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return input.countMetrics { tableName, requestTimeFragment ->
+        return countMetrics(input) { tableName, requestTimeFragment ->
             "SELECT sum(response_body_size) FROM $tableName WHERE $requestTimeFragment"
         }
     }
@@ -212,7 +222,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 状态码 4xx 统计指标
      */
     override suspend fun status4xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return input.countMetrics { tableName, requestTimeFragment ->
+        return countMetrics(input) { tableName, requestTimeFragment ->
             "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment AND status_code >= 400 AND status_code < 500"
         }
     }
@@ -221,7 +231,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 状态码 5xx 统计指标
      */
     override suspend fun status5xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return input.countMetrics { tableName, requestTimeFragment ->
+        return countMetrics(input) { tableName, requestTimeFragment ->
             "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment AND status_code >= 500"
         }
     }
@@ -230,44 +240,34 @@ class RouteMonitorMetricsServiceByH2Impl(
      * qps 折线图指标
      */
     override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<QpsLineMetricsOutput> {
-        val interval = input.interval
-        val intervalType = input.intervalType
-        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
-        val dateRangeMs = input.getDateRangeMs()
 
-        val second = interval.toDuration(intervalType.unit).toLong(DurationUnit.SECONDS)
-        val result = cairoEngine.findAll(
-            """
-                    SELECT
-                      concat(
-                        to_str(trunc_time, '${prefixFormat}'),
-                        CASE
-                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) >= 10 THEN ''
-                          ELSE '0'
-                        END,
-                        (${extractFunc}(trunc_time) / ${interval}) * $interval
-                      ) as unit,
-                       CASE WHEN sum(value) % $second > 0 THEN (sum(value) / ${second}) + 1 
-                       ELSE sum(value) / $second END as value
-                    FROM
-                      (
-                        SELECT
-                          date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
-                          count as value
-                        FROM
-                          route_metrics_record
-                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                        GROUP BY trunc_time
-                      ) timestamp(trunc_time)
-                    GROUP BY  unit
+        // 查询的sql
+        val sqlProvider: (LineMetricsInfo) -> String =
+            { info ->
+                val (tableName, requestTimeFragment, second, _, furtherUnitSecond) = info
+                """
+                    select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
+                           sum(request_count)                                                                                       as val
+                    from $tableName
+                    where $requestTimeFragment
+                    group by time
                 """.trimIndent()
-        ) {
-            val utf8StrSink = Utf8StringSink()
-            it.getStr(0, utf8StrSink)
-            QpsLineMetricsOutput(utf8StrSink.toString(), it.getLong(1))
+            }
+
+        // 结果封装
+        val resultExtract: (Readable, LineMetricsInfo) -> QpsLineMetricsOutput = { readable, _ ->
+            val unit = Instant.fromEpochSeconds((readable.get(0) as Number).toLong())
+                .toLocalDateTime()
+                .format(input.rawIntervalType.format)
+            val value = (readable.get(1) as Number).toLong()
+            QpsLineMetricsOutput(unit, value)
         }
 
-        return dateRangeDataCompletion(interval, intervalType, dateRangeMs, result) { it, unit ->
+        // 查询指标
+        val result = lineMetrics(input, sqlProvider, resultExtract)
+
+        // 数据补全
+        return dateRangeDataCompletion(input, result) { it, unit ->
             QpsLineMetricsOutput(unit, it?.value ?: 0)
         }
     }
@@ -276,46 +276,36 @@ class RouteMonitorMetricsServiceByH2Impl(
      * duration 折线图指标
      */
     override suspend fun durationLineMetrics(input: RouteLineMetricsInput): List<DurationLineMetricsOutput> {
-        val interval = input.interval
-        val intervalType = input.intervalType
-        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
-        val dateRangeMs = input.getDateRangeMs()
-
-        val result = cairoEngine.findAll(
-            """
-                    SELECT
-                      concat(
-                        to_str(trunc_time, '${prefixFormat}'),
-                        CASE
-                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) >= 10 THEN ''
-                          ELSE '0'
-                        END,
-                        (${extractFunc}(trunc_time) / ${interval}) * $interval
-                      ) as unit,
-                       sum(total_time) / sum(total)  as avg_value,
-                       max(max_time)  as max_value
-                    FROM
-                      (
-                        SELECT
-                          date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
-                          count as total,
-                          sum((response_time - request_time) / 1000) as total_time,
-                          max((response_time - request_time) / 1000) as max_time
-                        FROM
-                          route_metrics_record
-                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                        GROUP BY trunc_time 
-                      ) timestamp(trunc_time)
-                    GROUP BY unit
+        // 查询的sql
+        val sqlProvider: (LineMetricsInfo) -> String =
+            { info ->
+                val (tableName, requestTimeFragment, second, _, furtherUnitSecond) = info
+                """
+                    select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
+                           ROUND(sum(handle_time) / sum(request_count), 2) as val,
+                           max(max_time) as max_time
+                    from $tableName
+                    where $requestTimeFragment
+                    group by time
                 """.trimIndent()
-        ) {
-            val utf8StrSink = Utf8StringSink()
-            it.getStr(0, utf8StrSink)
-            DurationLineMetricsOutput(utf8StrSink.toString(), it.getLong(1), it.getLong(2))
+            }
+
+        // 结果封装
+        val resultExtract: (Readable, LineMetricsInfo) -> DurationLineMetricsOutput = { readable, _ ->
+            val unit = Instant.fromEpochSeconds((readable.get(0) as Number).toLong())
+                .toLocalDateTime()
+                .format(input.rawIntervalType.format)
+            val avgValue = (readable.get(1) as Number).toDouble()
+            val maxValue = (readable.get(2) as Number).toLong()
+            DurationLineMetricsOutput(unit, avgValue, maxValue)
         }
 
-        return dateRangeDataCompletion(interval, intervalType, dateRangeMs, result) { it, unit ->
-            DurationLineMetricsOutput(unit, it?.avgValue ?: 0, it?.maxValue ?: 0)
+        // 查询指标
+        val result = lineMetrics(input, sqlProvider, resultExtract)
+
+        // 数据补全
+        return dateRangeDataCompletion(input, result) { it, unit ->
+            DurationLineMetricsOutput(unit, it?.avgValue ?: 0.toDouble(), it?.maxValue ?: 0)
         }
     }
 
@@ -323,62 +313,40 @@ class RouteMonitorMetricsServiceByH2Impl(
      * top qps 折线图
      */
     override suspend fun topQpsLineMetrics(input: TopRouteLineMetricsInput): List<TopQpsLineMetricsOutput> {
-        val interval = input.interval
-        val intervalType = input.intervalType
-        val (prefixFormat, extractFunc, truncFunc) = requireNotNull(qpsLineMetricsMap[intervalType])
-
-        val dateRangeMs = input.getDateRangeMs()
-
-        val second = interval.toDuration(intervalType.unit).toLong(DurationUnit.SECONDS)
-        val result = cairoEngine.findAll(
-            """
-                    SELECT
-                      concat(
-                        to_str(trunc_time, '${prefixFormat}'),
-                        CASE
-                          WHEN ((${extractFunc}(trunc_time) / ${interval}) * ${interval}) >= 10 THEN ''
-                          ELSE '0'
-                        END,
-                        (${extractFunc}(trunc_time) / ${interval}) * $interval
-                      ) as unit,
-                       d.api,
-                       CASE WHEN sum(d.value) % $second > 0 THEN (sum(d.value) / ${second}) + 1 
-                       ELSE sum(d.value) / $second END as value
-                    FROM
-                      (
-                        SELECT
-                          date_trunc('${truncFunc}', to_timezone(request_time, '${timeZoneOffset()}')) as trunc_time,
-                          concat(method, ' ', app_path) as api,
-                          count as value
-                        FROM
-                          route_metrics_record
-                        WHERE ${input.getQuestDBDateFilterFragment("request_time")}
-                        GROUP BY api,trunc_time
-                      ) as d timestamp(trunc_time),
-                      (
-                          SELECT
-                            concat(method, ' ', app_path) as api,
-                            count() as value
-                          FROM  route_metrics_record
-                          GROUP BY api
-                          ORDER BY value desc
-                          LIMIT ${input.top}
-                        ) as t
-                    WHERE t.api = d.api 
-                    GROUP BY d.api, d.trunc_time;
+        // 查询的sql
+        val sqlProvider: (LineMetricsInfo) -> String =
+            { info ->
+                val (tableName, requestTimeFragment, second, _, furtherUnitSecond) = info
+                """
+                    select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
+                           endpoint,
+                           sum(request_count)  as val
+                    from $tableName
+                    where $requestTimeFragment
+                    group by time, endpoint
+                    order by val desc
+                    limit ${input.top}
                 """.trimIndent()
-        ) {
-            val unitStrSink = Utf8StringSink()
-            it.getStr(0, unitStrSink)
-            val apiStrSink = Utf8StringSink()
-            it.getStr(1, apiStrSink)
-            TopQpsLineMetricsMo(unitStrSink.toString(), apiStrSink.toString(), it.getLong(2))
+            }
+
+        // 结果封装
+        val resultExtract: (Readable, LineMetricsInfo) -> TopQpsLineMetricsMo = { readable, _ ->
+            val unit = Instant.fromEpochSeconds((readable.get(0) as Number).toLong())
+                .toLocalDateTime()
+                .format(input.rawIntervalType.format)
+            val endpoint = readable.get(1).toString()
+            val value = (readable.get(2) as Number).toLong()
+            TopQpsLineMetricsMo(unit, endpoint, value)
         }
 
-        return result.groupBy { it.api }
+        // 查询指标
+        val result = lineMetrics(input, sqlProvider, resultExtract)
+
+        // 数据补全
+        return result.groupBy { it.endpoint }
             .map { entry ->
                 val data =
-                    dateRangeDataCompletion(interval, intervalType, dateRangeMs, entry.value) { it, unit ->
+                    dateRangeDataCompletion(input, entry.value) { it, unit ->
                         QpsLineMetricsOutput(unit, it?.value ?: 0)
                     }
                 TopQpsLineMetricsOutput(entry.key, data)
@@ -389,21 +357,24 @@ class RouteMonitorMetricsServiceByH2Impl(
     /**
      * 统计指标
      */
-    suspend fun RouteCountMetricsInput.countMetrics(
+    suspend fun countMetrics(
+        input: RouteCountMetricsInput,
         sqlProvider: (tableName: String, requestTimeFragment: String) -> String
     ): ValueMetricsOutput {
-        val dateRangeMs = getDateRangeMs()
+        val dateRangeMs = input.getDateRangeMs()
         val (form, to) = dateRangeMs
 
-        val value = (0..dateRangeMs.diffDay()).sumOf {
-            val day = (form + it.toDuration(DurationUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_COMPONENTS_FORMAT)
+        val value = (0..dateRangeMs.diffDayByInstant()).sumOf {
+            val day = (form + it.toDuration(DurationUnit.DAYS))
+                .toLocalDateTime()
+                .format(DATE_TIME_DAY_NO_SEP_FORMAT)
 
             val count = getTableNameOfExists(day)?.let { tableName ->
                 val fragment = "request_time between ${form.epochSeconds} and ${to.epochSeconds}"
                 databaseClient.sql(sqlProvider(tableName, fragment))
                     .map { readable: Readable -> (readable.get(0) as Number?)?.toLong() ?: 0 }
                     .one()
-                    .awaitSingle()
+                    .awaitSingleOrNull()
             }
 
             count ?: 0
@@ -411,4 +382,47 @@ class RouteMonitorMetricsServiceByH2Impl(
 
         return ValueMetricsOutput(value)
     }
+
+
+    /**
+     * 折线图指标指标
+     */
+    suspend fun <T : LineMetricsOutput> lineMetrics(
+        input: RouteLineMetricsInput,
+        sqlProvider: (LineMetricsInfo) -> String,
+        resultExtract: (Readable, LineMetricsInfo) -> T
+    ): List<T> {
+        val dateRangeMs = input.getDateRangeMs()
+        val (form, to) = dateRangeMs
+
+        val second = input.getIntervalSecond()
+
+        // 获取比间隔时间单位大一个的单位
+        val furtherUnit = input.getFurtherUnit()
+        val furtherUnitSecond = 1.toDuration(furtherUnit.unit).toLong(DurationUnit.SECONDS)
+
+        return (0..dateRangeMs.diffDayByInstant()).flatMap {
+            val day = (form + it.toDuration(DurationUnit.DAYS))
+                .toLocalDateTime()
+                .format(DATE_TIME_DAY_NO_SEP_FORMAT)
+
+            getTableNameOfExists(day)?.let { tableName ->
+                val fragment = "request_time between ${form.epochSeconds} and ${to.epochSeconds}"
+                val info = LineMetricsInfo(tableName, fragment, second, furtherUnit, furtherUnitSecond)
+                databaseClient.sql(sqlProvider(info))
+                    .map { readable: Readable -> resultExtract(readable, info) }
+                    .all()
+                    .collectList()
+                    .awaitSingleOrNull()
+            } ?: emptyList()
+        }
+    }
+
+    data class LineMetricsInfo(
+        val tableName: String,
+        val requestTimeFragment: String,
+        val second: Long,
+        val furtherUnit: DateRangeDurationUnit,
+        val furtherUnitSecond: Long
+    )
 }

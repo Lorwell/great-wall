@@ -5,8 +5,6 @@ import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteUrls
 import cc.shacocloud.greatwall.model.po.converter.*
 import cc.shacocloud.greatwall.utils.AppUtil
-import com.querydsl.sql.H2Templates
-import com.querydsl.sql.SQLTemplates
 import io.r2dbc.h2.H2ConnectionConfiguration
 import io.r2dbc.h2.H2ConnectionFactory
 import io.r2dbc.pool.ConnectionPool
@@ -20,7 +18,6 @@ import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
 import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.r2dbc.core.bind
 import org.springframework.transaction.ReactiveTransactionManager
 import java.io.File
 import java.nio.file.Paths
@@ -48,11 +45,6 @@ class R2dbcConfiguration(
             bind(name, if (value != null) Parameters.`in`(value) else Parameters.`in`(T::class.java))
 
 
-    }
-
-    @Bean
-    fun sqlTemplates(): SQLTemplates {
-        return H2Templates()
     }
 
     @Bean(destroyMethod = "dispose")
