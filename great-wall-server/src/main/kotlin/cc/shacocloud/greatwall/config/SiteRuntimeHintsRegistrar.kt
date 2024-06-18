@@ -40,7 +40,7 @@ class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             arrayOf(
                 "cc.shacocloud.greatwall.controller.specification",
                 "cc.shacocloud.greatwall.model",
-                "cc.shacocloud.greatwall.model.constant",
+                "cc.shacocloud.greatwall.service.client.dto",
             )
         )
     }
