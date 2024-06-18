@@ -96,7 +96,7 @@ tasks.withType<Test> {
 // 处理资源之前先将前端资源复制到指定目录
 tasks.withType<ProcessResources> {
     // 如果不想在构建时编译前端项目，可以将此行注释，在打包项目时解开注释即可
-//    dependsOn("copyFeBuildResultToBe")
+    dependsOn("copyFeBuildResultToBe")
 }
 
 graalvmNative {
@@ -115,6 +115,12 @@ task("buildFe") {
     doFirst {
         val rootProjectDir = rootProject.projectDir.absoluteFile
         val feDir = File(rootProjectDir, "great-wall-fe").absoluteFile
+        val distDir = File(feDir, "dist").absoluteFile
+
+        if (distDir.exists()) {
+            println("构建结果已存在，跳过本次构建...")
+            return@doFirst
+        }
 
         // 执行构建命令
         val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()

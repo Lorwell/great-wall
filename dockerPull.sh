@@ -1,10 +1,10 @@
-version=1.7
+version=1.8
 
-# 构建后端
-bash gradlew clean bootJar || exit
+# 构建前端
+cd great-wall-fe && pnpm run build && cd .. || exit
 
 # 构建
-docker build -t great-wall:"$version" . || exit
+docker build -t great-wall:"$version" -f Dockerfile.native . || exit
 
 # 上传
 docker tag great-wall:"$version" ccr.ccs.tencentyun.com/shaco_work/great-wall:"$version"
