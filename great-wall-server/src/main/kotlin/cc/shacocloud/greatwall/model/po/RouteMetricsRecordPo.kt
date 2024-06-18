@@ -1,6 +1,6 @@
-package cc.shacocloud.greatwall.model.po.questdb
+package cc.shacocloud.greatwall.model.po
 
-import kotlinx.datetime.Instant
+import java.time.Instant
 
 /**
  * 请求指标记录
@@ -8,6 +8,11 @@ import kotlinx.datetime.Instant
  * @author 思追(shaco)
  */
 data class RouteMetricsRecordPo(
+
+    /**
+     * 请求关联的应用路由id
+     */
+    val appRouteId: Long? = null,
 
     /**
      * 来源ip
@@ -35,6 +40,11 @@ data class RouteMetricsRecordPo(
      * 响应时间，单位 毫秒
      */
     val responseTime: Instant,
+
+    /**
+     * 请求处理时间
+     */
+    val handleTime: Long,
 
     /**
      * 状态码

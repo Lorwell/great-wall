@@ -5,23 +5,21 @@ import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.*
 import cc.shacocloud.greatwall.model.mo.TopQpsLineMetricsMo
-import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
+import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import io.r2dbc.spi.Readable
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.*
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.await
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 /**
  * 基于 h2 实现的 [RouteMonitorMetricsService]
@@ -33,14 +31,17 @@ import kotlin.time.toDuration
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class RouteMonitorMetricsServiceByH2Impl(
-    val databaseClient: DatabaseClient
+    val databaseClient: DatabaseClient,
 ) : RouteMonitorMetricsService {
 
     // 表名集合
-    private val tableNameSet: MutableSet<String> by lazy {
-        runBlocking {
+    private val tableNameSet: MutableSet<String> = mutableSetOf()
+
+    init {
+        val tableNames = runBlocking {
             getAllRouteMonitorMetricsTables()
         }
+        tableNameSet.addAll(tableNames)
     }
 
     /**
@@ -48,12 +49,12 @@ class RouteMonitorMetricsServiceByH2Impl(
      */
     @Scheduled(cron = "1 0 0 * * *")
     suspend fun deleteExpirationTables() {
-        val current = Clock.System.now().toLocalDateTime()
+        val current = LocalDateTime.now() - 30.days
         val needDelTables = getAllRouteMonitorMetricsTables()
             .filter {
                 val day = it.removePrefix("route_metrics_record_")
-                val dayDate = DATE_TIME_DAY_NO_SEP_FORMAT.parse(day)
-                (current to dayDate).diffDayByLocalDateTime() > 30
+                val dayDateTime = LocalDateTime.parse(day, DATE_TIME_DAY_FORMAT)
+                dayDateTime < current
             }
 
         for (table in needDelTables) {
@@ -74,6 +75,7 @@ class RouteMonitorMetricsServiceByH2Impl(
             .all()
             .collectList()
             .awaitSingle()
+            .map { it.lowercase() }
             .filter { it.startsWith("route_metrics_record_") }
             .toMutableSet()
     }
@@ -136,14 +138,12 @@ class RouteMonitorMetricsServiceByH2Impl(
     override suspend fun addRouteRecord(record: RouteMetricsRecordPo) {
         try {
             val requestTime = record.requestTime
-            val requestLocalDateTime = requestTime.toLocalDateTime(TimeZone.currentSystemDefault())
-
-            val day = requestLocalDateTime.format(DATE_TIME_DAY_NO_SEP_FORMAT)
+            val day = requestTime.toLocalDateTime().format(DATE_TIME_DAY_NO_SEP_FORMAT)
             val tableName = createTable(day)
 
             // 计算部分数据
-            val handleTime = (record.responseTime - requestTime).toLong(DurationUnit.MILLISECONDS)
-            val requestSecondTime = requestLocalDateTime.toInstant(TimeZone.currentSystemDefault()).epochSeconds
+            val handleTime = record.handleTime
+            val requestSecondTime = requestTime.toLocalDateTime().toEpochSecond()
 
             databaseClient.sql(
                 """
@@ -256,8 +256,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 
         // 结果封装
         val resultExtract: (Readable, LineMetricsInfo) -> QpsLineMetricsOutput = { readable, _ ->
-            val unit = Instant.fromEpochSeconds((readable.get(0) as Number).toLong())
-                .toLocalDateTime()
+            val unit = (readable.get(0) as Number).toLong().toLocalDateTimeByEpochSecond()
                 .format(input.rawIntervalType.format)
             val value = (readable.get(1) as Number).toLong()
             QpsLineMetricsOutput(unit, value)
@@ -292,8 +291,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 
         // 结果封装
         val resultExtract: (Readable, LineMetricsInfo) -> DurationLineMetricsOutput = { readable, _ ->
-            val unit = Instant.fromEpochSeconds((readable.get(0) as Number).toLong())
-                .toLocalDateTime()
+            val unit = (readable.get(0) as Number).toLong().toLocalDateTimeByEpochSecond()
                 .format(input.rawIntervalType.format)
             val avgValue = (readable.get(1) as Number).toDouble()
             val maxValue = (readable.get(2) as Number).toLong()
@@ -331,8 +329,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 
         // 结果封装
         val resultExtract: (Readable, LineMetricsInfo) -> TopQpsLineMetricsMo = { readable, _ ->
-            val unit = Instant.fromEpochSeconds((readable.get(0) as Number).toLong())
-                .toLocalDateTime()
+            val unit = (readable.get(0) as Number).toLong().toLocalDateTimeByEpochSecond()
                 .format(input.rawIntervalType.format)
             val endpoint = readable.get(1).toString()
             val value = (readable.get(2) as Number).toLong()
@@ -361,20 +358,19 @@ class RouteMonitorMetricsServiceByH2Impl(
         input: RouteCountMetricsInput,
         sqlProvider: (tableName: String, requestTimeFragment: String) -> String
     ): ValueMetricsOutput {
-        val dateRangeMs = input.getDateRangeMs()
+        val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
 
-        val value = (0..dateRangeMs.diffDayByInstant()).sumOf {
-            val day = (form + it.toDuration(DurationUnit.DAYS))
-                .toLocalDateTime()
+        val value = (0..dateRangeMs.diffDays()).sumOf {
+            val day = (form + it.toDuration(ChronoUnit.DAYS))
                 .format(DATE_TIME_DAY_NO_SEP_FORMAT)
 
             val count = getTableNameOfExists(day)?.let { tableName ->
-                val fragment = "request_time between ${form.epochSeconds} and ${to.epochSeconds}"
+                val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
                 databaseClient.sql(sqlProvider(tableName, fragment))
                     .map { readable: Readable -> (readable.get(0) as Number?)?.toLong() ?: 0 }
                     .one()
-                    .awaitSingleOrNull()
+                    .awaitSingle()
             }
 
             count ?: 0
@@ -392,28 +388,27 @@ class RouteMonitorMetricsServiceByH2Impl(
         sqlProvider: (LineMetricsInfo) -> String,
         resultExtract: (Readable, LineMetricsInfo) -> T
     ): List<T> {
-        val dateRangeMs = input.getDateRangeMs()
+        val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
 
         val second = input.getIntervalSecond()
 
         // 获取比间隔时间单位大一个的单位
         val furtherUnit = input.getFurtherUnit()
-        val furtherUnitSecond = 1.toDuration(furtherUnit.unit).toLong(DurationUnit.SECONDS)
+        val furtherUnitSecond = 1.toDuration(furtherUnit.unit).toSeconds()
 
-        return (0..dateRangeMs.diffDayByInstant()).flatMap {
-            val day = (form + it.toDuration(DurationUnit.DAYS))
-                .toLocalDateTime()
+        return (0..dateRangeMs.diffDays()).flatMap {
+            val day = (form + it.toDuration(ChronoUnit.DAYS))
                 .format(DATE_TIME_DAY_NO_SEP_FORMAT)
 
             getTableNameOfExists(day)?.let { tableName ->
-                val fragment = "request_time between ${form.epochSeconds} and ${to.epochSeconds}"
+                val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
                 val info = LineMetricsInfo(tableName, fragment, second, furtherUnit, furtherUnitSecond)
                 databaseClient.sql(sqlProvider(info))
                     .map { readable: Readable -> resultExtract(readable, info) }
                     .all()
                     .collectList()
-                    .awaitSingleOrNull()
+                    .awaitSingle()
             } ?: emptyList()
         }
     }

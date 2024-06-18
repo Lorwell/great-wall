@@ -7,7 +7,7 @@ import cc.shacocloud.greatwall.model.dto.output.DurationLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.TopQpsLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
-import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
+import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 
 /**
  * 路由监控指标服务

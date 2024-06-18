@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.model.dto
+package cc.shacocloud.greatwall.model.dto.input
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min

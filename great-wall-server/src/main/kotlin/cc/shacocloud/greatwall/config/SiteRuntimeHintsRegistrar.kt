@@ -32,15 +32,15 @@ class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
         // 配置文件
         hints.resources().registerPattern("config/*")
 
-
         // 指定要扫描的包下的所有文件
         // 用于解决 springboot 3.2.x 中针对 kotlin 反射的bug，同时也可以批量扫描指定目录下的所有文件，将它们标识为可反射的
         scanBasePackage(
             hints,
             classLoader,
             arrayOf(
-                "cc.shacocloud.greatwall.model.dto.input",
-                "cc.shacocloud.greatwall.controller.specification"
+                "cc.shacocloud.greatwall.controller.specification",
+                "cc.shacocloud.greatwall.model",
+                "cc.shacocloud.greatwall.model.constant",
             )
         )
     }
@@ -131,7 +131,7 @@ class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
      */
     private fun addClass(clazz: Class<*>, classes: MutableSet<Class<*>>) {
         // 过滤枚举，注解，抽象类，匿名类，编译器生成的类
-        if (!clazz.isAnonymousClass && !clazz.isAnnotation && !clazz.isEnum && !clazz.isSynthetic) {
+        if (!clazz.isAnonymousClass && !clazz.isAnnotation && !clazz.isSynthetic) {
             classes.add(clazz)
         }
     }

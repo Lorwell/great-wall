@@ -8,6 +8,8 @@ build/
 /data/
 .kotlin
 /great-wall-server/data/
+/logs/
+/great-wall-server/logs/
 
 ### STS ###
 .apt_generated
@@ -39,3 +41,4 @@ out/
 
 ### VS Code ###
 .vscode/
+

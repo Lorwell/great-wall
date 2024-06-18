@@ -19,6 +19,7 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.ReactiveTransactionManager
+import org.springframework.transaction.reactive.TransactionalOperator
 import java.io.File
 import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
@@ -43,8 +44,6 @@ class R2dbcConfiguration(
 
         inline fun <reified T : Any> DatabaseClient.GenericExecuteSpec.bindByName(name: String, value: T?) =
             bind(name, if (value != null) Parameters.`in`(value) else Parameters.`in`(T::class.java))
-
-
     }
 
     @Bean(destroyMethod = "dispose")
@@ -79,6 +78,11 @@ class R2dbcConfiguration(
     @Bean
     fun transactionManager(connectionFactory: ConnectionFactory): ReactiveTransactionManager {
         return R2dbcTransactionManager(connectionFactory)
+    }
+
+    @Bean
+    fun transactionalOperator(transactionManager: ReactiveTransactionManager): TransactionalOperator {
+        return TransactionalOperator.create(transactionManager)
     }
 
     /**

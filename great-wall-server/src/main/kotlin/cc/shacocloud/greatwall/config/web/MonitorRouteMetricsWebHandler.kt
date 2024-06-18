@@ -1,17 +1,19 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.model.po.questdb.RouteMetricsRecordPo
+import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import cc.shacocloud.greatwall.utils.byteToUnitStr
 import cc.shacocloud.greatwall.utils.getRealIp
+import cc.shacocloud.greatwall.utils.minus
+import cc.shacocloud.greatwall.utils.toLocalDateTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.reactivestreams.Publisher
+import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.server.reactive.ServerHttpRequest
@@ -23,6 +25,7 @@ import org.springframework.web.server.WebHandler
 import org.springframework.web.server.handler.WebHandlerDecorator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -35,10 +38,19 @@ class MonitorRouteMetricsWebHandler(
     private val monitorMetricsService: CompositionMonitorMetricsService
 ) : WebHandlerDecorator(webHandler) {
 
-    class QueryParamsMetrics : HashMap<String, List<String>>()
+    companion object {
+        val accessLog = LoggerFactory.getLogger("accessLog")
+    }
+
+    class QueryParamsMetrics : HashMap<String, List<String?>>() {
+        override fun toString(): String {
+            return entries.flatMap { it.value.map { v -> it.key to v } }
+                .joinToString(separator = "&") { (key, value) -> "$key=${value ?: ""}" }
+        }
+    }
 
     override fun handle(exchange: ServerWebExchange): Mono<Void> {
-        val requestTime = Clock.System.now()
+        val requestTime = Instant.now()
 
         // 流量统计委托器
         val requestDecorator = TrafficStatisticsHttpRequestDecorator(exchange.request)
@@ -101,9 +113,16 @@ class MonitorRouteMetricsWebHandler(
         responseBodySize: Long
     ) {
         try {
+            val responseTime = Instant.now()
+
             val request = exchange.request
             val response = exchange.response
-            val path = request.path
+
+            val path = request.path.value()
+            val realIp = request.getRealIp()
+            val method = request.method.name()
+            val statusCode = response.statusCode?.value() ?: 500
+            val handleTime = (responseTime - requestTime).toMillis()
 
             // 路由信息
             val appRouteId = route?.metadata?.get(AppRouteLocator.APP_ROUTE_ID_META_KEY) as Long?
@@ -113,12 +132,31 @@ class MonitorRouteMetricsWebHandler(
             val queryParamsMetrics = request.queryParams
                 .map { it.key to it.value }.toMap(QueryParamsMetrics())
 
+            // 打印日志
+            if (accessLog.isInfoEnabled) {
+                accessLog.info(
+                    arrayOf(
+                        requestTime.toLocalDateTime(),
+                        realIp,
+                        method,
+                        "${path}${if (queryParamsMetrics.isEmpty()) "" else "?${queryParamsMetrics}"}",
+                        requestBodySize.byteToUnitStr(),
+                        "${handleTime}ms",
+                        statusCode,
+                        responseBodySize.byteToUnitStr(),
+                        targetUrl ?: ""
+                    ).joinToString(separator = " - ")
+                )
+            }
+
             val metricsRecord = RouteMetricsRecordPo(
-                ip = request.getRealIp(),
-                method = request.method.name(),
-                endpoint = path.pathWithinApplication().value(),
+                appRouteId = appRouteId,
+                ip = realIp,
+                method = method,
+                endpoint = path,
                 requestTime = requestTime,
-                responseTime = Clock.System.now(),
+                responseTime = responseTime,
+                handleTime = handleTime,
                 statusCode = response.statusCode?.value() ?: 500,
                 requestBodySize = requestBodySize,
                 responseBodySize = responseBodySize
@@ -134,6 +172,10 @@ class MonitorRouteMetricsWebHandler(
                 log.warn("获取监控指标发生例外：${e.message}", e)
             }
         }
+    }
+
+    fun printAccessLog() {
+
     }
 
     /**

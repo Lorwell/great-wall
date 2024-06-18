@@ -61,7 +61,6 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
@@ -104,6 +103,9 @@ graalvmNative {
     binaries.all {
         buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
         buildArgs.add("--initialize-at-build-time=kotlin.DeprecationLevel")
+        // 配合 jni-config.json 解决 javax.naming.directory.InitialDirContext fails on windows
+        // @see https://github.com/oracle/graal/issues/4304
+        buildArgs.add("--initialize-at-run-time=sun.net.dns.ResolverConfigurationImpl")
     }
 }
 

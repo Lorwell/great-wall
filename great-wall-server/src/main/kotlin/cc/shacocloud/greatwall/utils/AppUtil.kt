@@ -1,8 +1,5 @@
 package cc.shacocloud.greatwall.utils
 
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.annotations.Contract
 import org.springframework.util.ResourceUtils
 import java.io.File
@@ -13,9 +10,10 @@ import java.net.JarURLConnection
 import java.net.URISyntaxException
 import java.net.URL
 import java.security.CodeSource
+import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 import java.util.jar.JarFile
-import kotlin.math.abs
 
 /**
  * 应用工具库
@@ -30,20 +28,7 @@ object AppUtil {
      */
     val appStartTime: LocalDateTime by lazy {
         val time = ManagementFactory.getRuntimeMXBean().startTime
-        Instant.fromEpochMilliseconds(time).toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
-    }
-
-    /**
-     * 获取当前时区的偏移量字符串
-     */
-    fun timeZoneOffset(): String {
-        val rawOffset = TimeZone.getDefault().rawOffset
-        val offset = abs(rawOffset) / 1000
-        val hour = offset / 3600
-        val minute = (offset - 3600 * hour) / 60
-        val hour2 = if (hour > 9) hour.toString() else "0$hour"
-        val minute2 = if (minute > 9) minute.toString() else "0$minute"
-        return "${if (rawOffset > 0) "" else "-"}${hour2}:${minute2}"
+        Instant.ofEpochMilli(time).toLocalDateTime()
     }
 
     /**

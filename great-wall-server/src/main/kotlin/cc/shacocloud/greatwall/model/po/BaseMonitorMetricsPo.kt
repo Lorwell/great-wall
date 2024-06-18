@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.model.po.questdb
+package cc.shacocloud.greatwall.model.po
 
 /**
  * 监控指标基础模型

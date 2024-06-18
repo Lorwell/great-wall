@@ -1,197 +1,58 @@
 package cc.shacocloud.greatwall.utils
 
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalDateTime.Companion.Format
-import kotlinx.datetime.format.DateTimeComponents
-import kotlinx.datetime.format.DateTimeFormat
-import kotlinx.datetime.format.char
-import kotlinx.datetime.format.DateTimeComponents.Companion.Format as ComponentFormat
+import java.time.format.DateTimeFormatter
 
 /**
  * yyyy-MM-dd HH:mm:ss
  * @author 思追(shaco)
  */
-val DATE_TIME_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    year()
-    char('-')
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-    char(':')
-    second()
-}
+val DATE_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
 /**
  * yyyy-MM-dd HH:mm
  * @author 思追(shaco)
  */
-val DATE_TIME_MINUTE_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    year()
-    char('-')
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-}
+val DATE_TIME_MINUTE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
 /**
  * yyyy-MM-dd HH
  * @author 思追(shaco)
  */
-val DATE_TIME_HOUR_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    year()
-    char('-')
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-}
+val DATE_TIME_HOUR_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH")
 
 /**
  * yyyy-MM-dd
  * @author 思追(shaco)
  */
-val DATE_TIME_DAY_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    year()
-    char('-')
-    monthNumber()
-    char('-')
-    dayOfMonth()
-}
-
+val DATE_TIME_DAY_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 /**
  * HH:mm
  * @author 思追(shaco)
  */
-val TIME_MINUTE_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    hour()
-    char(':')
-    minute()
-}
+val TIME_MINUTE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 /**
  * HH:mm:ss
  * @author 思追(shaco)
  */
-val TIME_SECOND_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    hour()
-    char(':')
-    minute()
-    char(':')
-    second()
-}
-
+val TIME_SECOND_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
 /**
  * MM-dd HH:mm
  * @author 思追(shaco)
  */
-val TIME_DAY_MINUTE_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-    char(':')
-    second()
-}
+val TIME_DAY_MINUTE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm")
 
 /**
  * MM-dd HH
  * @author 思追(shaco)
  */
-val TIME_DAY_HOUR_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-}
+val TIME_DAY_HOUR_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd HH")
 
 
 /**
  * yyyyMMdd
  * @author 思追(shaco)
  */
-val DATE_TIME_DAY_NO_SEP_FORMAT: DateTimeFormat<LocalDateTime> = Format {
-    year()
-    monthNumber()
-    dayOfMonth()
-}
-
-/**
- * yyyyMMdd
- * @author 思追(shaco)
- */
-val DATE_TIME_DAY_NO_SEP_COMPONENTS_FORMAT: DateTimeFormat<DateTimeComponents> = ComponentFormat {
-    year()
-    monthNumber()
-    dayOfMonth()
-}
-
-/**
- * HH:mm:ss
- * @author 思追(shaco)
- */
-val TIME_SECOND_COMPONENTS_FORMAT: DateTimeFormat<DateTimeComponents> = ComponentFormat {
-    hour()
-    char(':')
-    minute()
-    char(':')
-    second()
-}
-
-/**
- * MM-dd HH:mm
- * @author 思追(shaco)
- */
-val TIME_DAY_MINUTE_COMPONENTS_FORMAT: DateTimeFormat<DateTimeComponents> = ComponentFormat {
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-    char(':')
-    second()
-}
-
-/**
- * MM-dd HH
- * @author 思追(shaco)
- */
-val TIME_DAY_HOUR_COMPONENTS_FORMAT: DateTimeFormat<DateTimeComponents> = ComponentFormat {
-    monthNumber()
-    char('-')
-    dayOfMonth()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-}
-
-/**
- * yyyy-MM-dd
- * @author 思追(shaco)
- */
-val DATE_TIME_DAY_COMPONENTS_FORMAT: DateTimeFormat<DateTimeComponents> = ComponentFormat {
-    year()
-    char('-')
-    monthNumber()
-    char('-')
-    dayOfMonth()
-}
+val DATE_TIME_DAY_NO_SEP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
