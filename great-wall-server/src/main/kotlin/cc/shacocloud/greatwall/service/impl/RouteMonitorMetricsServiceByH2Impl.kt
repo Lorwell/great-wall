@@ -48,22 +48,24 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 删除30天之前的表信息
      */
     @Scheduled(cron = "1 0 0 * * *")
-    suspend fun deleteExpirationTables() {
-        val current = LocalDateTime.now() - 30.days
-        val needDelTables = getAllRouteMonitorMetricsTables()
-            .filter {
-                val day = it.removePrefix("route_metrics_record_")
-                val dayDateTime = LocalDateTime.parse(day, DATE_TIME_DAY_FORMAT)
-                dayDateTime < current
+    fun deleteExpirationTables() {
+        runBlocking {
+            val current = LocalDateTime.now() - 30.days
+            val needDelTables = getAllRouteMonitorMetricsTables()
+                .filter {
+                    val day = it.removePrefix("route_metrics_record_")
+                    val dayDateTime = LocalDateTime.parse(day, DATE_TIME_DAY_FORMAT)
+                    dayDateTime < current
+                }
+
+            for (table in needDelTables) {
+                databaseClient.sql("drop table if exists $table")
+                    .await()
             }
 
-        for (table in needDelTables) {
-            databaseClient.sql("drop table if exists $table")
-                .await()
+            tableNameSet.clear()
+            tableNameSet.addAll(getAllRouteMonitorMetricsTables())
         }
-
-        tableNameSet.clear()
-        tableNameSet.addAll(getAllRouteMonitorMetricsTables())
     }
 
     /**

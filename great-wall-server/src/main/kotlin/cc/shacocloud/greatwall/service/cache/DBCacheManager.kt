@@ -2,6 +2,7 @@ package cc.shacocloud.greatwall.service.cache
 
 import cc.shacocloud.greatwall.repository.CacheRepository
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.runBlocking
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -27,8 +28,10 @@ class DBCacheManager(
      * 每分钟清理一次过期数据
      */
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
-    suspend fun clearExpirationData() {
-        cacheRepository.deleteByExpirationTimeLessThan(Date().time).awaitSingleOrNull()
+    fun clearExpirationData() {
+        runBlocking {
+            cacheRepository.deleteByExpirationTimeLessThan(Date().time).awaitSingleOrNull()
+        }
     }
 
 }

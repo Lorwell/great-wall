@@ -75,4 +75,6 @@ site:
 logging:
   level:
     root: info
+    # 忽略只读告警
+    "io.r2dbc.h2.H2Connection": error
 #    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug
