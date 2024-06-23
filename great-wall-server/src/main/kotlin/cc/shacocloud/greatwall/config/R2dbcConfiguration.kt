@@ -37,7 +37,6 @@ class R2dbcConfiguration(
 ) : AbstractR2dbcConfiguration() {
 
     companion object {
-        const val FILE_PROTOCOL = "file:"
 
         inline fun <reified T : Any> DatabaseClient.GenericExecuteSpec.bindByIndex(index: Int, value: T?) =
             bind(index, if (value != null) Parameters.`in`(value) else Parameters.`in`(T::class.java))
@@ -50,7 +49,7 @@ class R2dbcConfiguration(
     override fun connectionFactory(): ConnectionPool {
 
         val builder = H2ConnectionConfiguration.builder()
-        builder.url(urlFileProtocolAbsolutePath(r2dbcProperties.url))
+        builder.url(r2dbcProperties.url)
             .username(r2dbcProperties.username)
             .password(r2dbcProperties.password)
         r2dbcProperties.properties.forEach { (t, u) -> builder.property(t, u) }
@@ -99,24 +98,6 @@ class R2dbcConfiguration(
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
             object : StringToEnumConverter<AppRouteStatusEnum>() {}
         )
-    }
-
-
-    /**
-     * 将指定本地文件的h2地址转为绝对路径
-     */
-    fun urlFileProtocolAbsolutePath(url: String): String {
-        if (url.startsWith(FILE_PROTOCOL, ignoreCase = true)) {
-            val containsProperty = url.contains(";")
-            val path = url.substring(FILE_PROTOCOL.length, if (containsProperty) url.indexOf(";") else url.length)
-            if (!File(path).isAbsolute) {
-                val startDir = AppUtil.getStartDir(R2dbcConfiguration::class.java)
-                val absolutePath = Paths.get(startDir.absolutePath, path).normalize().absolutePathString()
-                val property = if (containsProperty) ";${url.substringAfter(";")}" else ""
-                return "file:${absolutePath}${property}"
-            }
-        }
-        return url
     }
 
 }

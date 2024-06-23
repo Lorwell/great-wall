@@ -37,7 +37,7 @@ spring:
           eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
   # r2dbc 配置
   r2dbc:
-    url: file:${H2_FILE_DIR:./data/db}/db;CACHE_SIZE=65536;MODE=MYSQL
+    url: file:${H2_FILE_DIR:./data/db}/db;MODE=MYSQL
     username: ${H2_USER:faLhBysh}
     password: ${H2_PASS:aclmUe6#!aq1tb0VL}
     pool:
@@ -77,4 +77,4 @@ logging:
     root: info
     # 忽略只读告警
     "io.r2dbc.h2.H2Connection": error
-#    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug
+    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug

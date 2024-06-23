@@ -363,20 +363,23 @@ class RouteMonitorMetricsServiceByH2Impl(
         val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
 
-        val value = (0..dateRangeMs.diffDays()).sumOf {
-            val day = (form + it.toDuration(ChronoUnit.DAYS))
-                .format(DATE_TIME_DAY_NO_SEP_FORMAT)
-
-            val count = getTableNameOfExists(day)?.let { tableName ->
-                val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
-                databaseClient.sql(sqlProvider(tableName, fragment))
-                    .map { readable: Readable -> (readable.get(0) as Number?)?.toLong() ?: 0 }
-                    .one()
-                    .awaitSingle()
-            }
-
-            count ?: 0
+        val tableNames = (0..dateRangeMs.diffDays()).mapNotNull {
+            val day = (form + it.toDuration(ChronoUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_FORMAT)
+            getTableNameOfExists(day)
         }
+
+        if (tableNames.isEmpty()) {
+            return ValueMetricsOutput(0)
+        }
+
+        val tableName =
+            if (tableNames.size == 1) tableNames[0]
+            else "( ${tableNames.joinToString(separator = " union all ") { "select * from $it" }} )"
+        val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+        val value = databaseClient.sql(sqlProvider(tableName, fragment))
+            .map { readable: Readable -> (readable.get(0) as Number?)?.toLong() ?: 0 }
+            .one()
+            .awaitSingle()
 
         return ValueMetricsOutput(value)
     }
@@ -399,20 +402,25 @@ class RouteMonitorMetricsServiceByH2Impl(
         val furtherUnit = input.getFurtherUnit()
         val furtherUnitSecond = 1.toDuration(furtherUnit.unit).toSeconds()
 
-        return (0..dateRangeMs.diffDays()).flatMap {
-            val day = (form + it.toDuration(ChronoUnit.DAYS))
-                .format(DATE_TIME_DAY_NO_SEP_FORMAT)
-
-            getTableNameOfExists(day)?.let { tableName ->
-                val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
-                val info = LineMetricsInfo(tableName, fragment, second, furtherUnit, furtherUnitSecond)
-                databaseClient.sql(sqlProvider(info))
-                    .map { readable: Readable -> resultExtract(readable, info) }
-                    .all()
-                    .collectList()
-                    .awaitSingle()
-            } ?: emptyList()
+        val tableNames = (0..dateRangeMs.diffDays()).mapNotNull {
+            val day = (form + it.toDuration(ChronoUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_FORMAT)
+            getTableNameOfExists(day)
         }
+
+        if (tableNames.isEmpty()) {
+            return emptyList()
+        }
+
+        val tableName =
+            if (tableNames.size == 1) tableNames[0]
+            else "( ${tableNames.joinToString(separator = " union all ") { "select * from $it" }} )"
+        val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+        val info = LineMetricsInfo(tableName, fragment, second, furtherUnit, furtherUnitSecond)
+        return databaseClient.sql(sqlProvider(info))
+            .map { readable: Readable -> resultExtract(readable, info) }
+            .all()
+            .collectList()
+            .awaitSingle()
     }
 
     data class LineMetricsInfo(
