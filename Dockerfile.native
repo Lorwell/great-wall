@@ -15,5 +15,7 @@ WORKDIR /workspace
 COPY --from=0 "/build/great-wall-server/build/native/nativeCompile/great-wall-server" /workspace/app
 
 EXPOSE 443
+EXPOSE 80
+EXPOSE 8080
 
-CMD [ "sh", "-c", "/workspace/app -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]
+CMD [ "sh", "-c", "/workspace/app -Xmx200m -xms200m -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]

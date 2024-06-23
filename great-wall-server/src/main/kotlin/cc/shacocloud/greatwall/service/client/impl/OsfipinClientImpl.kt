@@ -50,7 +50,7 @@ class OsfipinClientImpl(
             clientHttpRequestFactory.setReadTimeout(Duration.ofSeconds(30))
 
             // 提供对传出/传入流的缓冲,可以让响应body多次读取(如果不配置,拦截器读取了Response流,再响应数据时会返回body=null)
-            restTemplate.setRequestFactory(BufferingClientHttpRequestFactory(clientHttpRequestFactory))
+            restTemplate.requestFactory = BufferingClientHttpRequestFactory(clientHttpRequestFactory)
             // 拦截器
             restTemplate.interceptors = arrayListOf<ClientHttpRequestInterceptor>(
                 RestTemplateLogRequestInterceptor(
