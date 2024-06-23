@@ -1,4 +1,4 @@
-version=1.10
+version=1.11
 
 # 构建前端
 cd great-wall-fe && pnpm run build && cd .. || exit

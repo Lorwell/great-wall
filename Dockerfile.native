@@ -1,4 +1,4 @@
-FROM ccr.ccs.tencentyun.com/shaco_work/graalvm21:ubuntu22.build
+FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.build
 
 # 复制项目所有代码
 ADD . /build
@@ -9,7 +9,7 @@ RUN bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew na
 
 
 # 运行时镜像
-FROM ccr.ccs.tencentyun.com/shaco_work/graalvm21:ubuntu22.runtime
+FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.runtime
 
 WORKDIR /workspace
 COPY --from=0 "/build/great-wall-server/build/native/nativeCompile/great-wall-server" /workspace/app
