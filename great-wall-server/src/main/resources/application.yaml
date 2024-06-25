@@ -2,6 +2,9 @@ server:
   port: 443
   config-server:
     port: 8080
+  main-server:
+    port: 80
+    redirect-https: true
   http2:
     enabled: true
   ssl:
@@ -70,7 +73,6 @@ site:
   auth:
     admin:
       password: ${ADMIN_PASSWORD:123456789}
-
 
 logging:
   level:

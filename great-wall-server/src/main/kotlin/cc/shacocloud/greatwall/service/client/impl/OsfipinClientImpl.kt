@@ -54,7 +54,7 @@ class OsfipinClientImpl(
             // 拦截器
             restTemplate.interceptors = arrayListOf<ClientHttpRequestInterceptor>(
                 RestTemplateLogRequestInterceptor(
-                    logLevel = LogLevel.BODY,
+                    logLevel = LogLevel.NONE,
                     printLevel = Level.INFO
                 )
             )

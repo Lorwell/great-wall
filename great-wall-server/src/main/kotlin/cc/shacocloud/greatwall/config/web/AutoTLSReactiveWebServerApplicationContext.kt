@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
+import cc.shacocloud.greatwall.config.web.WebFluxServerConfiguration.Companion.MAIN_HTTP_HANDLER_BEAN_NAME
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry
 import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
@@ -10,11 +10,8 @@ import org.springframework.boot.ssl.SslBundle
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext
 import org.springframework.boot.web.server.Ssl
-import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping
 import org.springframework.context.SmartLifecycle
 import org.springframework.http.server.reactive.HttpHandler
-import org.springframework.web.reactive.HandlerMapping
-import org.springframework.web.server.WebHandler
 
 
 /**
@@ -28,42 +25,10 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
     private val builtSslBundleName = "_built_ssl_bundle"
 
     /**
-     * 主要的 web 处理器
-     */
-    private val mainWebHandler: WebHandler by lazy {
-        // 主服务只绑定一个条件处理器
-        val dispatcherHandler = object : WebFluxDispatcherHandler(this) {
-
-            override fun handlerMapping(mappings: List<HandlerMapping>) {
-                val handlers = mappings.filterIsInstance<RoutePredicateHandlerMapping>()
-                super.handlerMapping(handlers)
-            }
-        }
-
-        // 使用监控指标处理器来委托目标处理器
-        MonitorRouteMetricsWebHandler(
-            webHandler = dispatcherHandler,
-            monitorMetricsService = getBean(CompositionMonitorMetricsService::class.java)
-        )
-    }
-
-    /**
-     * 主要的 http 处理器
-     */
-    private val mainHttpHandler: HttpHandler by lazy {
-        WebFluxHttpHandlerBuilder(this)
-            .applyApplicationContext(
-                webHandler = false
-            )
-            .webHandler(mainWebHandler)
-            .build()
-    }
-
-    /**
      * 将主端口的服务只绑定一个网关的转发路由映射处理器
      */
     override fun getHttpHandler(): HttpHandler {
-        return mainHttpHandler
+        return getBean(MAIN_HTTP_HANDLER_BEAN_NAME, HttpHandler::class.java)
     }
 
     /**
