@@ -18,15 +18,20 @@ class MainServerNoTlsHttpHandler(
     private val mainServerProperties: MainServerProperties
 ) : HttpHandler {
 
+    val tlsPort: Int by lazy {
+        ApplicationContextHolder.getInstance().environment["server.port"]!!.toInt()
+    }
+
     override fun handle(request: ServerHttpRequest, response: ServerHttpResponse): Mono<Void> {
+
+        // 重定向到 https 端口
         if (mainServerProperties.redirectHttps) {
             val host = request.headers.getFirst(HttpHeaders.HOST)
             val path = request.path.value()
 
-            val tlsPort = ApplicationContextHolder.getInstance().environment["server.port"]!!.toInt()
             response.statusCode = HttpStatus.MOVED_PERMANENTLY
             response.headers.add(HttpHeaders.LOCATION, "https://${host}:${tlsPort}${path}")
-            return Mono.empty()
+            return response.setComplete()
         }
 
         return httpHandler.handle(request, response)
