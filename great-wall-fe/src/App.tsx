@@ -18,6 +18,7 @@ const MonitorMetrics = lazy(() => import("@/pages/monitor-metrics"));
 const RouteMetrics = lazy(() => import("@/pages/monitor-metrics/route-metrics"));
 const ServerMetrics = lazy(() => import("@/pages/monitor-metrics/server-metrics"));
 const LogList = lazy(() => import("@/pages/app-logs/list"));
+const LogFile = lazy(() => import("@/pages/app-logs/file"));
 
 const App = () => {
 
@@ -47,6 +48,7 @@ const App = () => {
               </Route>
               <Route path="logs" element={<EmptyRoute base={"/manage/logs"} to={"list"}/>}>
                 <Route path="list" element={<LogList/>}/>
+                <Route path="type/:type/file/:file" element={<LogFile/>}/>
               </Route>
               <Route path="*" element={<Error404/>}/>
             </Route>
