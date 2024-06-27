@@ -17,7 +17,7 @@ const UpdateAppRoutes = lazy(() => import("@/pages/app-routes/update"));
 const MonitorMetrics = lazy(() => import("@/pages/monitor-metrics"));
 const RouteMetrics = lazy(() => import("@/pages/monitor-metrics/route-metrics"));
 const ServerMetrics = lazy(() => import("@/pages/monitor-metrics/server-metrics"));
-const LogList = lazy(() => import("@/pages/logs/list"));
+const LogList = lazy(() => import("@/pages/app-logs/list"));
 
 const App = () => {
 

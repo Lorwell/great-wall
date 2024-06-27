@@ -5,16 +5,15 @@ import cc.shacocloud.greatwall.config.web.WebFluxServerConfiguration
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.web.reactive.config.EnableWebFlux
 import java.util.*
 
 /**
  * 当前服务将端口分为2个，主端口和配置端口
  *
- * 主端口只用于执行代理策略
- * 配置端口用于配置代理策略 [WebFluxServerConfiguration]
- *
- *
+ * @see [WebFluxServerConfiguration]
  */
+@EnableWebFlux
 @EnableScheduling
 @SpringBootApplication
 class GreatWallApplication

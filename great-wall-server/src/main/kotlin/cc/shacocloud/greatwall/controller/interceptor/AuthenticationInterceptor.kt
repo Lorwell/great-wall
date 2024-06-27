@@ -4,6 +4,7 @@ package cc.shacocloud.greatwall.controller.interceptor
 import cc.shacocloud.greatwall.config.web.RequestMappingHandlerInterceptor
 import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
+import cc.shacocloud.greatwall.model.mo.SessionMo
 import cc.shacocloud.greatwall.service.SessionService
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.AnnotatedElementUtils
@@ -31,10 +32,21 @@ class AuthenticationInterceptor(
 
         // 获取当前用户的会话
         val currentSession = sessionService.currentSession(exchange)
+
+        auth(userAuthRole, currentSession)
+    }
+
+    /**
+     * 认证方法
+     */
+    suspend fun auth(
+        needAuthRole: UserAuthRoleEnum,
+        currentSession: SessionMo? = null
+    ) {
         val currentUserRole = currentSession?.role ?: UserAuthRoleEnum.VISITOR
 
         // 包含则认证通过
-        if (currentUserRole.level > userAuthRole.level) {
+        if (currentUserRole.level > needAuthRole.level) {
 
             // 如果未登录用户则抛出未登录异常
             if (currentSession == null) {

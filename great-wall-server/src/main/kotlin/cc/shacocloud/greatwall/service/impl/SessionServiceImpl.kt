@@ -10,6 +10,7 @@ import kotlinx.serialization.serializer
 import org.springframework.http.ResponseCookie
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.socket.WebSocketSession
 import org.springframework.web.server.ServerWebExchange
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
@@ -88,6 +89,12 @@ class SessionServiceImpl(
             }
 
             sessionMo
+        }
+    }
+
+    override suspend fun currentSession(session: WebSocketSession): SessionMo? {
+        return session.handshakeInfo.cookies[SESSION_NAME]?.let {
+            it.firstNotNullOfOrNull { cookie -> sessionCache.get(cookie.value, SESSION_SERIALIZER) }
         }
     }
 

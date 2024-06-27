@@ -3,6 +3,7 @@ package cc.shacocloud.greatwall.service
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
 import cc.shacocloud.greatwall.model.mo.SessionMo
 import org.springframework.http.server.reactive.ServerHttpResponse
+import org.springframework.web.reactive.socket.WebSocketSession
 import org.springframework.web.server.ServerWebExchange
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
@@ -45,6 +46,11 @@ interface SessionService {
      * 获取当前访问用户的会话信息
      */
     suspend fun currentSession(exchange: ServerWebExchange): SessionMo?
+
+    /**
+     * 获取当前访问用户的会话信息
+     */
+    suspend fun currentSession(session: WebSocketSession): SessionMo?
 
     /**
      * 获取当前会话，如果没有会话则抛出未登录异常

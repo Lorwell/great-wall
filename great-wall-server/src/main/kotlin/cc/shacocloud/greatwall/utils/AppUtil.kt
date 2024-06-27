@@ -24,6 +24,23 @@ import java.util.jar.JarFile
 object AppUtil {
 
     /**
+     * 获取应用的 pid
+     */
+    val pid: Int by lazy {
+        val processName = ManagementFactory.getRuntimeMXBean().name
+        if (processName.isNullOrBlank()) {
+            throw RuntimeException("无法获取进程名称")
+        }
+
+        val atIndex = processName.indexOf('@')
+        if (atIndex > 0) {
+            processName.substring(0, atIndex).toInt()
+        } else {
+            processName.hashCode()
+        }
+    }
+
+    /**
      *  获取app 启动时间
      */
     val appStartTime: LocalDateTime by lazy {

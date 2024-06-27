@@ -81,6 +81,13 @@ fun LocalDateTime.toEpochSecond(): Long {
 }
 
 /**
+ * 将此日期时间转换为从 1970-01-01T00:00:00Z 纪元开始的毫秒数。使用当前系统时区
+ */
+fun LocalDateTime.toEpochMilli(): Long {
+    return toInstant(zoneOffset).toEpochMilli()
+}
+
+/**
  * 计算 2个 [LocalDateTime] 之间相差的天数，如果是在同一天则为 0
  */
 fun Pair<LocalDateTime, LocalDateTime>.diffDays(abs: Boolean = true): Long {

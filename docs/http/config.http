@@ -1,0 +1,29 @@
+### 认证
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123456789"
+}
+
+> {%
+    const setCookie = response.headers.valuesOf("set-cookie");
+    const cookie = setCookie.find(it => it.includes("greatwall-session"))?.substring(0, setCookie.indexOf(";"))
+    client.global.set("cookie", cookie);
+%}
+
+### 日志文件 websocket
+WEBSOCKET ws://localhost:8080/api/logs/type/ACCESS/name/2024-06-27-0.log
+Cookie: {{cookie}}
+Content-Type: application/json
+
+{
+  "lineNumber": 30
+}
+=== wait-for-server
+
+
+### 日志列表
+GET http://localhost:8080/api/logs
+Cookie: {{cookie}}

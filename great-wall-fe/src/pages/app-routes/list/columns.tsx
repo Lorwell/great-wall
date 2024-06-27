@@ -95,7 +95,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "lastUpdateTime",
         label: "最后修改时间",
-        size: 120,
+        size: 150,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),

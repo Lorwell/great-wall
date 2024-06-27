@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.controller
 
+import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.convert.LogEnum
 import cc.shacocloud.greatwall.model.dto.output.LogListOutput
 import org.springframework.validation.annotation.Validated
@@ -18,24 +19,27 @@ import kotlin.io.path.isDirectory
  * 日志控制器
  * @author 思追(shaco)
  */
-//@UserAuth
+@UserAuth
 @Validated
 @RestController
 @RequestMapping("/api/logs")
 class LogsController {
 
-    /**
-     * 日志文件根路径
-     */
-    val rootDir: Path by lazy {
-        File("./data/logs").toPath().toAbsolutePath().normalize()
+    companion object {
+
+        /**
+         * 日志文件根路径
+         */
+        val rootDir: Path by lazy {
+            File("./data/logs").toPath().toAbsolutePath().normalize()
+        }
+
     }
 
     @GetMapping
     fun list(): List<LogListOutput> {
-        val rootPath = rootDir.invariantSeparatorsPathString
-        val rootLogFiles = Paths.get(rootPath, "root").toLogList(LogEnum.ROOT)
-        val accessLogFiles = Paths.get(rootPath, "access_log").toLogList(LogEnum.ACCESS)
+        val rootLogFiles = rootDir.toLogList(LogEnum.ROOT)
+        val accessLogFiles = rootDir.toLogList(LogEnum.ACCESS)
 
         return (rootLogFiles + accessLogFiles).sortedByDescending { it.lastUpdateTime }
     }
@@ -46,9 +50,9 @@ class LogsController {
     fun Path.toLogList(
         type: LogEnum
     ): List<LogListOutput> {
-        return Files.list(this)
+        return Files.list(Paths.get(invariantSeparatorsPathString, type.dirName))
             .filter { !it.isDirectory() && it.extension == "log" }
-            .map { LogListOutput(type, it, rootDir) }
+            .map { LogListOutput(type, it) }
             .toList()
     }
 

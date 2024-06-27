@@ -1,0 +1,31 @@
+package cc.shacocloud.greatwall.model.dto.output
+
+import kotlinx.serialization.Serializable
+
+/**
+ * @author 思追(shaco)
+ */
+@Serializable
+data class LogFilePageOutput(
+
+    /**
+     * 是否已经达到尾行
+     */
+    val lastLine: Boolean = false,
+
+    /**
+     * 实际行数
+     */
+    val lineNumber: Int = 0,
+
+    /**
+     * 行数据
+     */
+    val lineData: List<String> = emptyList()
+) {
+
+
+    companion object {
+        val EMPTY: LogFilePageOutput = LogFilePageOutput()
+    }
+}
