@@ -8,7 +8,6 @@ build/
 /data/
 .kotlin
 /great-wall-server/data/
-/logs/
 /great-wall-server/logs/
 
 ### STS ###

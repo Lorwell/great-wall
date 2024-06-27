@@ -1,11 +1,18 @@
 package cc.shacocloud.greatwall.controller
 
+import cc.shacocloud.greatwall.model.dto.convert.LogEnum
 import cc.shacocloud.greatwall.model.dto.output.LogListOutput
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.extension
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isDirectory
 
 /**
  * 日志控制器
@@ -17,26 +24,32 @@ import java.io.File
 @RequestMapping("/api/logs")
 class LogsController {
 
+    /**
+     * 日志文件根路径
+     */
+    val rootDir: Path by lazy {
+        File("./data/logs").toPath().toAbsolutePath().normalize()
+    }
+
     @GetMapping
     fun list(): List<LogListOutput> {
-        val logPath = File("./data/logs")
+        val rootPath = rootDir.invariantSeparatorsPathString
+        val rootLogFiles = Paths.get(rootPath, "root").toLogList(LogEnum.ROOT)
+        val accessLogFiles = Paths.get(rootPath, "access_log").toLogList(LogEnum.ACCESS)
 
-        val rootFile = File(logPath, "root")
-        val rootLogFiles = rootFile
-            .list { _: File, name: String -> name.endsWith(".log") }
-            ?.map { File(rootFile, it) }
-            ?: emptyList()
+        return (rootLogFiles + accessLogFiles).sortedByDescending { it.lastUpdateTime }
+    }
 
-        val accessFile = File(logPath, "access_log")
-        val accessLogFiles = accessFile
-            .list { _: File, name: String -> name.endsWith(".log") }
-            ?.map { File(rootFile, it) }
-            ?: emptyList()
 
-        val logFiles = (rootLogFiles + accessLogFiles)
+    // ----------
 
-        println(logFiles)
-        return emptyList()
+    fun Path.toLogList(
+        type: LogEnum
+    ): List<LogListOutput> {
+        return Files.list(this)
+            .filter { !it.isDirectory() && it.extension == "log" }
+            .map { LogListOutput(type, it, rootDir) }
+            .toList()
     }
 
 }
