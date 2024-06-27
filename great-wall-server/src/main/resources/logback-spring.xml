@@ -41,6 +41,11 @@
         <appender-ref ref="ACCESS_LOG_FILE"/>
     </logger>
 
+    <logger name="cc.shacocloud.greatwall" level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>

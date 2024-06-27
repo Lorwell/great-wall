@@ -15,7 +15,8 @@ export const baseInfoFormSchema = z.object({
     .max(150, {
       message: "名称不能超过150个字符",
     })
-    .optional(),
+    .optional()
+    .nullable(),
   priority: z.number({required_error: "不可以为空"}),
   status: z.enum(
     [AppRouteStatusEnum.ONLINE, AppRouteStatusEnum.OFFLINE],

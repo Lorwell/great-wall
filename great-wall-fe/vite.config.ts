@@ -39,6 +39,11 @@ export default defineConfig({
         changeOrigin: true, // 接口跨域
         secure: false, // 启用 https 服务时需要配置
       },
+      '/api/logs': {
+        target: 'ws://127.0.0.1:8080/',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
   css: {

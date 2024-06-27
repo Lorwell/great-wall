@@ -89,7 +89,7 @@ function BaseInfoConfPage(props: BaseInfoConfPageProps) {
                          <FormItem>
                            <FormLabel>应用描述</FormLabel>
                            <FormControl>
-                             <Textarea {...field}/>
+                             <Textarea {...field} value={field.value || ""}/>
                            </FormControl>
                            <FormDescription>
                              应用描述信息，最多150个字符
