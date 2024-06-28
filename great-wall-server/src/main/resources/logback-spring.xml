@@ -11,8 +11,8 @@
     <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>./data/logs/root/%d{yyyy-MM-dd}-%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>10</maxHistory>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>50</maxHistory>
             <totalSizeCap>500MB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
@@ -25,8 +25,8 @@
     <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ACCESS_LOG_FILE">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>./data/logs/access_log/%d{yyyy-MM-dd}-%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>10</maxHistory>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>50</maxHistory>
             <totalSizeCap>500MB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>

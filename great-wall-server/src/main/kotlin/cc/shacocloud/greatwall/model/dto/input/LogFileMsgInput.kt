@@ -7,10 +7,10 @@ import kotlinx.serialization.Serializable
  * @author 思追(shaco)
  */
 @Serializable
-data class LogFilePageInput(
+data class LogFileMsgInput(
 
     /**
-     * 尝试读取的行数，默认为30行
+     * 是否自动刷新
      */
-    val lineNumber: Int = 30
+    val autoRefresh: Boolean
 )

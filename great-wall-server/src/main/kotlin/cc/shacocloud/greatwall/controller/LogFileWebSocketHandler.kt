@@ -1,12 +1,12 @@
 package cc.shacocloud.greatwall.controller
 
-import cc.shacocloud.greatwall.config.web.websocket.WSHandler
+import cc.shacocloud.greatwall.config.web.websocket.WebsocketMapping
 import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
 import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
 import cc.shacocloud.greatwall.controller.interceptor.UserAuthRoleEnum
 import cc.shacocloud.greatwall.model.dto.convert.LogEnum
-import cc.shacocloud.greatwall.model.dto.input.LogFilePageInput
+import cc.shacocloud.greatwall.model.dto.input.LogFileMsgInput
 import cc.shacocloud.greatwall.model.dto.output.LogFilePageOutput
 import cc.shacocloud.greatwall.service.SessionService
 import cc.shacocloud.greatwall.utils.Slf4j
@@ -14,17 +14,22 @@ import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.TaskTimer
 import cc.shacocloud.greatwall.utils.seconds
 import cc.shacocloud.greatwall.utils.toEpochMilli
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.reactor.flux
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.reactivestreams.Publisher
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.web.reactive.socket.CloseStatus
 import org.springframework.web.reactive.socket.WebSocketHandler
+import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.WebSocketSession
 import org.springframework.web.util.UriTemplate
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.io.Closeable
 import java.io.File
@@ -34,7 +39,9 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -45,7 +52,7 @@ import kotlin.io.path.invariantSeparatorsPathString
  * @author 思追(shaco)
  */
 @Slf4j
-@WSHandler(LogFileWebSocketHandler.PATH)
+@WebsocketMapping(LogFileWebSocketHandler.PATH)
 class LogFileWebSocketHandler(
     private val sessionService: SessionService,
     private val authenticationInterceptor: AuthenticationInterceptor,
@@ -66,106 +73,135 @@ class LogFileWebSocketHandler(
         const val HEARTBEAT_CHECK_TIMEOUT_NUMBER: Int = 3
     }
 
-    private val logger = Slf4j.log
+    private val logger = LoggerFactory.getLogger(LogFileWebSocketHandler::class.java)
     private val pathTemplate = UriTemplate(PATH)
-    private val sessionMappingLogFileReader = ConcurrentHashMap<String, LogFileReader>()
     private val sessionMappingHeartbeatCheckTaskId = ConcurrentHashMap<String, HeartbeatObj>()
     private val heartbeatCheckTimer = TaskTimer()
+    private val logSenderDispatcher = Executors.newCachedThreadPool().asCoroutineDispatcher()
 
-    override fun handle(session: WebSocketSession): Mono<Void> = mono {
+    override fun handle(session: WebSocketSession): Mono<Void> {
+        // 解析参数
+        val (type, name) = parsePathVariable(session)
+
+        if (logger.isDebugEnabled) {
+            logger.debug("收到日志文件链接： {} - {}", type, name)
+        }
 
         // 认证
-        if (!sessionMappingLogFileReader.contains(session.id)) {
+        val authMono = mono {
+
             try {
                 authenticationInterceptor.auth(
                     needAuthRole = UserAuthRoleEnum.ADMIN,
                     currentSession = sessionService.currentSession(session)
                 )
+
+                if (logger.isDebugEnabled) {
+                    logger.debug("日志文件链接，认证成功： {} - {}", type, name)
+                }
             } catch (e: UnauthorizedException) {
                 if (logger.isDebugEnabled) {
-                    logger.debug("当前用户未登录：{}", session.handshakeInfo.uri, e)
+                    logger.debug("日志文件链接断开，当前用户未登录： {} - {}", type, name, e)
                 }
-                return@mono session.close(CloseStatus.PROTOCOL_ERROR).awaitSingleOrNull()
+                session.close(CloseStatus.PROTOCOL_ERROR).awaitSingleOrNull()
+                throw e
             } catch (e: ForbiddenException) {
                 if (logger.isDebugEnabled) {
-                    logger.debug("当前用户无访问权限：{}", session.handshakeInfo.uri, e)
+                    logger.debug("日志文件链接断开，当前用户无访问权限： {} - {}", type, name, e)
                 }
-                return@mono session.close(CloseStatus.PROTOCOL_ERROR).awaitSingleOrNull()
+                session.close(CloseStatus.PROTOCOL_ERROR).awaitSingleOrNull()
+                throw e
             } catch (e: Exception) {
                 if (logger.isDebugEnabled) {
-                    logger.debug("用户认证发生例外：{}", session.handshakeInfo.uri, e)
+                    logger.debug("日志文件链接断开，用户认证发生例外： {} - {}", type, name, e)
                 }
-                return@mono session.close(CloseStatus.SERVER_ERROR).awaitSingleOrNull()
+                session.close(CloseStatus.SERVER_ERROR).awaitSingleOrNull()
+                throw e
             }
         }
 
-        val logFileReader = try {
-            sessionMappingLogFileReader.computeIfAbsent(session.id) {
+        // 接受消息
+        val input = session.receive()
+            .map(WebSocketMessage::getPayloadAsText)
+            .map { message ->
 
-                // 解析参数
-                val (type, name) = try {
-                    parsePathVariable(session)
-                } catch (e: Throwable) {
-                    throw IllegalArgumentException("路径变量解析错误")
-                }
-
-                val logFile = Paths.get(LogsController.rootDir.invariantSeparatorsPathString, type.dirName, name)
-                if (!logFile.exists()) {
-                    if (logger.isWarnEnabled) {
-                        logger.warn("日志文件不存在：{}", session.handshakeInfo.uri)
-                    }
-                    throw FileNotFoundException()
-                }
-
-                // 打开日志文件
-                LogFileReader(logFile.toFile())
-            }
-
-        } catch (ex: Throwable) {
-            if (logger.isDebugEnabled) {
-                logger.debug("初始化日志文件读取器发生例外：{}", session.handshakeInfo.uri, ex)
-            }
-            return@mono session.close(CloseStatus.BAD_DATA).awaitSingleOrNull()
-        }
-
-        session.receive()
-            .doOnNext {
                 refreshHeartbeatCheck(session)
-            }
-            .concatMap {
-                val text = it.payloadAsText
-                if (text == PONG) {
-                    Mono.empty()
-                } else {
-                    val input = Json.decodeFromString<LogFilePageInput>(text)
-                    val result = logFileReader.readTaskLogPage(input)
 
-                    val message = session.textMessage(Json.encodeToString(result))
-                    session.send(Mono.just(message))
+                if (logger.isDebugEnabled) {
+                    logger.debug("收到消息： {}", message)
                 }
+
+                if (message == PONG) {
+                    // 忽略心跳消息
+                } else {
+                    val input = Json.decodeFromString<LogFileMsgInput>(message)
+                    session.attributes["autoRefresh"] = input.autoRefresh
+                }
+
             }
             .then()
-            .doOnError {
-                if (logger.isWarnEnabled) {
-                    logger.warn("日志websocket会话异常，链接关闭，异常信息：{}", it.message, it)
-                }
 
-                try {
-                    if (session.isOpen) {
-                        runBlocking {
-                            session.close(CloseStatus.SERVER_ERROR).awaitSingleOrNull()
-                        }
-                    }
-                } catch (e: Exception) {
-                    log.warn("关闭websocket会话发生例外！", e)
+        // 输出消息
+        val output = session.send(subscribeMessage(session))
+
+        return authMono.flatMap { Mono.zip(input, output) }
+            .then()
+            .doOnError {
+                if (logger.isDebugEnabled) {
+                    logger.debug("日志文件链接发生错误： {} - {}", type, name, it)
                 }
             }
             .doFinally {
                 closeHeartbeatCheck(session)
-                logFileReader.close()
+
+                if (logger.isDebugEnabled) {
+                    logger.debug("日志文件链接断开： {} - {}", type, name)
+                }
             }
-            .awaitSingleOrNull()
+
     }
+
+    /**
+     * 订阅消息
+     */
+    private fun subscribeMessage(session: WebSocketSession): Publisher<WebSocketMessage> =
+        flux<WebSocketMessage>(logSenderDispatcher) {
+
+            val (type, name) = parsePathVariable(session)
+
+            val logFile =
+                Paths.get(LogsController.rootDir.invariantSeparatorsPathString, type.dirName, name)
+            if (!logFile.exists()) {
+                if (logger.isWarnEnabled) {
+                    logger.warn("日志文件不存在：{}", session.handshakeInfo.uri)
+                }
+                throw FileNotFoundException()
+            }
+
+            LogFileReader(logFile.toFile()).use {
+
+                while (session.isOpen && isActive) {
+                    val autoRefresh = session.attributes["autoRefresh"] as Boolean?
+
+                    if (autoRefresh != null && !autoRefresh) {
+                        delay(1000)
+                        continue
+                    }
+
+                    val result = it.readTaskLogPage() ?: continue
+
+                    val (lastLine, line) = result
+                    if (line != null) {
+                        send(session.textMessage(line))
+                    }
+
+                    // 到达尾行睡眠1秒
+                    if (lastLine) {
+                        delay(1000)
+                    }
+                }
+            }
+        }
 
 
     /**
@@ -207,6 +243,7 @@ class LogFileWebSocketHandler(
     override fun destroy() {
         try {
             heartbeatCheckTimer.shutdown()
+            logSenderDispatcher.close()
         } catch (e: InterruptedException) {
             if (logger.isWarnEnabled) {
                 logger.warn("关闭心跳检查定时器发生错误！", e)
@@ -248,40 +285,50 @@ class LogFileWebSocketHandler(
 
         private val randomAccessFile: RandomAccessFile = RandomAccessFile(file, "r")
         private val isClose = AtomicBoolean(false)
+        private val lock = ReentrantLock()
 
         /**
          * 读取任务日志页内容
+         *
+         * @return 如果返回 null 则表示存在并发，请忽略该内容
          */
-        fun readTaskLogPage(input: LogFilePageInput): LogFilePageOutput {
-            if (isClose.get()) {
-                return LogFilePageOutput.EMPTY
+        fun readTaskLogPage(): LogFilePageOutput? {
+            if (isClose()) {
+                throw IllegalStateException("日志文件读取器已经关闭！")
             }
 
-            // 读取对应行数的数据
-            val lineNumber: Int = input.lineNumber
-            val logData: MutableList<String> = ArrayList(lineNumber)
-            for (i in 0 until lineNumber) {
+            if (!lock.tryLock()) {
+                return null
+            }
+
+            try {
+                // 读取对应行数的数据
                 val line = nextLine()
-                if (line.isNotEmpty()) {
-                    logData.add(line)
+                val result = if (line.isNotEmpty()) {
+                    LogFilePageOutput(
+                        lastLine = isLastLine,
+                        line = line
+                    )
                 } else {
                     val filePointer = randomAccessFile.filePointer
                     val length = randomAccessFile.length()
+
                     // 到达尾行
                     if (filePointer >= length) {
-                        break
+                        LogFilePageOutput(
+                            lastLine = true,
+                        )
                     } else {
-                        logData.add("")
+                        LogFilePageOutput(
+                            lastLine = isLastLine,
+                        )
                     }
                 }
-            }
 
-            // 封装结果
-            return LogFilePageOutput(
-                lastLine = isLastLine,
-                lineNumber = logData.size,
-                lineData = logData
-            )
+                return result
+            } finally {
+                lock.unlock()
+            }
         }
 
         /**
@@ -305,7 +352,7 @@ class LogFileWebSocketHandler(
         /**
          * 从指定坐标读取一行
          */
-        fun nextLine(): String {
+        private fun nextLine(): String {
             var input = StringBuilder()
 
             val filePointer = randomAccessFile.filePointer

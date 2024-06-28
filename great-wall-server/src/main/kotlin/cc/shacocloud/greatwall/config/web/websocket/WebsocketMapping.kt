@@ -12,7 +12,7 @@ import org.springframework.web.reactive.socket.WebSocketHandler
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 @Component
-annotation class WSHandler(
+annotation class WebsocketMapping(
 
     /**
      * ws 请求路径

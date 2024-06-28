@@ -14,18 +14,8 @@ data class LogFilePageOutput(
     val lastLine: Boolean = false,
 
     /**
-     * 实际行数
-     */
-    val lineNumber: Int = 0,
-
-    /**
      * 行数据
      */
-    val lineData: List<String> = emptyList()
-) {
+    val line: String? = null
 
-
-    companion object {
-        val EMPTY: LogFilePageOutput = LogFilePageOutput()
-    }
-}
+)
