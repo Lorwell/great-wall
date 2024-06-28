@@ -1,7 +1,7 @@
 import {ColumnDef} from "@tanstack/react-table";
 import {columnCell, dataTableCheckboxColumn} from "@/components/data-table/data-table-column.tsx";
 import dayjs from "dayjs";
-import {LogListOutput, LogTypeEnum} from "@/constant/api/app-logs/types.ts";
+import {LogListOutput, logTypeChinese, LogTypeEnum} from "@/constant/api/app-logs/types.ts";
 import RowActions, {RowActionsEvent} from "@/pages/app-logs/list/row-actions.tsx";
 import {byteSizeToUnitStr} from "@/utils/Utils.ts";
 
@@ -27,14 +27,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<LogListOutput>[] => {
         enableSorting: false,
         cell: ({getValue}) => {
           const type = getValue() as LogTypeEnum
-
-          switch (type) {
-            case "ROOT":
-              return "系统日志"
-            case "ACCESS":
-              return "访问日志"
-          }
-          return "未知"
+          return logTypeChinese(type)
         }
       }
     ),

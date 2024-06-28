@@ -1,15 +1,17 @@
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {CSSProperties, useEffect, useRef, useState} from "react";
-import {LogTypeEnum} from "@/constant/api/app-logs/types.ts";
 import {toast} from "sonner";
-import {isBlank} from "@/utils/Utils.ts";
+import {isBlank, isEmpty} from "@/utils/Utils.ts";
 import {Label} from "@/components/ui/label.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
 import {Dot} from "lucide-react";
 import {LazyLog, ScrollFollow} from "@melloware/react-logviewer";
+import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import {logsList} from "@/constant/api/app-logs";
+import {logTypeChinese} from "@/constant/api/app-logs/types.ts";
 
 export enum ReadyState {
   Connecting = "CONNECTING",
@@ -35,6 +37,7 @@ const statusStyles: Record<string, CSSProperties> = {
  */
 export default function LogFile() {
   const {type, file} = useParams();
+  const navigate = useNavigate();
 
   if (isBlank(type) || isBlank(file)) {
     toast.error("错误的路径参数", {
@@ -44,7 +47,7 @@ export default function LogFile() {
     window.history.back()
   }
 
-  const [logType, setLogType] = useState<LogTypeEnum>(type!!.toUpperCase() as LogTypeEnum)
+  const {data, loading} = useApiRequest(logsList);
 
   // 操作相关
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
@@ -58,6 +61,16 @@ export default function LogFile() {
     wsRef.current?.send(JSON.stringify({autoRefresh}))
   }, [autoRefresh]);
 
+  /**
+   * 导航到新的日志文件
+   */
+  function navigateLogFile(logFile: string) {
+    const index = logFile.indexOf("-")
+    const type = logFile.substring(0, index)
+    const file = logFile.substring(index + 1)
+    navigate(`/manage/logs/type/${type.toLowerCase()}/file/${file}`)
+  }
+
   const host = `${window.location.host}`;
   const openTLS = 'https:' === window.location.protocol;
   const url = `${openTLS ? 'wss' : 'ws'}://${host}/api/logs/type/${type}/name/${file}`
@@ -69,24 +82,26 @@ export default function LogFile() {
           <div className={"flex flex-col space-y-4"} style={{...size}}>
 
             <div className={"flex flex-row justify-between"}>
-              <div className={"flex flex-row items-center space-x-2"}>
-                <Select value={logType} onValueChange={it => setLogType(it as LogTypeEnum)}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ROOT">系统日志</SelectItem>
-                    <SelectItem value="ACCESS">访问日志</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className={"flex flex-row items-center space-x-3"}>
 
-                <Select value={logType} onValueChange={it => setLogType(it as LogTypeEnum)}>
-                  <SelectTrigger className="w-[150px]">
+                <Select disabled={loading || isEmpty(data?.records)}
+                        value={`${type!!.toUpperCase()}-${file}`}
+                        onValueChange={it => navigateLogFile(it)}
+                >
+                  <SelectTrigger className="w-[280px]">
                     <SelectValue/>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ROOT">系统日志</SelectItem>
-                    <SelectItem value="ACCESS">访问日志</SelectItem>
+                    {
+                      data?.records?.map((it) => {
+                        const value = `${it.type}-${it.name}`
+                        return (
+                          <SelectItem key={`${it.type}-${it.name}`} value={value}>
+                            {logTypeChinese(it.type)} - {it.name}
+                          </SelectItem>
+                        )
+                      })
+                    }
                   </SelectContent>
                 </Select>
 
@@ -126,6 +141,7 @@ export default function LogFile() {
                            enableSearch
                            enableSearchNavigation
                            selectableLines
+                           enableLineNumbers
                            url={url}
                            websocket
                            websocketOptions={{

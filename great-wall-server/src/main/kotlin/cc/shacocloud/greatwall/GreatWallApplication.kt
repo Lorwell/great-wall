@@ -5,7 +5,6 @@ import cc.shacocloud.greatwall.config.web.WebFluxServerConfiguration
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.web.reactive.config.EnableWebFlux
 import java.util.*
 
 /**
@@ -13,7 +12,6 @@ import java.util.*
  *
  * @see [WebFluxServerConfiguration]
  */
-@EnableWebFlux
 @EnableScheduling
 @SpringBootApplication
 class GreatWallApplication

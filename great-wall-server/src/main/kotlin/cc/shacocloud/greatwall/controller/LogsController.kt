@@ -1,11 +1,12 @@
 package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
-import cc.shacocloud.greatwall.model.dto.convert.LogEnum
+import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.output.LogListOutput
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
 import java.nio.file.Files
@@ -37,18 +38,20 @@ class LogsController {
     }
 
     @GetMapping
-    fun list(): List<LogListOutput> {
-        val rootLogFiles = rootDir.toLogList(LogEnum.ROOT)
-        val accessLogFiles = rootDir.toLogList(LogEnum.ACCESS)
-
-        return (rootLogFiles + accessLogFiles).sortedByDescending { it.lastUpdateTime }
+    fun list(
+        @RequestParam(required = false) type: LogTypeEnum? = null
+    ): List<LogListOutput> {
+        return LogTypeEnum.entries
+            .filter { type == null || it == type }
+            .flatMap { rootDir.toLogList(it) }
+            .sortedByDescending { it.lastUpdateTime }
     }
 
 
     // ----------
 
     fun Path.toLogList(
-        type: LogEnum
+        type: LogTypeEnum
     ): List<LogListOutput> {
         return Files.list(Paths.get(invariantSeparatorsPathString, type.dirName))
             .filter { !it.isDirectory() && it.extension == "log" }

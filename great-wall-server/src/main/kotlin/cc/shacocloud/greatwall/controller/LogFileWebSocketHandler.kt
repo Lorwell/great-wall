@@ -5,9 +5,9 @@ import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
 import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
 import cc.shacocloud.greatwall.controller.interceptor.UserAuthRoleEnum
-import cc.shacocloud.greatwall.model.dto.convert.LogEnum
+import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.input.LogFileMsgInput
-import cc.shacocloud.greatwall.model.dto.output.LogFilePageOutput
+import cc.shacocloud.greatwall.model.dto.output.LogFileMsgutput
 import cc.shacocloud.greatwall.service.SessionService
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
@@ -82,7 +82,7 @@ class LogFileWebSocketHandler(
     override fun handle(session: WebSocketSession): Mono<Void> {
         // 解析参数
         val (type, name) = parsePathVariable(session)
-
+        sessionMappingHeartbeatCheckTaskId.iterator()
         if (logger.isDebugEnabled) {
             logger.debug("收到日志文件链接： {} - {}", type, name)
         }
@@ -263,7 +263,7 @@ class LogFileWebSocketHandler(
         val pathVariable = pathTemplate.match(handshakeInfo.uri.path)
 
         return PathVariable(
-            type = LogEnum.valueOf(pathVariable["type"]!!.uppercase()),
+            type = LogTypeEnum.valueOf(pathVariable["type"]!!.uppercase()),
             name = pathVariable["name"]!!
         )
     }
@@ -274,7 +274,7 @@ class LogFileWebSocketHandler(
     )
 
     data class PathVariable(
-        val type: LogEnum,
+        val type: LogTypeEnum,
         val name: String,
     )
 
@@ -292,7 +292,7 @@ class LogFileWebSocketHandler(
          *
          * @return 如果返回 null 则表示存在并发，请忽略该内容
          */
-        fun readTaskLogPage(): LogFilePageOutput? {
+        fun readTaskLogPage(): LogFileMsgutput? {
             if (isClose()) {
                 throw IllegalStateException("日志文件读取器已经关闭！")
             }
@@ -305,7 +305,7 @@ class LogFileWebSocketHandler(
                 // 读取对应行数的数据
                 val line = nextLine()
                 val result = if (line.isNotEmpty()) {
-                    LogFilePageOutput(
+                    LogFileMsgutput(
                         lastLine = isLastLine,
                         line = line
                     )
@@ -315,11 +315,11 @@ class LogFileWebSocketHandler(
 
                     // 到达尾行
                     if (filePointer >= length) {
-                        LogFilePageOutput(
+                        LogFileMsgutput(
                             lastLine = true,
                         )
                     } else {
-                        LogFilePageOutput(
+                        LogFileMsgutput(
                             lastLine = isLastLine,
                         )
                     }

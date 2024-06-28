@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * @author 思追(shaco)
  */
 @Serializable
-data class LogFilePageOutput(
+data class LogFileMsgutput(
 
     /**
      * 是否已经达到尾行

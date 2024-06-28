@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.model.dto.output
 
-import cc.shacocloud.greatwall.model.dto.convert.LogEnum
+import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
 import java.nio.file.Path
 import kotlin.io.path.fileSize
 import kotlin.io.path.getLastModifiedTime
@@ -12,12 +12,12 @@ import kotlin.io.path.pathString
  */
 data class LogListOutput(
     val name: String,
-    val type: LogEnum,
+    val type: LogTypeEnum,
     val size: Long,
     val lastUpdateTime: Long
 ) {
 
-    constructor(type: LogEnum, path: Path) : this(
+    constructor(type: LogTypeEnum, path: Path) : this(
         name = path.fileName.pathString,
         type = type,
         size = path.fileSize(),

@@ -14,5 +14,19 @@ export enum LogTypeEnum {
 
 }
 
+/**
+ * 日志类型转中文
+ * @param type
+ */
+export function logTypeChinese(type: LogTypeEnum): string {
+  switch (type) {
+    case "ROOT":
+      return "系统日志"
+    case "ACCESS":
+      return "访问日志"
+  }
+  return "未知"
+}
+
 export type LogListOutput = Partial<LogListOutputSchemaValues>
 export type LogListRecordsOutput = Partial<LogListRecordsOutputSchemaValues>

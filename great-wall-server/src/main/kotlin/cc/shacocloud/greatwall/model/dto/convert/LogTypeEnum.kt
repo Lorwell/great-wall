@@ -4,7 +4,7 @@ package cc.shacocloud.greatwall.model.dto.convert
  *
  * @author 思追(shaco)
  */
-enum class LogEnum(
+enum class LogTypeEnum(
     val dirName: String
 ) {
 
