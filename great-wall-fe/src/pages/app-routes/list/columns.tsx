@@ -6,6 +6,7 @@ import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hov
 import RowActions, {RowActionsEvent} from "@/pages/app-routes/list/row-actions.tsx";
 import {AppRouteListOutput} from "@/constant/api/app-routes/types.ts";
 import {UrlsSchemaValues} from "@/constant/api/app-routes/schema.ts";
+import PredicatesColumn from "@/pages/app-routes/list/PredicatesColumn.tsx";
 
 export interface ColumnsProps {
 
@@ -30,17 +31,22 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
     ),
     columnCell(
       {
-        columnId: "describe",
-        label: "描述",
+        columnId: "predicates",
+        label: "路由条件",
         size: 200,
         enableSorting: false,
-        cell: ({getValue}) => getValue()
+        cell: ({getValue}) => {
+          const value = getValue()
+          return (
+            <PredicatesColumn predicates={value}/>
+          )
+        }
       }
     ),
     columnCell(
       {
         columnId: "urls",
-        label: "路由地址",
+        label: "目标地址",
         size: 200,
         enableSorting: false,
         cell: ({getValue}) => {
@@ -72,7 +78,11 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
         columnId: "priority",
         label: "优先级",
         size: 100,
-        cell: ({getValue}) => getValue()
+        cell: ({getValue}) => (
+          <div className={"p-4"}>
+            {getValue()}
+          </div>
+        )
       }
     ),
     columnCell(
@@ -87,7 +97,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "createTime",
         label: "创建时间",
-        size: 120,
+        size: 150,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),

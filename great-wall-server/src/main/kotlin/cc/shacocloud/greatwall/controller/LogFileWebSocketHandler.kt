@@ -242,8 +242,15 @@ class LogFileWebSocketHandler(
 
     override fun destroy() {
         try {
-            heartbeatCheckTimer.shutdown()
             logSenderDispatcher.close()
+        } catch (e: Exception) {
+            if (logger.isWarnEnabled) {
+                logger.warn("关闭日志发送队列发生错误！", e)
+            }
+        }
+
+        try {
+            heartbeatCheckTimer.shutdown()
         } catch (e: InterruptedException) {
             if (logger.isWarnEnabled) {
                 logger.warn("关闭心跳检查定时器发生错误！", e)

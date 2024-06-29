@@ -33,6 +33,7 @@ export const cookiePredicatesSchema = z.object({
   name: z.string({required_error: "不可以为空"}),
   regexp: z.string({required_error: "不可以为空"}),
 })
+export type CookiePredicatesSchemaValues = z.infer<typeof cookiePredicatesSchema>
 
 export const headerPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Header]),
@@ -54,10 +55,13 @@ export const hostPredicatesSchema = z.object({
   ).min(1, "不可以为空")
 })
 
+export type HostPredicatesSchemaValues = z.infer<typeof hostPredicatesSchema>
+
 export const methodPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Method]),
   methods: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"})
 })
+export type MethodPredicatesSchemaValues = z.infer<typeof methodPredicatesSchema>
 
 export const pathPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Path]),
@@ -70,8 +74,15 @@ export const remoteAddrPredicatesSchema = z.object({
   sources: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"}),
 })
 
-
-export const predicatesSchema = z.union([cookiePredicatesSchema, headerPredicatesSchema, queryParamPredicatesSchema, hostPredicatesSchema, methodPredicatesSchema, pathPredicatesSchema, remoteAddrPredicatesSchema]);
+export const predicatesSchema = z.union([
+  cookiePredicatesSchema,
+  headerPredicatesSchema,
+  queryParamPredicatesSchema,
+  hostPredicatesSchema,
+  methodPredicatesSchema,
+  pathPredicatesSchema,
+  remoteAddrPredicatesSchema
+]);
 export type PredicatesSchemaValues = z.infer<typeof predicatesSchema>
 
 export const predicatesOperatorSchema = z.object({
@@ -87,8 +98,11 @@ export const urlsSchema = z.object({
 })
 export type UrlsSchemaValues = z.infer<typeof urlsSchema>
 
+export const predicates = z.array(predicatesOperatorSchema);
+export type PredicatesValues = z.infer<typeof predicates>
+
 export const predicatesFormSchema = z.object({
-  predicates: z.array(predicatesOperatorSchema),
+  predicates: predicates,
   urls: z.array(urlsSchema),
 
 })
@@ -107,8 +121,5 @@ export type AppRoutesConfValues = z.infer<typeof appRoutesConfSchema>
 export const appRouteOutputSchema = appRoutesConfSchema.merge(baseOutputSchema)
 export type AppRouteOutputValues = z.infer<typeof appRouteOutputSchema>
 
-export const appRouteListOutputSchema = appRoutesConfSchema.merge(baseOutputSchema).omit({predicates: true})
-export type AppRouteListOutputValues = z.infer<typeof appRouteListOutputSchema>
-
-export const appRouteListPageRecordsSchema = getPageRecordSchema(appRouteListOutputSchema)
-export type AppRouteListPageRecordsValues = z.infer<typeof appRouteListPageRecordsSchema>
+export const appRoutePageRecordsSchema = getPageRecordSchema(appRouteOutputSchema)
+export type AppRoutePageRecordsValues = z.infer<typeof appRoutePageRecordsSchema>

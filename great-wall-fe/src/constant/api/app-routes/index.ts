@@ -1,8 +1,8 @@
 import {AppRouteInput, AppRouteListInput, AppRouteOutput, AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 import {Get, Patch, PostJson, PutJson} from "@/constant/api";
 import {
-  appRouteListPageRecordsSchema,
-  AppRouteListPageRecordsValues,
+  appRoutePageRecordsSchema,
+  AppRoutePageRecordsValues,
   appRouteOutputSchema
 } from "@/constant/api/app-routes/schema.ts";
 
@@ -18,8 +18,8 @@ export function createAppRoute(input: AppRouteInput): Promise<AppRouteOutput> {
  * 应用路由列表
  * @param input
  */
-export function appRouteList(input?: AppRouteListInput): Promise<AppRouteListPageRecordsValues> {
-  return Get(`/api/app-route`, {body: input, resultSchema: appRouteListPageRecordsSchema})
+export function appRouteList(input?: AppRouteListInput): Promise<AppRoutePageRecordsValues> {
+  return Get(`/api/app-route`, {body: input, resultSchema: appRoutePageRecordsSchema})
 }
 
 /**

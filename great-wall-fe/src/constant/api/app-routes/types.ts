@@ -1,4 +1,4 @@
-import {AppRouteListOutputValues, AppRouteOutputValues, AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
+import {AppRouteOutputValues, AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
 import {BaseListInputSchemaValues} from "@/constant/api/schema.ts";
 
 export enum AppRouteStatusEnum {
@@ -62,7 +62,7 @@ export enum PredicateTypeEnum {
 
 export type AppRouteInput = Partial<AppRoutesConfValues>
 export type AppRouteOutput = Partial<AppRouteOutputValues>
-export type AppRouteListOutput = Partial<AppRouteListOutputValues>
+export type AppRouteListOutput = AppRouteOutput
 
 export interface AppRouteListInput extends BaseListInputSchemaValues {
 

@@ -3,11 +3,9 @@ package cc.shacocloud.greatwall.controller
 import cc.shacocloud.greatwall.controller.exception.NotFoundException
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
-import cc.shacocloud.greatwall.model.dto.convert.toListOutput
 import cc.shacocloud.greatwall.model.dto.convert.toOutput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
-import cc.shacocloud.greatwall.model.dto.output.AppRouteListOutput
 import cc.shacocloud.greatwall.model.dto.output.AppRouteOutput
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.AppRouteService
@@ -43,9 +41,9 @@ class AppRouteController(
      * 应用路由列表
      */
     @GetMapping
-    suspend fun list(@Validated input: AppRouteListInput): Page<AppRouteListOutput> {
+    suspend fun list(@Validated input: AppRouteListInput): Page<AppRouteOutput> {
         return appRouteService.list(input)
-            .map { it.toListOutput() }
+            .map { it.toOutput() }
     }
 
     /**
