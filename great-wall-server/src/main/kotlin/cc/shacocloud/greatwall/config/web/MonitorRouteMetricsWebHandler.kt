@@ -172,10 +172,6 @@ class MonitorRouteMetricsWebHandler(
         }
     }
 
-    fun printAccessLog() {
-
-    }
-
     /**
      * 流量统计请求委托器
      *
