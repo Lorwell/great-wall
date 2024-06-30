@@ -139,7 +139,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
                     {
                       PredicateTypeEnum.Method === type && (
                         <MethodPredicate control={form.control}
-                                         name={`predicates.${index}.predicate.patterns`}
+                                         name={`predicates.${index}.predicate.methods`}
                                          className={"flex-auto"}
                         />
                       )

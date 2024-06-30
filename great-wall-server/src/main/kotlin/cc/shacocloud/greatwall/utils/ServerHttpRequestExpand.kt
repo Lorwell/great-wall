@@ -32,5 +32,5 @@ fun ServerHttpRequest.getRealIp(): String {
  * @author 思追(shaco)
  */
 fun ServerHttpRequest.getHost(): String {
-    return headers.getFirst("Host") ?: UNKNOWN
+    return headers.host?.hostString ?: UNKNOWN
 }

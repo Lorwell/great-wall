@@ -40,12 +40,14 @@ export const headerPredicatesSchema = z.object({
   name: z.string({required_error: "不可以为空"}),
   regexp: z.string({required_error: "不可以为空"}),
 })
+export type HeaderPredicatesSchemaValues = z.infer<typeof headerPredicatesSchema>
 
 export const queryParamPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Query]),
   name: z.string({required_error: "不可以为空"}),
   regexp: z.string({required_error: "不可以为空"}),
 })
+export type QueryPredicatesSchemaValues = z.infer<typeof queryParamPredicatesSchema>
 
 export const hostPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.Host]),
@@ -68,11 +70,13 @@ export const pathPredicatesSchema = z.object({
   patterns: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"}),
   matchTrailingSlash: z.boolean({required_error: "不可以为空"}),
 })
+export type PathPredicatesSchemaValues = z.infer<typeof pathPredicatesSchema>
 
 export const remoteAddrPredicatesSchema = z.object({
   type: z.enum([PredicateTypeEnum.RemoteAddr]),
   sources: z.array(z.string({required_error: "不可以为空"}), {required_error: "不可以为空"}),
 })
+export type RemoteAddrPredicatesSchemaValues = z.infer<typeof remoteAddrPredicatesSchema>
 
 export const predicatesSchema = z.union([
   cookiePredicatesSchema,
@@ -89,6 +93,7 @@ export const predicatesOperatorSchema = z.object({
   operator: z.enum([RoutePredicateOperatorEnum.AND, RoutePredicateOperatorEnum.OR]),
   predicate: predicatesSchema
 })
+export type PredicatesOperatorSchemaValues = z.infer<typeof predicatesOperatorSchema>
 
 export const urlsSchema = z.object({
   url: z.string({required_error: "不可以为空"}).url({message: "请输入有效地址"}),

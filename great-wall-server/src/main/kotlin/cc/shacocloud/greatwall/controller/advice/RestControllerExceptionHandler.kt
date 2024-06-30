@@ -41,6 +41,10 @@ class RestControllerExceptionHandler {
         request: ServerHttpRequest,
         response: ServerHttpResponse
     ): Any {
+        if (log.isDebugEnabled) {
+            log.debug("请求 {} 无法处理！", request.path.pathWithinApplication().value(), e)
+        }
+
         response.statusCode = HttpStatus.BAD_REQUEST
         return ResponseBusinessMessage.BAD_REQUEST
     }
@@ -54,6 +58,10 @@ class RestControllerExceptionHandler {
         request: ServerHttpRequest,
         response: ServerHttpResponse
     ): Any {
+        if (log.isDebugEnabled) {
+            log.debug("请求 {} 处理出现错误的响应！", request.path.pathWithinApplication().value(), e)
+        }
+
         val statusCode = e.statusCode
         response.statusCode = statusCode
         return when (statusCode) {

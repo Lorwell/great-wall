@@ -33,7 +33,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "predicates",
         label: "路由条件",
-        size: 200,
+        size: 80,
         enableSorting: false,
         cell: ({getValue}) => {
           const value = getValue()

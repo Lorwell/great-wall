@@ -50,7 +50,7 @@ export default function RemoteAddrPredicate<
                 <HoverCardContent>
                   <p>
                     RemoteAddr 匹配规则 <br/>
-                    IPv4或IPv6字符串， 如 192.168.0.1/ 16（其中 192.168.0.1 是一个IP地址，16 是一个子网掩码 <br/>
+                    IPv4或IPv6字符串， 如 192.168.0.1/16（其中 192.168.0.1 是一个IP地址，16 是一个子网掩码 <br/>
                     如果未指定网络掩码，默认值为32
                   </p>
                 </HoverCardContent>

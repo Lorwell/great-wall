@@ -3,11 +3,8 @@ package cc.shacocloud.greatwall.config.web
 import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
+import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import cc.shacocloud.greatwall.utils.byteToUnitStr
-import cc.shacocloud.greatwall.utils.getRealIp
-import cc.shacocloud.greatwall.utils.minus
-import cc.shacocloud.greatwall.utils.toLocalDateTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -138,6 +135,7 @@ class MonitorRouteMetricsWebHandler(
                     arrayOf(
                         requestTime.toLocalDateTime(),
                         realIp,
+                        request.getHost(),
                         method,
                         "${path}${if (queryParamsMetrics.isEmpty()) "" else "?${queryParamsMetrics}"}",
                         requestBodySize.byteToUnitStr(),

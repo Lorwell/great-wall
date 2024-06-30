@@ -1,12 +1,18 @@
 import {
   CookiePredicatesSchemaValues,
+  HeaderPredicatesSchemaValues,
   HostPredicatesSchemaValues,
-  PredicatesSchemaValues,
-  PredicatesValues
+  MethodPredicatesSchemaValues,
+  PathPredicatesSchemaValues,
+  PredicatesOperatorSchemaValues,
+  PredicatesValues,
+  QueryPredicatesSchemaValues,
+  RemoteAddrPredicatesSchemaValues
 } from "@/constant/api/app-routes/schema.ts";
-import {PredicateTypeEnum} from "@/constant/api/app-routes/types.ts";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
+import {RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
+import {routePredicateOperatorEnumToChinese} from "@/pages/app-routes/utils.ts";
 
 export interface PredicatesColumnProps {
   predicates: PredicatesValues
@@ -18,22 +24,18 @@ export interface PredicatesColumnProps {
  */
 export default function PredicatesColumn(props: PredicatesColumnProps) {
   const {predicates} = props
-  const {predicate} = predicates[0];
 
   return (
-    <div className={"w-full flex gap-1"}>
-      <div style={{width: "calc(100% - 25px)"}}>
-        <Predicates prefix={false} value={predicate}/>
-      </div>
+    <div className={"w-full"}>
       <HoverCard>
         <HoverCardTrigger>
           <Badge variant={"secondary"} className={"cursor-pointer"}>{predicates.length}</Badge>
         </HoverCardTrigger>
         <HoverCardContent>
-          <div className={"flex flex-col gap-1"}>
+          <div className={"table table-auto border-separate border-spacing-1"}>
             {
               predicates.map((it, index) => (
-                <Predicates key={index} value={it.predicate}/>
+                <Predicates key={index} value={it} first={index === 0} viewOperator/>
               ))
             }
           </div>
@@ -43,65 +45,239 @@ export default function PredicatesColumn(props: PredicatesColumnProps) {
   )
 }
 
-function Predicates({value, prefix = true}: { value: PredicatesSchemaValues, prefix?: boolean }) {
-  switch (value.type) {
+function Predicates({value, first = false, viewOperator = false}: {
+  value: PredicatesOperatorSchemaValues,
+  first?: boolean,
+  viewOperator?: boolean
+}) {
+  const {predicate, operator} = value
+  const {type} = predicate
+  switch (type) {
     case "Host":
-      return (<HostPredicates prefix={prefix} value={value}/>)
+      return (
+        <HostPredicates value={predicate}
+                        first={first}
+                        operator={operator}
+                        viewOperator={viewOperator}
+        />
+      )
     case "Cookie":
-      return (<CookiePredicates prefix={prefix} value={value}/>)
+      return (
+        <KVPredicates kvType="Cookie"
+                      value={predicate}
+                      first={first}
+                      operator={operator}
+                      viewOperator={viewOperator}
+        />
+      )
     case "Header":
-      break;
+      return (
+        <KVPredicates kvType="Header"
+                      value={predicate}
+                      first={first}
+                      operator={operator}
+                      viewOperator={viewOperator}
+        />
+      )
     case "Query":
-      break;
+      return (
+        <KVPredicates kvType="Query"
+                      value={predicate}
+                      first={first}
+                      operator={operator}
+                      viewOperator={viewOperator}
+        />
+      )
     case "Method":
-      break;
+      return (
+        <MethodPredicates value={predicate}
+                          first={first}
+                          operator={operator}
+                          viewOperator={viewOperator}
+        />
+      )
     case "Path":
-      break;
+      return (
+        <PathPredicates value={predicate}
+                        first={first}
+                        operator={operator}
+                        viewOperator={viewOperator}
+        />
+      )
     case "RemoteAddr":
-      break;
+      return (
+        <RemoteAddrPredicates value={predicate}
+                              first={first}
+                              operator={operator}
+                              viewOperator={viewOperator}
+        />
+      )
   }
 
-  return (
-    <div></div>
-  )
+  throw new Error(`未知的类型 ${type}`)
 }
 
-function CookiePredicates({value, prefix = true}: { value: CookiePredicatesSchemaValues, prefix?: boolean }) {
+function KVPredicates({kvType, value, first, operator, viewOperator = false}: {
+  kvType: "Cookie" | "Query" | "Header",
+  value: CookiePredicatesSchemaValues | HeaderPredicatesSchemaValues | QueryPredicatesSchemaValues,
+  first: boolean,
+
+  operator?: RoutePredicateOperatorEnum,
+  viewOperator?: boolean
+}) {
   const {name, regexp} = value
 
   return (
-    <div className={"flex flex-row truncate"}>
+    <div className={"table-row"}>
       {
-        prefix && (
-          <div className={"basis-1/3"}>Cookie 匹配规则：</div>
+        (viewOperator && !!operator) && (
+          <div className={"table-cell text-left pr-1"}>
+            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
+          </div>
         )
       }
 
-      <div className={"basis-2/3"}>
+      <div className={"table-cell text-right"}>{kvType} 匹配规则：</div>
+
+      <div className={"table-cell text-left truncate"}>
         {name}={regexp}
       </div>
     </div>
   )
 }
 
-function HostPredicates({value, prefix = true}: { value: HostPredicatesSchemaValues, prefix?: boolean }) {
+function HostPredicates({value, first, operator, viewOperator = false}: {
+  value: HostPredicatesSchemaValues,
+  first: boolean,
+
+  operator?: RoutePredicateOperatorEnum,
+  viewOperator?: boolean
+}) {
   const {patterns} = value
 
   return (
-    <div className={"flex flex-row truncate"}>
+    <div className={"table-row"}>
       {
-        prefix && (
-          <div className={"basis-1/3"}>Host 匹配规则：</div>
+        (viewOperator && !!operator) && (
+          <div className={"table-cell text-left pr-1"}>
+            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
+          </div>
         )
       }
 
+      <div className={"table-cell text-right"}>Host 匹配规则：</div>
+
+      <div className={"table-cell text-left truncate"}>
+        {
+          patterns.map((it, i) => (
+            <span key={i}>
+              {it}{(i + 1) < patterns.length && ", "}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  )
+}
+
+function MethodPredicates({value, first, operator, viewOperator = false}: {
+  value: MethodPredicatesSchemaValues,
+  first: boolean,
+
+  operator?: RoutePredicateOperatorEnum,
+  viewOperator?: boolean
+}) {
+  const {methods} = value
+
+  return (
+    <div className={"table-row"}>
       {
-        patterns.map((it, i) => (
-          <div key={i} className={"basis-2/3"}>
-            {it}{(i + 1) < patterns.length && ", "}
+        (viewOperator && !!operator) && (
+          <div className={"table-cell text-left pr-1"}>
+            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
           </div>
-        ))
+        )
       }
+
+      <div className={"table-cell text-right"}>Method 匹配规则：</div>
+
+      <div className={"table-cell text-left truncate"}>
+        {
+          methods.map((it, i) => (
+            <span key={i}>
+              {it}{(i + 1) < methods.length && ", "}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  )
+}
+
+function PathPredicates({value, first, operator, viewOperator = false}: {
+  value: PathPredicatesSchemaValues,
+  first: boolean,
+
+  operator?: RoutePredicateOperatorEnum,
+  viewOperator?: boolean
+}) {
+  const {patterns} = value
+
+  return (
+    <div className={"table-row"}>
+      {
+        (viewOperator && !!operator) && (
+          <div className={"table-cell text-left pr-1"}>
+            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
+          </div>
+        )
+      }
+
+      <div className={"table-cell text-right"}>Path 匹配规则：</div>
+
+      <div className={"table-cell text-left truncate"}>
+        {
+          patterns.map((it, i) => (
+            <span key={i}>
+              {it}{(i + 1) < patterns.length && ", "}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  )
+}
+
+function RemoteAddrPredicates({value, first, operator, viewOperator = false}: {
+  value: RemoteAddrPredicatesSchemaValues,
+  first: boolean,
+
+  operator?: RoutePredicateOperatorEnum,
+  viewOperator?: boolean
+}) {
+  const {sources} = value
+
+  return (
+    <div className={"table-row"}>
+      {
+        (viewOperator && !!operator) && (
+          <div className={"table-cell text-left pr-1"}>
+            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
+          </div>
+        )
+      }
+
+      <div className={"table-cell text-right"}>Path 匹配规则：</div>
+
+      <div className={"table-cell text-left truncate"}>
+        {
+          sources.map((it, i) => (
+            <span key={i}>
+              {it}{(i + 1) < sources.length && ", "}
+            </span>
+          ))
+        }
+      </div>
     </div>
   )
 }

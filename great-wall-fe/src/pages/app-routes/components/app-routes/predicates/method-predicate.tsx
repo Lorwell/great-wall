@@ -11,7 +11,7 @@ export interface MethodPredicateProps<TFieldValues extends FieldValues = FieldVa
   className?: string
 }
 
-const options: Option[] = [
+export const options: Option[] = [
   {
     label: "OPTIONS",
     value: "OPTIONS",
@@ -62,8 +62,8 @@ export default function MethodPredicate<
                 <MultipleSelector
                   {...field}
                   value={value}
-                  onChange={options => field.onChange(options.map(it => it.value))}
                   defaultOptions={options}
+                  onChange={options => field.onChange(options.map(it => it.value))}
                   creatable
                   hidePlaceholderWhenSelected
                   badgeClassName={"bg-transparent hover:bg-transparent text-primary"}

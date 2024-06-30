@@ -89,7 +89,7 @@ data class RouteHeaderPredicate(
      * 请求头 名称
      */
     @field:NotBlank
-    val header: String,
+    val name: String,
 
     /**
      * 请求头 值的正则表达式
@@ -104,7 +104,7 @@ data class RouteHeaderPredicate(
      */
     override fun <T : Any> fillConfig(config: T, baseInfo: BaseRouteInfo) {
         config as HeaderRoutePredicateFactory.Config
-        config.setHeader(header)
+        config.setHeader(name)
         config.setRegexp(regexp)
     }
 }
@@ -112,10 +112,10 @@ data class RouteHeaderPredicate(
 data class RouteQueryPredicate(
 
     /**
-     * 请求头 名称
+     * 查询参数 名称
      */
     @field:NotBlank
-    val param: String,
+    val name: String,
 
     /**
      * 请求头 值的正则表达式
@@ -130,7 +130,7 @@ data class RouteQueryPredicate(
      */
     override fun <T : Any> fillConfig(config: T, baseInfo: BaseRouteInfo) {
         config as QueryRoutePredicateFactory.Config
-        config.setParam(param)
+        config.setParam(name)
         config.setRegexp(regexp)
     }
 }

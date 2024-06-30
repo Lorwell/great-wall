@@ -38,6 +38,10 @@ spring:
           max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:60S}
           max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
           eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
+      predicate:
+        host:
+          # host 匹配不导入端口
+          include-port: false
   # r2dbc 配置
   r2dbc:
     url: file:${H2_FILE_DIR:./data/db}/db;MODE=MYSQL
