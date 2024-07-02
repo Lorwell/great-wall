@@ -12,13 +12,16 @@ import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import io.r2dbc.spi.Readable
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.runBlocking
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.await
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 /**
@@ -35,7 +38,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 ) : RouteMonitorMetricsService {
 
     // 表名集合
-    private val tableNameSet: MutableSet<String> = mutableSetOf()
+    private var tableNameSet: MutableSet<String> = mutableSetOf()
 
     init {
         val tableNames = runBlocking {
@@ -48,24 +51,21 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 删除30天之前的表信息
      */
     @Scheduled(cron = "1 0 0 * * *")
-    fun deleteExpirationTables() {
-        runBlocking {
-            val current = LocalDateTime.now() - 30.days
-            val needDelTables = getAllRouteMonitorMetricsTables()
-                .filter {
-                    val day = it.removePrefix("route_metrics_record_")
-                    val dayDateTime = LocalDateTime.parse(day, DATE_TIME_DAY_FORMAT)
-                    dayDateTime < current
-                }
-
-            for (table in needDelTables) {
-                databaseClient.sql("drop table if exists $table")
-                    .await()
+    fun deleteExpirationTables() = mono {
+        val current = LocalDateTime.now() - 30.days
+        val needDelTables = getAllRouteMonitorMetricsTables()
+            .filter {
+                val day = it.removePrefix("route_metrics_record_")
+                val dayDateTime = LocalDate.parse(day, DATE_TIME_DAY_NO_SEP_FORMAT).atStartOfDay()
+                dayDateTime < current
             }
 
-            tableNameSet.clear()
-            tableNameSet.addAll(getAllRouteMonitorMetricsTables())
+        for (table in needDelTables) {
+            databaseClient.sql("drop table if exists $table")
+                .await()
         }
+
+        tableNameSet = getAllRouteMonitorMetricsTables()
     }
 
     /**

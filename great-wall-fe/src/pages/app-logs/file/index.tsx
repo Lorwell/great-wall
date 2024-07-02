@@ -129,43 +129,42 @@ export default function LogFile() {
             </div>
 
             <div className={"flex-auto"}>
-              <ScrollFollow
-                startFollowing={true}
-                render={({follow, onScroll}) => (
-                  <LazyLog follow={follow}
-                           onScroll={onScroll}
-                           caseInsensitive
-                           enableHotKeys
-                           enableLinks
-                           enableMultilineHighlight
-                           enableSearch
-                           enableSearchNavigation
-                           selectableLines
-                           enableLineNumbers
-                           url={url}
-                           websocket
-                           websocketOptions={{
-                             onOpen: (__, sock) => {
-                               setReadyState(ReadyState.Open)
-                               wsRef.current = sock
-                               sock.send(JSON.stringify({autoRefresh}))
-                             },
-                             onClose: (e) => {
-                               console.error(`日志链接 ${url} 断开`, e)
-                               setReadyState(ReadyState.Closed)
-                             },
-                             // @ts-ignore
-                             formatMessage: (message: string) => {
-                               if (message === "PING") {
-                                 wsRef.current?.send("PONG")
-                                 return null
-                               } else {
-                                 return message
-                               }
-                             }
-                           }}
-                  />
-                )}
+              <ScrollFollow startFollowing={true}
+                            render={({follow, onScroll}) => (
+                              <LazyLog follow={follow}
+                                       onScroll={onScroll}
+                                       caseInsensitive
+                                       enableHotKeys
+                                       enableLinks
+                                       enableMultilineHighlight
+                                       enableSearch
+                                       enableSearchNavigation
+                                       selectableLines
+                                       enableLineNumbers
+                                       url={url}
+                                       websocket
+                                       websocketOptions={{
+                                         onOpen: (__, sock) => {
+                                           setReadyState(ReadyState.Open)
+                                           wsRef.current = sock
+                                           sock.send(JSON.stringify({autoRefresh}))
+                                         },
+                                         onClose: (e) => {
+                                           console.error(`日志链接 ${url} 断开`, e)
+                                           setReadyState(ReadyState.Closed)
+                                         },
+                                         // @ts-ignore
+                                         formatMessage: (message: string) => {
+                                           if (message === "PING") {
+                                             wsRef.current?.send("PONG")
+                                             return null
+                                           } else {
+                                             return message
+                                           }
+                                         }
+                                       }}
+                              />
+                            )}
               />
             </div>
 

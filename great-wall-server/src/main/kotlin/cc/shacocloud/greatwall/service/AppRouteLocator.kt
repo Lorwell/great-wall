@@ -9,6 +9,7 @@ import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.reactor.flux
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
+import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
 import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
@@ -28,8 +29,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 class AppRouteLocator(
     val appRouteService: AppRouteService,
     val routePredicateFactory: RoutePredicateFactory,
-    val weightRoutePredicateFactory: WeightRoutePredicateFactory
+    val weightRoutePredicateFactory: WeightRoutePredicateFactory,
+    gatewayFilterFactories: List<GatewayFilterFactory<Any>>
 ) : RouteLocator {
+
+    /**
+     * 以网关的 [GatewayFilterFactory.name] 作为键，转为一个 map 对象，用于快速匹配
+     */
+    private val gatewayFilterFactoryMap = gatewayFilterFactories.associateBy { it.name() }
 
     companion object {
 
@@ -102,7 +109,13 @@ class AppRouteLocator(
                             }
                         }
 
-                    // 插件配置 TODO
+                    // 插件配置
+                    // TODO 这边先固定一部分插件
+
+                    // 转发请求头网关过滤器
+                    val preserveHostHeaderGatewayFilter =
+                        gatewayFilterFactoryMap["PreserveHostHeader"]!!.apply { }
+                    routeBuilder.filter(preserveHostHeaderGatewayFilter)
 
                     send(routeBuilder.build())
                 }
