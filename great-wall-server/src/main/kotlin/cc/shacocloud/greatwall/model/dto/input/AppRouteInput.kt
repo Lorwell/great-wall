@@ -2,11 +2,11 @@ package cc.shacocloud.greatwall.model.dto.input
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
-import cc.shacocloud.greatwall.model.mo.RouteUrl
-import cc.shacocloud.greatwall.model.mo.RouteUrls
+import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
 
 /**
  *
@@ -36,11 +36,11 @@ data class AppRouteInput(
     val status: AppRouteStatusEnum,
 
     /**
-     * 请求地址
+     * 目标地址配置
      */
     @field:Valid
-    @field:NotEmpty
-    val urls: RouteUrls,
+    @field:NotNull
+    val targetConfig: RouteTargetConfig,
 
     /**
      * 路由条件

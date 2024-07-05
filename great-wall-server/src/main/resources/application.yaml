@@ -29,8 +29,6 @@ spring:
         websocket:
           # 设置 ws 最大帧数字节长度
           max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
-        connect-timeout: ${HTTPCLIENT_CONNECT_TIMEOUT:3000}
-        response-timeout: ${HTTPCLIENT_RESPONSE_TIMEOUT:10S}
         # 代理请求连接池
         pool:
           type: ELASTIC

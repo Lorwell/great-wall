@@ -1,8 +1,7 @@
 import {Control, FieldPath, FieldValues} from "react-hook-form";
 import {FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
-import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
-import {CircleHelp} from "lucide-react";
 import MultipleSelector from "@/components/custom-ui/multiple-selector.tsx";
+import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 
 
 export interface RemoteAddrPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
@@ -42,19 +41,13 @@ export default function RemoteAddrPredicate<
                   badgeClassName={"bg-transparent hover:bg-transparent font-normal text-primary text-sm"}
                 />
               </FormControl>
-
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <CircleHelp className={"h-4 w-4"}/>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p>
-                    RemoteAddr 匹配规则 <br/>
-                    IPv4或IPv6字符串， 如 192.168.0.1/16（其中 192.168.0.1 是一个IP地址，16 是一个子网掩码 <br/>
-                    如果未指定网络掩码，默认值为32
-                  </p>
-                </HoverCardContent>
-              </HoverCard>
+              <FormHoverDescription>
+                <p>
+                  RemoteAddr 匹配规则 <br/>
+                  IPv4或IPv6字符串， 如 192.168.0.1/16（其中 192.168.0.1 是一个IP地址，16 是一个子网掩码 <br/>
+                  如果未指定网络掩码，默认值为32
+                </p>
+              </FormHoverDescription>
             </div>
             <FormDescription>
               RemoteAddr 匹配

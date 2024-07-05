@@ -103,13 +103,19 @@ export const urlsSchema = z.object({
 })
 export type UrlsSchemaValues = z.infer<typeof urlsSchema>
 
+export const targetConfigSchema = z.object({
+  connectTimeout: z.string({required_error: "不可以为空"}),
+  responseTimeout: z.string().optional(),
+  urls: z.array(urlsSchema),
+})
+export type TargetConfigSchemaValues = z.infer<typeof targetConfigSchema>
+
 export const predicates = z.array(predicatesOperatorSchema);
 export type PredicatesValues = z.infer<typeof predicates>
 
 export const predicatesFormSchema = z.object({
   predicates: predicates,
-  urls: z.array(urlsSchema),
-
+  targetConfig: targetConfigSchema
 })
 
 export type PredicatesFormValues = z.infer<typeof predicatesFormSchema>

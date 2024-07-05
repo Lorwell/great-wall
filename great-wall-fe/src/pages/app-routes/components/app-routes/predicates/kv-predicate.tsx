@@ -2,8 +2,7 @@ import {Control, FieldPath, FieldValues} from "react-hook-form";
 import {FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {cn} from "@/utils/shadcnUtils.ts";
-import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
-import {CircleHelp} from "lucide-react";
+import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 
 
 export interface KVPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
@@ -60,18 +59,13 @@ export default function KVPredicate<
                 <FormControl>
                   <Input {...field} placeholder={`${kvType} value`}/>
                 </FormControl>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <CircleHelp className={"h-4 w-4"}/>
-                  </HoverCardTrigger>
-                  <HoverCardContent>
-                    <p>
-                      {kvType}{" "}匹配规则 <br/>
-                      key 是完全匹配，也就是说这个 key 必须存在 <br/>
-                      value 使用正则表达式进行匹配
-                    </p>
-                  </HoverCardContent>
-                </HoverCard>
+                <FormHoverDescription>
+                  <p>
+                    {kvType}{" "}匹配规则 <br/>
+                    key 是完全匹配，也就是说这个 key 必须存在 <br/>
+                    value 使用正则表达式进行匹配
+                  </p>
+                </FormHoverDescription>
               </div>
               <FormMessage/>
             </FormItem>

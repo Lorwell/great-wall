@@ -14,7 +14,7 @@ fun AppRoutePo.toOutput(): AppRouteOutput {
         describe = describe,
         priority = priority,
         status = status,
-        urls = urls,
+        targetConfig = targetConfig,
         predicates = predicates,
         createTime = createTime,
         lastUpdateTime = lastUpdateTime

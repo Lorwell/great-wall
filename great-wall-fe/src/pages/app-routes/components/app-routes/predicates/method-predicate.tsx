@@ -1,8 +1,7 @@
 import {Control, FieldPath, FieldValues} from "react-hook-form";
 import {FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
-import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
-import {CircleHelp} from "lucide-react";
 import MultipleSelector, {Option} from "@/components/custom-ui/multiple-selector.tsx";
+import FormHoverDescription from "@/components/custom-ui/form-hover-description";
 
 
 export interface MethodPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
@@ -69,18 +68,12 @@ export default function MethodPredicate<
                   badgeClassName={"bg-transparent hover:bg-transparent text-primary"}
                 />
               </FormControl>
-
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <CircleHelp className={"h-4 w-4"}/>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p>
-                    请求方式匹配规则 <br/>
-                    基于指定的请求方式进行路由规则的匹配
-                  </p>
-                </HoverCardContent>
-              </HoverCard>
+              <FormHoverDescription>
+                <p>
+                  请求方式匹配规则 <br/>
+                  基于指定的请求方式进行路由规则的匹配
+                </p>
+              </FormHoverDescription>
             </div>
             <FormDescription>
               请求方式匹配

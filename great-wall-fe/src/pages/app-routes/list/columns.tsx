@@ -5,7 +5,7 @@ import {Badge} from "@/components/ui/badge";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
 import RowActions, {RowActionsEvent} from "@/pages/app-routes/list/row-actions.tsx";
 import {AppRouteListOutput} from "@/constant/api/app-routes/types.ts";
-import {UrlsSchemaValues} from "@/constant/api/app-routes/schema.ts";
+import {TargetConfigSchemaValues} from "@/constant/api/app-routes/schema.ts";
 import PredicatesColumn from "@/pages/app-routes/list/PredicatesColumn.tsx";
 
 export interface ColumnsProps {
@@ -45,12 +45,13 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
     ),
     columnCell(
       {
-        columnId: "urls",
+        columnId: "targetConfig",
         label: "目标地址",
         size: 200,
         enableSorting: false,
         cell: ({getValue}) => {
-          const urls = getValue<Array<UrlsSchemaValues>>();
+          const {urls} = getValue<TargetConfigSchemaValues>();
+
           return (
             <div className={"w-full flex gap-1"}>
               <div className={"truncate"} style={{width: "calc(100% - 25px)"}}>

@@ -31,7 +31,7 @@ export default function UpdateAppRoutes() {
           status: data.status,
         },
         predicates: {
-          urls: data.urls,
+          targetConfig: data.targetConfig,
           predicates: data.predicates
         }
       })

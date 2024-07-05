@@ -36,7 +36,7 @@ class AppRouteServiceImpl(
             describe = input.describe,
             priority = input.priority,
             status = input.status,
-            urls = input.urls,
+            targetConfig = input.targetConfig,
             predicates = input.predicates,
             createTime = Date(),
             lastUpdateTime = Date()
@@ -97,7 +97,7 @@ class AppRouteServiceImpl(
             describe = input.describe
             priority = input.priority
             status = input.status
-            urls = input.urls
+            targetConfig = input.targetConfig
             predicates = input.predicates
             lastUpdateTime = Date()
         }

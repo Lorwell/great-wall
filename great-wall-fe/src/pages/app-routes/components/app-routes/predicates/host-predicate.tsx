@@ -1,8 +1,7 @@
 import {Control, FieldPath, FieldValues} from "react-hook-form";
 import {FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
-import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
-import {CircleHelp} from "lucide-react";
 import MultipleSelector from "@/components/custom-ui/multiple-selector.tsx";
+import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 
 
 export interface HostPredicateProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>> {
@@ -40,29 +39,24 @@ export default function HostPredicate<
                   badgeClassName={"bg-transparent hover:bg-transparent font-normal text-primary text-sm"}
                 />
               </FormControl>
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <CircleHelp className={"h-4 w-4"}/>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <p>
-                    Host 匹配规则使用{" "}
-                    <a href={"https://ant.apache.org/"}
-                       target={"_blank"}
-                       className={"underline underline-offset-2"}
-                    >
-                      Ant
-                    </a>
-                    {" "} 风格路径模式，如下所示：
-                  </p>
+              <FormHoverDescription>
+                <p>
+                  Host 匹配规则使用{" "}
+                  <a href={"https://ant.apache.org/"}
+                     target={"_blank"}
+                     className={"underline underline-offset-2"}
+                  >
+                    Ant
+                  </a>
+                  {" "} 风格路径模式，如下所示：
+                </p>
 
-                  <ul>
-                    <li>? 匹配一个字符</li>
-                    <li>* 匹配零个或多个字符</li>
-                    <li>** 匹配路径中的零个或多个层级</li>
-                  </ul>
-                </HoverCardContent>
-              </HoverCard>
+                <ul>
+                  <li>? 匹配一个字符</li>
+                  <li>* 匹配零个或多个字符</li>
+                  <li>** 匹配路径中的零个或多个层级</li>
+                </ul>
+              </FormHoverDescription>
             </div>
             <FormDescription>
               Host 匹配

@@ -2,7 +2,7 @@ package cc.shacocloud.greatwall.model.po
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
-import cc.shacocloud.greatwall.model.mo.RouteUrls
+import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -44,10 +44,10 @@ data class AppRoutePo(
     var status: AppRouteStatusEnum,
 
     /**
-     * 请求地址
+     * 目标地址配置
      */
-    @Column("urls")
-    var urls: RouteUrls,
+    @Column("target_config")
+    var targetConfig: RouteTargetConfig,
 
     /**
      * 路由条件

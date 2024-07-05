@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
 import {Control, FieldPath, FieldValues, useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import RoutePredicatesPlusOptions from "@/pages/app-routes/components/app-routes/route-predicates-plus-options.tsx";
 import {PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
@@ -20,6 +20,8 @@ import RemoteAddrPredicate from "@/pages/app-routes/components/app-routes/predic
 import {predicatesFormSchema, PredicatesFormValues} from "@/constant/api/app-routes/schema.ts";
 import {useRecoilState} from "recoil";
 import {appRoutesDataOptionsState} from "@/pages/app-routes/components/app-routes/store.ts";
+import DurationInput from "@/components/custom-ui/duration-input.tsx";
+import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 
 export interface PredicatesConfPageProps {
 
@@ -50,10 +52,13 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
             patterns: []
           }
         }],
-        urls: [{
-          url: "",
-          weight: 1
-        }]
+        targetConfig: {
+          connectTimeout: "PT30S",
+          urls: [{
+            url: "",
+            weight: 1
+          }]
+        }
       }, ...appRoutesDataOptions.predicates
     },
     disabled: preview
@@ -75,7 +80,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
     remove: urlsRemove
   } = useFieldArray({
     control: form.control,
-    name: "urls",
+    name: "targetConfig.urls",
   });
 
   useEffect(() => {
@@ -256,12 +261,12 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
                   <div key={uriField.id} className={"flex flex-row space-x-2 items-start"}>
 
                     <UrlFormField control={form.control}
-                                  name={`urls.${index}.url`}
+                                  name={`targetConfig.urls.${index}.url`}
                                   className={"flex-auto"}
                     />
 
                     <WeightFormField control={form.control}
-                                     name={`urls.${index}.weight`}
+                                     name={`targetConfig.urls.${index}.weight`}
                                      className={"w-20"}
                     />
 
@@ -280,6 +285,37 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
                 )
               })
             }
+
+            <FormField control={form.control}
+                       name="targetConfig.connectTimeout"
+                       render={({field}) => (
+                         <FormItem className={"flex flex-row gap-2 items-center"}>
+                           <FormLabel>连接超时时间：</FormLabel>
+                           <FormControl>
+                             <DurationInput {...field} />
+                           </FormControl>
+                           <FormMessage/>
+                         </FormItem>
+                       )}
+            />
+
+            <FormField control={form.control}
+                       name="targetConfig.responseTimeout"
+                       render={({field}) => (
+                         <FormItem>
+                           <div className={"flex flex-row gap-2 items-center"}>
+                             <FormLabel>响应超时时间：</FormLabel>
+                             <FormControl>
+                               <DurationInput {...field} />
+                             </FormControl>
+                             <FormHoverDescription>
+                               可以为空，表示未不超时
+                             </FormHoverDescription>
+                           </div>
+                           <FormMessage/>
+                         </FormItem>
+                       )}
+            />
           </CardContent>
         </Card>
 

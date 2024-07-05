@@ -2,9 +2,8 @@ package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
-import cc.shacocloud.greatwall.model.mo.RouteUrls
+import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
 import cc.shacocloud.greatwall.model.po.converter.*
-import cc.shacocloud.greatwall.utils.AppUtil
 import io.r2dbc.h2.H2ConnectionConfiguration
 import io.r2dbc.h2.H2ConnectionFactory
 import io.r2dbc.pool.ConnectionPool
@@ -20,9 +19,6 @@ import org.springframework.r2dbc.connection.R2dbcTransactionManager
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.reactive.TransactionalOperator
-import java.io.File
-import java.nio.file.Paths
-import kotlin.io.path.absolutePathString
 
 
 /**
@@ -93,8 +89,8 @@ class R2dbcConfiguration(
             LongToDateConverter(),
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
-            object : BeanToJsonStringConverter<RouteUrls>() {},
-            object : JsonStringToBeanConverter<RouteUrls>() {},
+            object : BeanToJsonStringConverter<RouteTargetConfig>() {},
+            object : JsonStringToBeanConverter<RouteTargetConfig>() {},
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
             object : StringToEnumConverter<AppRouteStatusEnum>() {}
         )
