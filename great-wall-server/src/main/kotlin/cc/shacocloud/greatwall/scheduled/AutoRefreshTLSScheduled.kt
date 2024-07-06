@@ -1,10 +1,16 @@
 package cc.shacocloud.greatwall.scheduled
 
-import cc.shacocloud.greatwall.service.TLSService
+import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
+import cc.shacocloud.greatwall.service.TlsService
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
+import cc.shacocloud.greatwall.utils.Slf4j
+import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import cc.shacocloud.greatwall.utils.hours
+import kotlinx.coroutines.reactor.mono
+import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.util.*
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 /**
@@ -12,44 +18,55 @@ import java.util.concurrent.TimeUnit
  *
  * @author 思追(shaco)
  */
+@Slf4j
 @Service
-class AutoRefreshTLSScheduled {
-
-    private var expirationTime: Date? = null
+class AutoRefreshTLSScheduled(
+    val tlsService: TlsService,
+) {
 
     /**
      * 每隔一小时刷新一次证书
      */
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
-    fun refreshTls() {
-        if (!ApplicationContextHolder.available()) return
+    fun refreshTls() = mono {
+        if (!ApplicationContextHolder.available()) return@mono
 
         // 获取当前证书的过期时间
-        var currentExpirationTime = this.expirationTime ?: reload()
+        val currentExpirationTime = tlsService.getTlsExpiredTime()
 
-        // 证书到期前一天更新证书
-        val before1Day = Date(Date().time + 24 * 60 * 60 * 1000)
-        if (currentExpirationTime.before(before1Day)) {
-            currentExpirationTime = reload()
+        // 证书到期前一段时间更新证书
+        val updateTime = LocalDateTime.now() - 12.hours
+        if (currentExpirationTime != null && currentExpirationTime <= updateTime) {
+            refreshTlsBundle()
         }
-
-        this.expirationTime = currentExpirationTime
     }
 
     /**
-     * 重新加载证书
+     * 刷新证书时间
      */
-    fun reload(): Date {
+    @EventListener(RefreshTlsEvent::class)
+    fun refreshTlsEvent() = mono {
+        refreshTlsBundle()
+    }
+
+    /**
+     * 重新加载证书，并且重启服务
+     */
+    suspend fun refreshTlsBundle() {
         // 加载证书文件
         val applicationContext = ApplicationContextHolder.getInstance()
-        val tlsService = applicationContext.getBean(TLSService::class.java)
-        val (sslBundleProperties, expirationTime) = tlsService.load()
+        val tlsLoadMo = tlsService.load()
+
+        if (tlsLoadMo == null) {
+            if (log.isWarnEnabled) {
+                log.warn("当前未配置证书跳过证书刷新！")
+            }
+            return
+        }
 
         // 刷新证书配置，重新启动web服务
-        applicationContext.refreshSslBundle(sslBundleProperties)
+        applicationContext.refreshSslBundle(tlsLoadMo.properties)
         applicationContext.refreshWebserver()
-
-        return expirationTime
     }
 
 }

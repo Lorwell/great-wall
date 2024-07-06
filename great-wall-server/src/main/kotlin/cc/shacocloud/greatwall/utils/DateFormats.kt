@@ -56,3 +56,9 @@ val TIME_DAY_HOUR_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd
  * @author 思追(shaco)
  */
 val DATE_TIME_DAY_NO_SEP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
+/**
+ * openssl 证书过期时间格式
+ * @author 思追(shaco)
+ */
+val OPENSSL_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd HH:mm:ss yyyy 'GMT'")

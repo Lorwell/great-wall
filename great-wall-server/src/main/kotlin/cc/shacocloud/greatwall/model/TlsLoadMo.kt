@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.model
 
 import org.springframework.boot.autoconfigure.ssl.SslBundleProperties
+import java.time.LocalDateTime
 import java.util.Date
 
 /**
@@ -16,6 +17,6 @@ data class TlsLoadMo(
     /**
      * 证书过期时间
      */
-    val expirationTime: Date
+    val expirationTime: LocalDateTime?
 
 )

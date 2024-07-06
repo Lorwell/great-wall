@@ -1,5 +1,5 @@
 import {NavLink} from "@/components/nav.tsx";
-import {CloudCog, LayoutPanelLeft, ScrollText} from "lucide-react";
+import {CloudCog, LayoutPanelLeft, ScrollText, ShieldCheck} from "lucide-react";
 
 export const navConfig: NavLink[] = [
   {
@@ -16,5 +16,10 @@ export const navConfig: NavLink[] = [
     title: "日志管理",
     icon: ScrollText,
     to: "/manage/logs"
+  },
+  {
+    title: "证书管理",
+    icon: ShieldCheck,
+    to: "/manage/tls"
   },
 ]

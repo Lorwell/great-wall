@@ -43,9 +43,8 @@ class AppRouteLocator(
     val appRouteService: AppRouteService,
     val routePredicateFactory: RoutePredicateFactory,
     val weightRoutePredicateFactory: WeightRoutePredicateFactory,
-    gatewayFilterFactories: List<GatewayFilterFactory<Any>>,
-    val databaseClient: DatabaseClient
-) : RouteLocator, InitializingBean {
+    gatewayFilterFactories: List<GatewayFilterFactory<Any>>
+) : RouteLocator {
 
     /**
      * 以网关的 [GatewayFilterFactory.name] 作为键，转为一个 map 对象，用于快速匹配
@@ -61,72 +60,6 @@ class AppRouteLocator(
          */
         fun refreshRoutes() {
             ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
-        }
-    }
-
-    // 修改表结构临时写的逻辑
-    override fun afterPropertiesSet() {
-        runBlocking {
-
-            var exists = databaseClient.sql(
-                """
-            SELECT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'APP_ROUTE' AND COLUMN_NAME = 'TARGET_CONFIG' )
-        """.trimIndent()
-            )
-                .map { readable: Readable -> readable.get(0) as Boolean }
-                .awaitOne()
-
-            if (!exists) {
-                databaseClient.sql(
-                    """
-                ALTER TABLE app_route ADD COLUMN target_config LONGTEXT NOT NULL default ''
-            """.trimIndent()
-                )
-                    .await()
-            }
-
-            exists = databaseClient.sql(
-                """
-            SELECT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'APP_ROUTE' AND COLUMN_NAME = 'URLS' )
-        """.trimIndent()
-            )
-                .map { readable: Readable -> readable.get(0) as Boolean }
-                .awaitOne()
-
-
-            if (exists) {
-                databaseClient.sql(
-                    """
-                    SELECT id, urls FROM app_route
-                """.trimIndent()
-                )
-                    .map { readable: Readable -> readable.get(0) as Long to readable.get(1) as String }
-                    .all()
-                    .collectList()
-                    .awaitSingle()
-                    .forEach { (id, urls) ->
-                        val routeUrls = Json.mapper().readValue(urls, object : TypeReference<ArrayList<RouteUrl>>() {})
-                        val config = RouteTargetConfig(
-                            urls = routeUrls,
-                        )
-
-                        databaseClient.sql(
-                            """
-                            UPDATE app_route SET target_config = :target_config WHERE id = :id
-                        """.trimIndent()
-                        )
-                            .bindByName("id", id)
-                            .bindByName("target_config", Json.encode(config))
-                            .await()
-                    }
-
-                databaseClient.sql(
-                    """
-                    ALTER TABLE app_route DROP COLUMN urls
-                """.trimIndent()
-                )
-                    .await()
-            }
         }
     }
 

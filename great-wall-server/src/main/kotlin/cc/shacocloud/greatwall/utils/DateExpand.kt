@@ -2,6 +2,7 @@ package cc.shacocloud.greatwall.utils
 
 import java.time.*
 import java.time.temporal.ChronoUnit
+import java.util.Date
 import kotlin.math.abs
 
 /**
@@ -85,6 +86,13 @@ fun LocalDateTime.toEpochSecond(): Long {
  */
 fun LocalDateTime.toEpochMilli(): Long {
     return toInstant(zoneOffset).toEpochMilli()
+}
+
+/**
+ * 将此 [LocalDateTime] 转为 [Date]
+ */
+fun LocalDateTime.toDate(): Date {
+    return Date.from(toInstant(zoneOffset))
 }
 
 /**
