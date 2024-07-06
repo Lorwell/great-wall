@@ -1,8 +1,10 @@
 package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
+import cc.shacocloud.greatwall.model.constant.TlsTypeEnum
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
+import cc.shacocloud.greatwall.model.mo.TlsConfig
 import cc.shacocloud.greatwall.model.po.converter.*
 import io.r2dbc.h2.H2ConnectionConfiguration
 import io.r2dbc.h2.H2ConnectionFactory
@@ -92,7 +94,11 @@ class R2dbcConfiguration(
             object : BeanToJsonStringConverter<RouteTargetConfig>() {},
             object : JsonStringToBeanConverter<RouteTargetConfig>() {},
             object : EnumToStringConverter<AppRouteStatusEnum>() {},
-            object : StringToEnumConverter<AppRouteStatusEnum>() {}
+            object : StringToEnumConverter<AppRouteStatusEnum>() {},
+            object : BeanToJsonStringConverter<TlsConfig>() {},
+            object : JsonStringToBeanConverter<TlsConfig>() {},
+            object : EnumToStringConverter<TlsTypeEnum>() {},
+            object : StringToEnumConverter<TlsTypeEnum>() {}
         )
     }
 

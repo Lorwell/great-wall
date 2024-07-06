@@ -137,6 +137,17 @@ class TlsServiceImpl(
     }
 
     /**
+     * 刷新证书
+     */
+    override suspend fun refresh() {
+        val tlsPo = findTlsPo()
+        if (tlsPo == null) return
+
+
+
+    }
+
+    /**
      * 获取证书过期时间
      */
     override suspend fun getTlsExpiredTime(): LocalDateTime? {

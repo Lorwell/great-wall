@@ -28,8 +28,14 @@ interface TlsService {
     suspend fun update(input: TlsInput): TlsPo
 
     /**
+     * 刷新证书
+     */
+    suspend fun refresh()
+
+    /**
      * 获取证书过期时间
      */
     suspend fun getTlsExpiredTime(): LocalDateTime?
+
 
 }

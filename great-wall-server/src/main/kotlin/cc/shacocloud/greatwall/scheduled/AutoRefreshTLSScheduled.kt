@@ -37,6 +37,7 @@ class AutoRefreshTLSScheduled(
         // 证书到期前一段时间更新证书
         val updateTime = LocalDateTime.now() - 12.hours
         if (currentExpirationTime != null && currentExpirationTime <= updateTime) {
+            tlsService.refresh()
             refreshTlsBundle()
         }
     }
