@@ -53,6 +53,8 @@ class AutoRefreshTLSScheduled(
      * 重新加载证书，并且重启服务
      */
     suspend fun refreshTlsBundle() {
+        if (!ApplicationContextHolder.available()) return
+
         // 加载证书文件
         val applicationContext = ApplicationContextHolder.getInstance()
         val tlsLoadMo = tlsService.load()
