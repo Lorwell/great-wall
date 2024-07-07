@@ -19,6 +19,9 @@ const RouteMetrics = lazy(() => import("@/pages/monitor-metrics/route-metrics"))
 const ServerMetrics = lazy(() => import("@/pages/monitor-metrics/server-metrics"));
 const LogList = lazy(() => import("@/pages/app-logs/list"));
 const LogFile = lazy(() => import("@/pages/app-logs/file"));
+const Tls = lazy(() => import("@/pages/tls"));
+const CustomTls = lazy(() => import("@/pages/tls/custom/config.tsx"));
+const OsfipinTls = lazy(() => import("@/pages/tls/osfipin/config.tsx"));
 
 const App = () => {
 
@@ -33,6 +36,7 @@ const App = () => {
           <Route path="" element={<LoginStatusGuard/>}>
             <Route path="manage" element={<AppFrame/>}>
               <Route path="" element={<Navigate to={"app-routes"}/>}/>
+              {/* 路由配置 */}
               <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
                 <Route path="list" element={<AppRouteList/>}/>
                 <Route path="add" element={<AddAppRoutes/>}>
@@ -42,13 +46,21 @@ const App = () => {
                   {configAppRoutesRoutes()}
                 </Route>
               </Route>
+              {/* 监控指标 */}
               <Route path="monitor-metrics" element={<MonitorMetrics/>}>
                 <Route path="route" element={<RouteMetrics/>}/>
                 <Route path="server" element={<ServerMetrics/>}/>
               </Route>
+              {/* 日志管理 */}
               <Route path="logs" element={<EmptyRoute base={"/manage/logs"} to={"list"}/>}>
                 <Route path="list" element={<LogList/>}/>
                 <Route path="type/:type/file/:file" element={<LogFile/>}/>
+              </Route>
+              {/* 证书管理 */}
+              <Route path="tls">
+                <Route path="" element={<Tls/>}/>
+                <Route path="custom" element={<CustomTls/>}/>
+                <Route path="osfipin" element={<OsfipinTls/>}/>
               </Route>
               <Route path="*" element={<Error404/>}/>
             </Route>

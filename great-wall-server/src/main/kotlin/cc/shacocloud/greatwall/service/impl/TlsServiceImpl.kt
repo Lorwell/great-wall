@@ -16,14 +16,19 @@ import kotlinx.coroutines.withContext
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import java.io.IOException
+import java.io.UncheckedIOException
+import java.nio.file.*
 import java.time.LocalDateTime
 import java.util.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.createTempFile
 import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.name
+
 
 /**
  * 基于 [来此加密](https://letsencrypt.osfipin.com/) 的tls证书服务器实现
@@ -86,20 +91,10 @@ class TlsServiceImpl(
     override suspend fun update(input: TlsInput): TlsPo {
         val tlsConfig = input.config
 
-        // 使用临时文件存储
-        val tempDir =
-            Paths.get(filesParent, "temp", UUID.randomUUID().toString().lowercase())
+        return tlsFileHandler {
+            tlsProvider.getLatestTls(tlsConfig, it)
 
-        try {
-            val tempDirStr = tempDir.invariantSeparatorsPathString
-            val tempCertificatePath = Paths.get(tempDirStr, "certificate.crt").createOfNotExist()
-            val tempPrivateKeyPath = Paths.get(tempDirStr, "private.pem").createOfNotExist()
-
-            // 获取最新的证书文件
-            val tlsFile = TlsFile(tempCertificatePath, tempPrivateKeyPath)
-            tlsProvider.getLatestTls(tlsConfig, tlsFile)
-
-            val tlsExpiredTime = getTlsExpiredTime(tempCertificatePath)?.toDate()
+            val tlsExpiredTime = getTlsExpiredTime(it.certificatePath)?.toDate()
 
             // 更新入库
             var tlsPo = findTlsPo()
@@ -119,20 +114,7 @@ class TlsServiceImpl(
                     lastUpdateTime = Date()
                 }
             }
-            tlsPo = tlsRepository.save(tlsPo).awaitSingle()
-
-            // 复制临时证书文件到目标地址
-            copyFile(tempCertificatePath, certificatePath)
-            copyFile(tempPrivateKeyPath, privateKeyPath)
-
-            // 发布更新事件
-            ApplicationContextHolder.getInstance().publishEvent(RefreshTlsEvent())
-
-            return tlsPo
-        } finally {
-            withContext(Dispatchers.IO) {
-                Files.deleteIfExists(tempDir)
-            }
+            tlsRepository.save(tlsPo).awaitSingle()
         }
     }
 
@@ -140,11 +122,11 @@ class TlsServiceImpl(
      * 刷新证书
      */
     override suspend fun refresh() {
-        val tlsPo = findTlsPo()
-        if (tlsPo == null) return
+        val tlsPo = findTlsPo() ?: return
 
-
-
+        tlsFileHandler {
+            tlsProvider.getLatestTls(tlsPo.config, it)
+        }
     }
 
     /**
@@ -160,6 +142,23 @@ class TlsServiceImpl(
     }
 
     /**
+     * 生成 zip 文件
+     */
+    override suspend fun genZipFile(): ZipFile {
+        val tempFile = createTempFile(prefix = "tls")
+        withContext(Dispatchers.IO) {
+            ZipOutputStream(Files.newOutputStream(tempFile)).use { zos ->
+                certificatePath.putZipEntry(zos)
+                privateKeyPath.putZipEntry(zos)
+            }
+
+        }
+        return ZipFile(tempFile.toFile()){
+
+        }
+    }
+
+    /**
      * 获取证书过期时间
      */
     suspend fun getTlsExpiredTime(certificatePath: Path): LocalDateTime? {
@@ -168,18 +167,51 @@ class TlsServiceImpl(
         ).exec()
 
         return withContext(Dispatchers.IO) {
-            val code = process.waitFor()
-            if (code == 0) {
-                process.inputStream.use { input ->
-                    val result = input.readAllBytes().toString(Charsets.UTF_8)
-                    val timeStr = result.trim().removePrefix("notAfter=")
-                    LocalDateTime.parse(timeStr, OPENSSL_DATE_FORMAT)
+            try {
+                val code = process.waitFor()
+                if (code == 0) {
+                    process.inputStream.use { input ->
+                        val result = input.readAllBytes().toString(Charsets.UTF_8)
+                        val timeStr = result.trim().removePrefix("notAfter=").trim()
+                        LocalDateTime.parse(timeStr, OPENSSL_DATE_FORMAT)
+                    }
+                } else {
+                    throw IllegalArgumentException(process.errorStream.bufferedReader().readText())
                 }
-            } else {
+            } catch (e: Throwable) {
                 if (log.isErrorEnabled) {
-                    log.error("读取证书过期时间失败：{}", process.errorStream.bufferedReader().readText())
+                    log.error("读取证书过期时间失败", e)
                 }
                 null
+            }
+        }
+    }
+
+    suspend fun <T> tlsFileHandler(handler: suspend (tlsFile: TlsFile) -> T): T {
+        // 使用临时文件存储
+        val tempDir =
+            Paths.get(filesParent, "temp", UUID.randomUUID().toString().lowercase())
+
+        try {
+            val tempDirStr = tempDir.invariantSeparatorsPathString
+            val tempCertificatePath = Paths.get(tempDirStr, "certificate.crt").createOfNotExist()
+            val tempPrivateKeyPath = Paths.get(tempDirStr, "private.pem").createOfNotExist()
+
+            val tlsFile = TlsFile(tempCertificatePath, tempPrivateKeyPath)
+
+            val result = handler(tlsFile)
+
+            // 复制临时证书文件到目标地址
+            copyFile(tempCertificatePath, certificatePath)
+            copyFile(tempPrivateKeyPath, privateKeyPath)
+
+            // 发布更新事件
+            ApplicationContextHolder.getInstance().publishEvent(RefreshTlsEvent())
+
+            return result
+        } finally {
+            withContext(Dispatchers.IO) {
+                tempDir.deleteAll()
             }
         }
     }
@@ -194,7 +226,6 @@ class TlsServiceImpl(
                 target,
                 StandardCopyOption.REPLACE_EXISTING,
                 StandardCopyOption.COPY_ATTRIBUTES,
-                StandardCopyOption.ATOMIC_MOVE
             )
         }
     }

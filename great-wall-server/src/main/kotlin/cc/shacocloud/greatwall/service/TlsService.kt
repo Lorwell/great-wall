@@ -4,6 +4,7 @@ import cc.shacocloud.greatwall.model.TlsLoadMo
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.po.TlsPo
 import java.time.LocalDateTime
+import java.util.zip.ZipFile
 
 /**
  * tls 证书服务接口
@@ -36,6 +37,11 @@ interface TlsService {
      * 获取证书过期时间
      */
     suspend fun getTlsExpiredTime(): LocalDateTime?
+
+    /**
+     * 生成 zip 文件
+     */
+    suspend fun genZipFile(): ZipFile
 
 
 }

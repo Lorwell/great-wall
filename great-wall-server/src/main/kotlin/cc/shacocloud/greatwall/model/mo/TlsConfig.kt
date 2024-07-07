@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank
  *
  * @author 思追(shaco)
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = CustomTlsConfig::class, name = "Custom"),
     JsonSubTypes.Type(value = OsfipinTlsConfig::class, name = "Osfipin"),

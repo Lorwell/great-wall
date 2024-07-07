@@ -283,7 +283,11 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
 
   // JSON 结果解析
   const contentType = headers.get("content-Type");
-  if (contentType && contentType.includes("application/json")) {
+  const length = Number(headers.get("content-length"));
+
+  if (length === 0) {
+    body = null;
+  } else if (contentType && contentType.includes("application/json")) {
     body = await response.json();
   } else {
     body = await response.text()
@@ -309,7 +313,7 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
   // 请求成功
   if (success) {
     try {
-      return resultSchema?.parse(body) || body
+      return (!!body && resultSchema?.parse(body)) || body
     } catch (e) {
       console.log(`结果值结构解析失败!`, e)
       body = {

@@ -10,6 +10,8 @@ import kotlinx.coroutines.reactor.mono
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.event.TransactionalEventListener
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
@@ -45,7 +47,7 @@ class AutoRefreshTLSScheduled(
     /**
      * 刷新证书时间
      */
-    @EventListener(RefreshTlsEvent::class)
+    @TransactionalEventListener(RefreshTlsEvent::class)
     fun refreshTlsEvent() = mono {
         refreshTlsBundle()
     }

@@ -4,12 +4,9 @@ import cc.shacocloud.greatwall.model.dto.convert.toOutput
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.dto.output.TlsOutput
 import cc.shacocloud.greatwall.service.TlsService
+import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 /**
  * 证书管理控制器
@@ -17,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
  * @author 思追(shaco)
  */
 @Validated
-@RestController
+@Controller
 @RequestMapping("/api/tls")
 class TlsController(
     val tlsService: TlsService
@@ -27,6 +24,7 @@ class TlsController(
      * 更新
      */
     @PutMapping
+    @ResponseBody
     suspend fun update(@RequestBody @Validated input: TlsInput): TlsOutput {
         return tlsService.update(input).toOutput()
     }
@@ -35,8 +33,17 @@ class TlsController(
      * 证书详情
      */
     @GetMapping
+    @ResponseBody
     suspend fun details(): TlsOutput? {
         return tlsService.findTlsPo()?.toOutput()
+    }
+
+    /**
+     * 下载证书
+     */
+    @GetMapping("/download")
+    suspend fun download() {
+        tlsService.genZipFile()
     }
 
 }

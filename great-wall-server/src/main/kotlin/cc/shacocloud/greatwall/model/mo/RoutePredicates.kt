@@ -29,7 +29,7 @@ data class RoutePredicateOperator(
 /**
  * 路由条件
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = RouteCookiePredicate::class, name = "Cookie"),
     JsonSubTypes.Type(value = RouteHeaderPredicate::class, name = "Header"),

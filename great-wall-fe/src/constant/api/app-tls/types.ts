@@ -1,3 +1,5 @@
+import {TlsInputSchemaValues, TlsOutputSchemaValues} from "@/constant/api/app-tls/schema.ts";
+
 export enum TlsTypeEnum {
 
   /**
@@ -13,3 +15,6 @@ export enum TlsTypeEnum {
   Osfipin = "Osfipin"
 
 }
+
+export type TlsInput = Partial<TlsInputSchemaValues>
+export type TlsOutput = Partial<TlsOutputSchemaValues>

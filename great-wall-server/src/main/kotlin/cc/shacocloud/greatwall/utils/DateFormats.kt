@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.utils
 
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * yyyy-MM-dd HH:mm:ss
@@ -61,4 +62,4 @@ val DATE_TIME_DAY_NO_SEP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern
  * openssl 证书过期时间格式
  * @author 思追(shaco)
  */
-val OPENSSL_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd HH:mm:ss yyyy 'GMT'")
+val OPENSSL_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM  d HH:mm:ss yyyy z", Locale.US)
