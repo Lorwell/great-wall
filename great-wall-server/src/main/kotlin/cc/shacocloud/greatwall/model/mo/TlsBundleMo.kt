@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 /**
  * @author 思追(shaco)
  */
-data class TlsLoadMo(
+data class TlsBundleMo(
 
     /**
      * ssl 证书的配置属性

@@ -1,9 +1,9 @@
 package cc.shacocloud.greatwall.service.impl
 
-import cc.shacocloud.greatwall.model.mo.TlsLoadMo
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.model.mo.TlsFile
+import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.model.po.TlsPo
 import cc.shacocloud.greatwall.repository.TlsRepository
 import cc.shacocloud.greatwall.service.TlsService
@@ -51,28 +51,11 @@ class TlsServiceImpl(
     /**
      * 重新加载证书
      */
-    override suspend fun load(): TlsLoadMo? {
+    override suspend fun load(): TlsBundleMo? {
+        // 没有证书配置，返回null
+        findTlsPo() ?: return null
 
-        // 没有证书配置
-        if (findTlsPo() == null) {
-            return null
-        }
-
-        // 封装为证书的配置
-        val sslProperties = PemSslBundleProperties().apply {
-            keystore.apply {
-                certificate = certificatePath.absolutePathString()
-                privateKey = privateKeyPath.absolutePathString()
-            }
-        }
-
-        // 获取当前证书的过期时间
-        val expirationTime = getTlsExpiredTime(certificatePath)
-
-        return TlsLoadMo(
-            properties = sslProperties,
-            expirationTime = expirationTime
-        )
+        return loadLocal()
     }
 
     /**
@@ -157,6 +140,28 @@ class TlsServiceImpl(
     }
 
     /**
+     * 加载本地证书
+     */
+    suspend fun loadLocal(): TlsBundleMo {
+
+        // 封装为证书的配置
+        val sslProperties = PemSslBundleProperties().apply {
+            keystore.apply {
+                certificate = certificatePath.absolutePathString()
+                privateKey = privateKeyPath.absolutePathString()
+            }
+        }
+
+        // 获取当前证书的过期时间
+        val expirationTime = getTlsExpiredTime(certificatePath)
+
+        return TlsBundleMo(
+            properties = sslProperties,
+            expirationTime = expirationTime
+        )
+    }
+
+    /**
      * 获取证书过期时间
      */
     suspend fun getTlsExpiredTime(certificatePath: Path): LocalDateTime? {
@@ -199,16 +204,18 @@ class TlsServiceImpl(
 
             val tlsFile = TlsFile(tempCertificatePath, tempPrivateKeyPath)
 
-            val result = handler(tlsFile)
+            val tlsPo = handler(tlsFile)
 
             // 复制临时证书文件到目标地址
             copyFile(tempCertificatePath, certificatePath)
             copyFile(tempPrivateKeyPath, privateKeyPath)
 
-            // 发布更新事件
-            ApplicationContextHolder.getInstance().publishEvent(RefreshTlsEvent())
+            val load = loadLocal()
 
-            return result
+            // 发布更新事件
+            ApplicationContextHolder.getInstance().publishEvent(RefreshTlsEvent(load))
+
+            return tlsPo
         } finally {
             withContext(Dispatchers.IO) {
                 tempDir.deleteAll()

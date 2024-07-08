@@ -66,10 +66,6 @@ site:
       # 基于来此加密的tls证书提供着
       osfipin:
         base-url: https://api.osfipin.com/letsencrypt/api
-        token: f9c22e612cc15056fdc3c7c902b5882e
-        user: 1679924785@qq.com
-        auto-id: 5r8r9e
-        domain: "*.shacocloud.cc"
   auth:
     admin:
       password: ${ADMIN_PASSWORD:123456789}

@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.model.mo.TlsLoadMo
+import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.po.TlsPo
 import java.nio.file.Path
@@ -16,7 +16,7 @@ interface TlsService {
     /**
      * 加载证书并且返回配置信息
      */
-    suspend fun load(): TlsLoadMo?
+    suspend fun load(): TlsBundleMo?
 
     /**
      * 查询证书信息

@@ -1,15 +1,17 @@
 package cc.shacocloud.greatwall.service
 
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
+import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.hours
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.event.TransactionalEventListener
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
@@ -47,27 +49,36 @@ class AutoRefreshTLSScheduled(
     }
 
     /**
+     * 应用启动成功事件
+     */
+    @EventListener(ApplicationReadyEvent::class)
+    fun appReady() = mono {
+        refreshTlsBundle()
+    }
+
+    /**
      * 刷新证书时间
      */
-    @TransactionalEventListener(RefreshTlsEvent::class)
-    fun refreshTlsEvent() = mono {
+    @EventListener(RefreshTlsEvent::class)
+    fun refreshTlsEvent(event: RefreshTlsEvent) = mono {
         if (log.isInfoEnabled) {
             log.info("收到刷新tls证书事件！")
         }
-        refreshTlsBundle()
+
+        refreshTlsBundle(event.tlsBundleMo)
     }
 
     /**
      * 重新加载证书，并且重启服务
      */
-    suspend fun refreshTlsBundle() {
+    suspend fun refreshTlsBundle(tlsBundleMo: TlsBundleMo? = null) {
         if (!ApplicationContextHolder.available()) return
 
         // 加载证书文件
         val applicationContext = ApplicationContextHolder.getInstance()
-        val tlsLoadMo = tlsService.load()
+        val tlsBundle = tlsBundleMo ?: tlsService.load()
 
-        if (tlsLoadMo == null) {
+        if (tlsBundle == null) {
             if (log.isWarnEnabled) {
                 log.warn("当前未配置证书跳过证书刷新！")
             }
@@ -75,7 +86,7 @@ class AutoRefreshTLSScheduled(
         }
 
         // 刷新证书配置，重新启动web服务
-        applicationContext.refreshSslBundle(tlsLoadMo.properties)
+        applicationContext.refreshSslBundle(tlsBundle.properties)
         applicationContext.refreshWebserver()
     }
 
