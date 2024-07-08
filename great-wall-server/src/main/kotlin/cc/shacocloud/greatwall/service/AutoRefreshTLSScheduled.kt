@@ -3,9 +3,10 @@ package cc.shacocloud.greatwall.service
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.hours
 import kotlinx.coroutines.reactor.mono
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.event.TransactionalEventListener
@@ -22,6 +23,10 @@ import java.util.concurrent.TimeUnit
 class AutoRefreshTLSScheduled(
     val tlsService: TlsService,
 ) {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(AutoRefreshTLSScheduled::class.java)
+    }
 
     /**
      * 每隔一小时刷新一次证书
@@ -46,6 +51,9 @@ class AutoRefreshTLSScheduled(
      */
     @TransactionalEventListener(RefreshTlsEvent::class)
     fun refreshTlsEvent() = mono {
+        if (log.isInfoEnabled) {
+            log.info("收到刷新tls证书事件！")
+        }
         refreshTlsBundle()
     }
 
