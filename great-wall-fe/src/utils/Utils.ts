@@ -107,3 +107,20 @@ export const byteSizeToUnitStr = (size?: number,
     return (size / Math.pow(num, 3)).toFixed(2) + "G"; //G
   return (size / Math.pow(num, 4)).toFixed(2) + "T"; //T
 }
+
+
+/**
+ * 下载文件
+ * @param filename 文件名称
+ * @param url 文件地址
+ */
+export const downloadFile = (filename: string,
+                             url: string) => {
+  const link = document.createElement('a')
+  link.style.display = 'none'
+  link.href = url
+  link.setAttribute('download', filename)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}

@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.reactivestreams.Publisher
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.core.io.buffer.DataBuffer
@@ -36,7 +37,7 @@ class MonitorRouteMetricsWebHandler(
 ) : WebHandlerDecorator(webHandler) {
 
     companion object {
-        val accessLog = LoggerFactory.getLogger("accessLog")
+        private val accessLog: Logger = LoggerFactory.getLogger("accessLog")
     }
 
     class QueryParamsMetrics : HashMap<String, List<String?>>() {

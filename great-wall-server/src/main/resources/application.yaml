@@ -4,7 +4,6 @@ server:
     port: ${CONFIG_SERVER_PORT:8080}
   main-server:
     port: ${PORT:80}
-    redirect-https: true
   http2:
     enabled: true
   ssl:
@@ -60,7 +59,6 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/
-
 
 site:
   tls:

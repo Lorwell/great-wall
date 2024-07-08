@@ -6,8 +6,8 @@ import {Spinner} from "@/components/custom-ui/spinner.tsx";
  */
 const SuspenseFallback = () => {
   return (
-    <div className={"w-screen h-screen flex align-items-center justify-content-center"}>
-      <Spinner/>
+    <div className={"w-screen h-screen flex flex-row items-center"}>
+      <Spinner className={"mt-20"}/>
     </div>
   )
 }

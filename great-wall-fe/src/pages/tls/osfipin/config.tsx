@@ -1,6 +1,6 @@
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {osfipinConfigSchema, OsfipinConfigSchemaValues} from "@/constant/api/app-tls/schema.ts";
+import {ConfigSchemaValues, osfipinConfigSchema, OsfipinConfigSchemaValues} from "@/constant/api/app-tls/schema.ts";
 import {
   Form,
   FormControl,
@@ -15,7 +15,7 @@ import {TlsTypeEnum} from "@/constant/api/app-tls/types.ts";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {tlsUpdate} from "@/constant/api/app-tls";
 import useFromFieldErrorSpecification from "@/components/hooks/useFromFieldErrorSpecification.ts";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {Input} from "@/components/ui/input.tsx";
 
 /**
@@ -25,13 +25,16 @@ import {Input} from "@/components/ui/input.tsx";
  * @constructor
  */
 export default function CustomTls() {
-
   const navigate = useNavigate();
+
+  const {state} = useLocation();
+  const config = state as ConfigSchemaValues | undefined | null;
 
   const form = useForm<OsfipinConfigSchemaValues>({
     resolver: zodResolver(osfipinConfigSchema),
     defaultValues: {
-      type: TlsTypeEnum.Osfipin
+      type: TlsTypeEnum.Osfipin,
+      ...(config?.type === TlsTypeEnum.Osfipin ? config : {})
     }
   });
 

@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.config.web
 
+import cc.shacocloud.greatwall.model.Settings
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import org.springframework.core.env.get
 import org.springframework.http.HttpHeaders
@@ -14,18 +15,17 @@ import reactor.core.publisher.Mono
  * @author 思追(shaco)
  */
 class MainServerNoTlsHttpHandler(
-    private val httpHandler: HttpHandler,
-    private val mainServerProperties: MainServerProperties
+    private val httpHandler: HttpHandler
 ) : HttpHandler {
 
-    val tlsPort: Int by lazy {
+    private val tlsPort: Int by lazy {
         ApplicationContextHolder.getInstance().environment["server.port"]!!.toInt()
     }
 
     override fun handle(request: ServerHttpRequest, response: ServerHttpResponse): Mono<Void> {
 
         // 重定向到 https 端口
-        if (mainServerProperties.redirectHttps) {
+        if (Settings.redirectHttps.get()) {
             val host = request.headers.getFirst(HttpHeaders.HOST)
             val path = request.path.value()
 

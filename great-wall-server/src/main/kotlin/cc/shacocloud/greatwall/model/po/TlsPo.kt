@@ -8,7 +8,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.util.*
 
 /**
- *
+ * 证书管理
  * @author 思追(shaco)
  */
 @Table("app_tls")

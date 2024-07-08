@@ -12,10 +12,6 @@ data class MainServerProperties(
     /**
      * 非 tls 端口
      */
-    val port: Int,
+    val port: Int
 
-    /**
-     * 请求是否重定向到 https
-     */
-    val redirectHttps: Boolean
 )

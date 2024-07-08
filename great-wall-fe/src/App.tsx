@@ -22,6 +22,7 @@ const LogFile = lazy(() => import("@/pages/app-logs/file"));
 const Tls = lazy(() => import("@/pages/tls"));
 const CustomTls = lazy(() => import("@/pages/tls/custom/config.tsx"));
 const OsfipinTls = lazy(() => import("@/pages/tls/osfipin/config.tsx"));
+const Settings = lazy(() => import("@/pages/settings"));
 
 const App = () => {
 
@@ -62,6 +63,8 @@ const App = () => {
                 <Route path="custom" element={<CustomTls/>}/>
                 <Route path="osfipin" element={<OsfipinTls/>}/>
               </Route>
+              {/* 系统设置页面 */}
+              <Route path="settings" element={<Settings/>}/>
               <Route path="*" element={<Error404/>}/>
             </Route>
           </Route>

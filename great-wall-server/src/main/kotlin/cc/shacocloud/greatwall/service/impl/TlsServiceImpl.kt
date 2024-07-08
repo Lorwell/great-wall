@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.service.impl
 
-import cc.shacocloud.greatwall.model.TlsLoadMo
+import cc.shacocloud.greatwall.model.mo.TlsLoadMo
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.model.mo.TlsFile
@@ -16,18 +16,15 @@ import kotlinx.coroutines.withContext
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
-import java.io.UncheckedIOException
-import java.nio.file.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.time.LocalDateTime
 import java.util.*
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.absolutePathString
-import kotlin.io.path.createTempFile
 import kotlin.io.path.invariantSeparatorsPathString
-import kotlin.io.path.name
 
 
 /**
@@ -134,27 +131,28 @@ class TlsServiceImpl(
      */
     override suspend fun getTlsExpiredTime(): LocalDateTime? {
         // 没有证书配置
-        if (findTlsPo() == null) {
-            return null
+        val tlsPo = findTlsPo() ?: return null
+
+        val tlsExpiredTime = getTlsExpiredTime(certificatePath)
+
+        //  更新过期时间
+        if (tlsExpiredTime != null && tlsPo.expiredTime == null) {
+            tlsPo.expiredTime = tlsExpiredTime.toDate()
+            tlsRepository.save(tlsPo).awaitSingle()
         }
 
-        return getTlsExpiredTime(certificatePath)
+        return tlsExpiredTime
     }
 
     /**
      * 生成 zip 文件
      */
-    override suspend fun genZipFile(): ZipFile {
-        val tempFile = createTempFile(prefix = "tls")
+    override suspend fun genZipFile(path: Path) {
         withContext(Dispatchers.IO) {
-            ZipOutputStream(Files.newOutputStream(tempFile)).use { zos ->
+            ZipOutputStream(Files.newOutputStream(path)).use { zos ->
                 certificatePath.putZipEntry(zos)
                 privateKeyPath.putZipEntry(zos)
             }
-
-        }
-        return ZipFile(tempFile.toFile()){
-
         }
     }
 
@@ -162,12 +160,13 @@ class TlsServiceImpl(
      * 获取证书过期时间
      */
     suspend fun getTlsExpiredTime(certificatePath: Path): LocalDateTime? {
-        val process = arrayOf(
-            "openssl", "x509", "-in", certificatePath.invariantSeparatorsPathString, "-noout", "-enddate"
-        ).exec()
+        try {
+            val process = arrayOf(
+                "openssl", "x509", "-in", certificatePath.invariantSeparatorsPathString, "-noout", "-enddate"
+            ).exec()
 
-        return withContext(Dispatchers.IO) {
-            try {
+            return withContext(Dispatchers.IO) {
+
                 val code = process.waitFor()
                 if (code == 0) {
                     process.inputStream.use { input ->
@@ -178,12 +177,13 @@ class TlsServiceImpl(
                 } else {
                     throw IllegalArgumentException(process.errorStream.bufferedReader().readText())
                 }
-            } catch (e: Throwable) {
-                if (log.isErrorEnabled) {
-                    log.error("读取证书过期时间失败", e)
-                }
-                null
+
             }
+        } catch (e: Throwable) {
+            if (log.isWarnEnabled) {
+                log.warn("读取证书过期时间失败", e)
+            }
+            return null
         }
     }
 

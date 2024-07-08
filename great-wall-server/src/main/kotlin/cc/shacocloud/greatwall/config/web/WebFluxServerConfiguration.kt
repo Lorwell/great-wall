@@ -146,7 +146,7 @@ class WebFluxServerConfiguration(
     ): SimpleWebServer {
         mainPortInit.set(true)
         try {
-            val mainHttpHandler = MainServerNoTlsHttpHandler(httpHandler, mainServerProperties)
+            val mainHttpHandler = MainServerNoTlsHttpHandler(httpHandler)
             val configWebServer = super.getWebServer(mainHttpHandler)
             return SimpleWebServer(configWebServer)
         } finally {

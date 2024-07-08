@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.config
 
+import cc.shacocloud.greatwall.utils.converter.BooleanConverter
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar
@@ -12,41 +13,59 @@ import java.net.URL
  */
 class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
 
+    // 反射类型的配置
+    private val reflectionMemberCategory = MemberCategory.entries.toTypedArray()
 
-    companion object {
+    // 注册的指定文件规则
+    private val registerPatters = arrayOf(
+        // sql 文件
+        "sql/*.sql",
+        // 静态资源
+        "static/*",
+    )
 
-        // 反射类型的配置
-        val REFLECTION_MEMBER_CATEGORY = MemberCategory.entries.toTypedArray()
-    }
+    // 注册的指定类型
+    private val registerTypes = arrayOf<Class<*>>(
+        BooleanConverter::class.java
+    )
+
+    // 扫描的指定包名
+    private val scanPackages = arrayOf(
+        "cc.shacocloud.greatwall.controller.specification",
+        "cc.shacocloud.greatwall.model",
+        "cc.shacocloud.greatwall.service.client.dto",
+    )
 
 
     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
         requireNotNull(classLoader)
 
         // sql 文件
-        hints.resources().registerPattern("sql/*.sql")
+        registerPatters.forEach { hints.resources().registerPattern(it) }
 
-        // 静态资源
-        hints.resources().registerPattern("static/*")
-
-        // 配置文件
-        hints.resources().registerPattern("config/*")
+        // 注册指定的类
+        registerTypes.forEach { registerType(hints, it) }
 
         // 指定要扫描的包下的所有文件
         // 用于解决 springboot 3.2.x 中针对 kotlin 反射的bug，同时也可以批量扫描指定目录下的所有文件，将它们标识为可反射的
         scanBasePackage(
             hints,
             classLoader,
-            arrayOf(
-                "cc.shacocloud.greatwall.controller.specification",
-                "cc.shacocloud.greatwall.model",
-                "cc.shacocloud.greatwall.service.client.dto",
-            )
+            scanPackages
         )
     }
 
 
     // ---------------------------------
+
+    /**
+     * 注册类型
+     */
+    private fun registerType(hints: RuntimeHints, clazz: Class<*>) {
+        println("============== add hints: $clazz")
+
+        hints.reflection().registerType(clazz, *reflectionMemberCategory)
+    }
 
     /**
      * 扫描指定包路径下的类型
@@ -64,17 +83,9 @@ class SiteRuntimeHintsRegistrar : RuntimeHintsRegistrar {
                     getFilePath(resource)?.let {
                         getFromDirectory(File(it), basePackage, classLoader)
                     }
-                }.flatMap { it.toList() }
-                .forEach { clazz ->
-
-                    println("============== add hints: $clazz")
-
-                    // 注册
-                    hints.reflection().registerType(
-                        clazz,
-                        *REFLECTION_MEMBER_CATEGORY
-                    )
                 }
+                .flatMap { it.toList() }
+                .forEach { registerType(hints, it) }
         }
     }
 

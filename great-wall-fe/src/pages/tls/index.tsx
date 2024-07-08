@@ -1,9 +1,9 @@
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {tlsDetails} from "@/constant/api/app-tls";
-import {Spinner} from "@/components/custom-ui/spinner.tsx";
 import {isNull} from "@/utils/Utils.ts";
 import EmptyTls from "@/pages/tls/empty.tsx";
 import Details from "@/pages/tls/details.tsx";
+import LoadingBlock from "@/components/custom-ui/loading-block";
 
 /**
  * 证书页面
@@ -15,9 +15,10 @@ export default function Tls() {
 
   return (
     <div className={"w-full h-full"}>
-      {loading && <Spinner className={"mt-20"}/>}
-      {!loading && isNull(data) && (<EmptyTls/>)}
-      {!loading && !isNull(data) && (<Details data={data!!}/>)}
+      <LoadingBlock loading={loading}>
+        {isNull(data) && (<EmptyTls/>)}
+        {!isNull(data) && (<Details data={data!!}/>)}
+      </LoadingBlock>
     </div>
   )
 }

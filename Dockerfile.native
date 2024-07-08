@@ -14,6 +14,9 @@ FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.runtime
 WORKDIR /workspace
 COPY --from=0 "/build/great-wall-server/build/native/nativeCompile/great-wall-server" /workspace/app
 
+# 安装 openssl
+RUN apt-get update & apt-get install openssl
+
 EXPOSE 443
 EXPOSE 80
 EXPOSE 8080

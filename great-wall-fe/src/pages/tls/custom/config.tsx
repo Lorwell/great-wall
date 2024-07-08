@@ -1,6 +1,6 @@
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {CustomConfigSchemaValues, customsConfigSchema} from "@/constant/api/app-tls/schema.ts";
+import {ConfigSchemaValues, CustomConfigSchemaValues, customsConfigSchema} from "@/constant/api/app-tls/schema.ts";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {TlsTypeEnum} from "@/constant/api/app-tls/types.ts";
@@ -8,7 +8,7 @@ import {Textarea} from "@/components/ui/textarea.tsx";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {tlsUpdate} from "@/constant/api/app-tls";
 import useFromFieldErrorSpecification from "@/components/hooks/useFromFieldErrorSpecification.ts";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 
 /**
  * 自定义证书
@@ -18,10 +18,14 @@ export default function CustomTls() {
 
   const navigate = useNavigate();
 
+  const {state} = useLocation();
+  const config = state as ConfigSchemaValues | undefined | null;
+
   const form = useForm<CustomConfigSchemaValues>({
     resolver: zodResolver(customsConfigSchema),
     defaultValues: {
-      type: TlsTypeEnum.Custom
+      type: TlsTypeEnum.Custom,
+      ...(config?.type === TlsTypeEnum.Custom ? config : {})
     }
   });
 
