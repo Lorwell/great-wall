@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @Service
 class AutoRefreshTLSScheduled(
     val tlsService: TlsService,
