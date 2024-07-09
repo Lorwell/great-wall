@@ -33,6 +33,8 @@ const statusStyles: Record<string, CSSProperties> = {
 
 /**
  * 日志文件
+ *
+ * 组件： https://github.com/melloware/react-logviewer
  * @constructor
  */
 export default function LogFile() {
@@ -159,7 +161,7 @@ export default function LogFile() {
                                              wsRef.current?.send("PONG")
                                              return null
                                            } else {
-                                             return message
+                                             return JSON.parse(message).join("\n")
                                            }
                                          }
                                        }}

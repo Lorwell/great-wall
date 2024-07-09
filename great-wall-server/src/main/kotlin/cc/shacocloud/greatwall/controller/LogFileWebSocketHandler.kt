@@ -9,11 +9,8 @@ import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.input.LogFileMsgInput
 import cc.shacocloud.greatwall.model.dto.output.LogFileMsgutput
 import cc.shacocloud.greatwall.service.SessionService
-import cc.shacocloud.greatwall.utils.Slf4j
+import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import cc.shacocloud.greatwall.utils.TaskTimer
-import cc.shacocloud.greatwall.utils.seconds
-import cc.shacocloud.greatwall.utils.toEpochMilli
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -21,6 +18,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.flux
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -37,6 +35,7 @@ import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -180,23 +179,57 @@ class LogFileWebSocketHandler(
 
             LogFileReader(logFile.toFile()).use {
 
+                // 使用分批发送，批次为 1 秒或达到100条消息
+                val batchTime = 1.seconds
+                val batchCount = 100
+
+                var start: Instant? = null
+                var batchLog: MutableList<String> = ArrayList(batchCount)
+
+                // 发送消息
+                val sendBatchLog = suspend {
+                    if (batchLog.isNotEmpty()) {
+                        send(session.textMessage(Json.encodeToString(batchLog)))
+                        batchLog = ArrayList(batchCount)
+                        start = null
+                    }
+                }
+
                 while (session.isOpen && isActive) {
                     val autoRefresh = session.attributes["autoRefresh"] as Boolean?
 
                     if (autoRefresh != null && !autoRefresh) {
+                        // 切换到自动重试时，先发送消息
+                        sendBatchLog()
+
                         delay(1000)
                         continue
                     }
 
+                    // 开始时间为空则开始
+                    start = start ?: Instant.now()
+
+                    // 读取一行数据
                     val result = it.readTaskLogPage() ?: continue
 
                     val (lastLine, line) = result
                     if (line != null) {
-                        send(session.textMessage(line))
+                        batchLog.add(line)
+                    }
+
+                    // 计算是否满足批次
+                    val finalStart = start
+                    if (batchLog.size >= batchCount
+                        || (finalStart != null && (Instant.now() - finalStart) >= batchTime)
+                    ) {
+                        sendBatchLog()
                     }
 
                     // 到达尾行睡眠1秒
                     if (lastLine) {
+                        // 发送批次消息
+                        sendBatchLog()
+
                         delay(1000)
                     }
                 }
