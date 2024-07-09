@@ -6,7 +6,6 @@ import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
 import cc.shacocloud.greatwall.model.po.AppRoutePo
 import cc.shacocloud.greatwall.repository.AppRouteRepository
 import cc.shacocloud.greatwall.service.AppRouteService
-import cc.shacocloud.greatwall.utils.Slf4j
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -19,7 +18,6 @@ import java.util.*
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class AppRouteServiceImpl(

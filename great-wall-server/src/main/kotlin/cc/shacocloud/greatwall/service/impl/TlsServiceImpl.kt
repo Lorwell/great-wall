@@ -2,17 +2,18 @@ package cc.shacocloud.greatwall.service.impl
 
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
-import cc.shacocloud.greatwall.model.mo.TlsFile
 import cc.shacocloud.greatwall.model.mo.TlsBundleMo
+import cc.shacocloud.greatwall.model.mo.TlsFile
 import cc.shacocloud.greatwall.model.po.TlsPo
 import cc.shacocloud.greatwall.repository.TlsRepository
 import cc.shacocloud.greatwall.service.TlsService
 import cc.shacocloud.greatwall.utils.*
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,7 +32,6 @@ import kotlin.io.path.invariantSeparatorsPathString
  * 基于 [来此加密](https://letsencrypt.osfipin.com/) 的tls证书服务器实现
  * @author 思追(shaco)
  */
-@Slf4j
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class TlsServiceImpl(
@@ -46,6 +46,8 @@ class TlsServiceImpl(
         private val certificatePath = Paths.get(filesParent, "certificate.crt").createOfNotExist()
 
         private val privateKeyPath = Paths.get(filesParent, "private.pem").createOfNotExist()
+
+        private val log: Logger = LoggerFactory.getLogger(TlsServiceImpl::class.java)
     }
 
     /**

@@ -1,9 +1,9 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.core.annotation.AnnotationAwareOrderComparator
 import org.springframework.web.method.HandlerMethod
@@ -20,11 +20,14 @@ import java.util.stream.Collectors
  *
  * @author 思追(shaco)
  */
-@Slf4j
 class RequestMappingHandlerInterceptorAdapter(
     private val requestMappingHandlerAdapter: RequestMappingHandlerAdapter,
     private val interceptorProvider: ObjectProvider<RequestMappingHandlerInterceptor>
 ) : HandlerAdapter, DispatchExceptionHandler {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(RequestMappingHandlerInterceptorAdapter::class.java)
+    }
 
     // 拦截器
     private val interceptors: List<RequestMappingHandlerInterceptor> by lazy {

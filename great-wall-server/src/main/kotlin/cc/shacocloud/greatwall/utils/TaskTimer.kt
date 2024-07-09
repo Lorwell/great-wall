@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.utils
 
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -17,8 +18,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @author 思追(shaco)
  */
-@Slf4j
 class TaskTimer {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(TaskTimer::class.java)
+    }
 
     private val scheduledExecutorService = Executors.newScheduledThreadPool(1)
     private val lock = Any()
@@ -211,8 +215,12 @@ class TaskTimer {
         }
     }
 
-    @Slf4j
     private class TaskExecutor(private val taskObj: TaskObj, private val taskTimer: TaskTimer) : Runnable {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(TaskExecutor::class.java)
+        }
+
         override fun run() {
             try {
                 taskObj.task.run()

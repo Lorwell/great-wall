@@ -1,6 +1,5 @@
 package cc.shacocloud.greatwall.controller.advice
 
-import cc.shacocloud.greatwall.utils.Slf4j
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.io.buffer.DataBuffer
@@ -17,7 +16,6 @@ import reactor.core.publisher.Mono
  * 资源异常处理器
  * @author 思追(shaco)
  */
-@Slf4j
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class ResourceExceptionHandler {

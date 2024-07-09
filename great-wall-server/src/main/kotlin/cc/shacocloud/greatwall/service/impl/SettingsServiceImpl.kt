@@ -4,7 +4,6 @@ import cc.shacocloud.greatwall.model.dto.SettingsDto
 import cc.shacocloud.greatwall.model.po.SettingsPo
 import cc.shacocloud.greatwall.repository.SettingsRepository
 import cc.shacocloud.greatwall.service.SettingsService
-import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.converter.convertToMap
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.stereotype.Service
@@ -15,7 +14,6 @@ import java.util.*
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class SettingsServiceImpl(

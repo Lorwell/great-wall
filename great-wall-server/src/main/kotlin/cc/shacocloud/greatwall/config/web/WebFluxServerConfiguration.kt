@@ -1,8 +1,9 @@
 package cc.shacocloud.greatwall.config.web
 
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
-import cc.shacocloud.greatwall.utils.Slf4j
 import jakarta.annotation.PostConstruct
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -32,7 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @Configuration
 @EnableConfigurationProperties(ConfigServerProperties::class, MainServerProperties::class)
 class WebFluxServerConfiguration(
@@ -43,6 +43,8 @@ class WebFluxServerConfiguration(
 
     companion object {
         const val MAIN_HTTP_HANDLER_BEAN_NAME = "mainHttpHandler"
+
+        private val log: Logger = LoggerFactory.getLogger(WebFluxServerConfiguration::class.java)
     }
 
     private val configPortInit = AtomicBoolean(false)

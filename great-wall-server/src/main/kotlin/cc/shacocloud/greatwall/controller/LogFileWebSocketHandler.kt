@@ -1,6 +1,8 @@
 package cc.shacocloud.greatwall.controller
 
+import cc.shacocloud.greatwall.config.web.RequestMappingHandlerInterceptorAdapter
 import cc.shacocloud.greatwall.config.web.websocket.WebsocketMapping
+import cc.shacocloud.greatwall.controller.advice.DefaultExceptionHandler
 import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
 import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
@@ -10,7 +12,6 @@ import cc.shacocloud.greatwall.model.dto.input.LogFileMsgInput
 import cc.shacocloud.greatwall.model.dto.output.LogFileMsgutput
 import cc.shacocloud.greatwall.service.SessionService
 import cc.shacocloud.greatwall.utils.*
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -21,6 +22,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.reactivestreams.Publisher
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.web.reactive.socket.CloseStatus
@@ -50,7 +52,6 @@ import kotlin.io.path.invariantSeparatorsPathString
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @WebsocketMapping(LogFileWebSocketHandler.PATH)
 class LogFileWebSocketHandler(
     private val sessionService: SessionService,
@@ -70,6 +71,8 @@ class LogFileWebSocketHandler(
 
         // 心跳检查超时次数
         const val HEARTBEAT_CHECK_TIMEOUT_NUMBER: Int = 3
+
+        private val log: Logger = LoggerFactory.getLogger(RequestMappingHandlerInterceptorAdapter::class.java)
     }
 
     private val logger = LoggerFactory.getLogger(LogFileWebSocketHandler::class.java)
@@ -443,8 +446,10 @@ class LogFileWebSocketHandler(
     /**
      * 心跳检查任务
      */
-    @Slf4j
     class HeartbeatCheckTask(private val session: WebSocketSession) : Runnable {
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(HeartbeatCheckTask::class.java)
+        }
 
         override fun run() = runBlocking {
             try {
@@ -467,8 +472,11 @@ class LogFileWebSocketHandler(
     /**
      * 心跳超时任务
      */
-    @Slf4j
     class HeartbeatTimeoutTask(private val session: WebSocketSession) : Runnable {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(DefaultExceptionHandler::class.java)
+        }
 
         override fun run() = runBlocking {
             try {

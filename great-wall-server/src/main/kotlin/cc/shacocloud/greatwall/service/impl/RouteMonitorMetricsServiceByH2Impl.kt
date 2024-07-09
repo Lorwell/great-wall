@@ -9,11 +9,12 @@ import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import io.r2dbc.spi.Readable
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.runBlocking
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.await
 import org.springframework.scheduling.annotation.Scheduled
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 /**
@@ -30,12 +30,15 @@ import java.time.temporal.ChronoUnit
  * @author 思追(shaco)
  * @see [https://questdb.io/]
  */
-@Slf4j
 @Service
 @Transactional(rollbackFor = [Exception::class])
 class RouteMonitorMetricsServiceByH2Impl(
     val databaseClient: DatabaseClient,
 ) : RouteMonitorMetricsService {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(RouteMonitorMetricsServiceByH2Impl::class.java)
+    }
 
     // 表名集合
     private var tableNameSet: MutableSet<String> = mutableSetOf()

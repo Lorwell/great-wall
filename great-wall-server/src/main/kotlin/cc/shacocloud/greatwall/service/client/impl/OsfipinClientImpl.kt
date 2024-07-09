@@ -1,16 +1,14 @@
 package cc.shacocloud.greatwall.service.client.impl
 
-import cc.shacocloud.greatwall.controller.converter.InputStreamHttpMessageConverter
 import cc.shacocloud.greatwall.config.OsfipinProperties
+import cc.shacocloud.greatwall.controller.converter.InputStreamHttpMessageConverter
 import cc.shacocloud.greatwall.model.mo.OsfipinTlsConfig
 import cc.shacocloud.greatwall.service.client.LogLevel
 import cc.shacocloud.greatwall.service.client.OsfipinClient
 import cc.shacocloud.greatwall.service.client.RestTemplateLogRequestInterceptor
-import cc.shacocloud.greatwall.service.client.dto.output.CertificateDetailOutput
-import cc.shacocloud.greatwall.service.client.dto.output.CertificateListOutput
-import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.json.Json
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -143,8 +141,11 @@ class OsfipinClientImpl(
     /**
      * 证书文件，关闭时自动删除
      */
-    @Slf4j
     class OsfipinCertificateZipFile(private val file: File) : ZipFile(file) {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(OsfipinCertificateZipFile::class.java)
+        }
 
         override fun close() {
             try {

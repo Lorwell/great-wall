@@ -4,7 +4,6 @@ import cc.shacocloud.greatwall.model.mo.SessionMo
 import cc.shacocloud.greatwall.service.SessionService
 import cc.shacocloud.greatwall.service.SessionService.Companion.SESSION_NAME
 import cc.shacocloud.greatwall.service.cache.CacheManager
-import cc.shacocloud.greatwall.utils.Slf4j
 import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer
 import org.springframework.http.ResponseCookie
@@ -19,7 +18,6 @@ import kotlin.time.toJavaDuration
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @Service
 class SessionServiceImpl(
     cacheManager: CacheManager,

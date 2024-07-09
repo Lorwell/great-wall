@@ -1,22 +1,13 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.config.R2dbcConfiguration.Companion.bindByName
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.AND
 import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.OR
 import cc.shacocloud.greatwall.model.mo.BaseRouteInfo
-import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
-import cc.shacocloud.greatwall.model.mo.RouteUrl
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
-import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
-import cc.shacocloud.greatwall.utils.json.Json
-import com.fasterxml.jackson.core.type.TypeReference
-import io.r2dbc.spi.Readable
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.flux
-import kotlinx.coroutines.runBlocking
-import org.springframework.beans.factory.InitializingBean
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
 import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
@@ -24,9 +15,6 @@ import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.support.RouteMetadataUtils
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
-import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.r2dbc.core.await
-import org.springframework.r2dbc.core.awaitOne
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URI
@@ -37,7 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @author 思追(shaco)
  */
-@Slf4j
 @Service
 class AppRouteLocator(
     val appRouteService: AppRouteService,
@@ -55,12 +42,15 @@ class AppRouteLocator(
 
         val APP_ROUTE_ID_META_KEY = "${AppRouteLocator::class.java}.appRouteId"
 
+        private val log: Logger = LoggerFactory.getLogger(AppRouteLocator::class.java)
+
         /**
          * 刷新路由
          */
         fun refreshRoutes() {
             ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
         }
+
     }
 
     /**

@@ -3,7 +3,6 @@ package cc.shacocloud.greatwall.service
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
-import cc.shacocloud.greatwall.utils.Slf4j
 import cc.shacocloud.greatwall.utils.hours
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger

@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.controller.converter
 
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
@@ -41,6 +42,10 @@ class InputStreamHttpMessageConverter : AbstractHttpMessageConverter<InputStream
 
 
     class HttpInputSteam(private val file: File) : FileInputStream(file) {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(HttpInputSteam::class.java)
+        }
 
         override fun close() {
             try {

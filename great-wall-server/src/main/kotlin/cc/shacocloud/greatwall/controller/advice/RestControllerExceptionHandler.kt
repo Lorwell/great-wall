@@ -3,12 +3,12 @@ package cc.shacocloud.greatwall.controller.advice
 import cc.shacocloud.greatwall.controller.exception.BusinessException
 import cc.shacocloud.greatwall.controller.specification.ResponseBusinessMessage
 import cc.shacocloud.greatwall.controller.specification.StrRespMsg
-import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import cc.shacocloud.greatwall.utils.ValidationExceptionUtil.constraintViolation
 import cc.shacocloud.greatwall.utils.ValidationExceptionUtil.getFieldsRespMsg
 import cc.shacocloud.greatwall.utils.ValidationExceptionUtil.objectErrorViolation
 import jakarta.validation.ConstraintViolationException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
@@ -27,10 +27,14 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException
  * 默认异常处理器
  * @author 思追(shaco)
  */
-@Slf4j
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 class RestControllerExceptionHandler {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(RestControllerExceptionHandler::class.java)
+    }
+
 
     /**
      * 消息不可读

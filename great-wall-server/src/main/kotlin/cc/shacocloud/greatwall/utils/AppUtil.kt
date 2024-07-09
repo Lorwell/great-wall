@@ -20,7 +20,6 @@ import java.util.jar.JarFile
  *
  * @author 思追(shaco)
  */
-@Slf4j
 object AppUtil {
 
     /**

@@ -4,7 +4,6 @@ import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
 import cc.shacocloud.greatwall.utils.*
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -37,6 +36,7 @@ class MonitorRouteMetricsWebHandler(
 ) : WebHandlerDecorator(webHandler) {
 
     companion object {
+        private val log: Logger = LoggerFactory.getLogger(MonitorRouteMetricsWebHandler::class.java)
         private val accessLog: Logger = LoggerFactory.getLogger("accessLog")
     }
 

@@ -3,7 +3,6 @@ package cc.shacocloud.greatwall.service
 import cc.shacocloud.greatwall.model.po.BaseMonitorMetricsPo
 import cc.shacocloud.greatwall.model.po.BaseMonitorMetricsPo.Type.ROUTE
 import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -11,6 +10,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Service
 import java.util.concurrent.Executors
@@ -23,6 +24,10 @@ import java.util.concurrent.Executors
 class CompositionMonitorMetricsService(
     val routeMonitorMetricsService: RouteMonitorMetricsService
 ) : DisposableBean {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(CompositionMonitorMetricsService::class.java)
+    }
 
     val channel = Channel<BaseMonitorMetricsPo>(
         capacity = UNLIMITED
