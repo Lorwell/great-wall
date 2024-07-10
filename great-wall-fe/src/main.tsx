@@ -4,7 +4,6 @@ import {RecoilRoot} from "recoil";
 import App from './App.tsx'
 
 import '@/constant/theme/globals.css'
-import "@/constant/theme/echarts.ts"
 
 ReactDOM.createRoot(document.getElementById('root')!)
   .render(
