@@ -1,13 +1,12 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
-import Charts from "@/components/custom-ui/charts.tsx";
 import {useApiRequestMetrics} from "@/pages/monitor-metrics/context.ts";
 import {qpsLineMetrics} from "@/constant/api/monitor-metrics/route-metrics";
 import {maxPoint} from "@/pages/monitor-metrics/utils.ts";
 import {Activity} from "lucide-react";
 import AutoSizablePanel, {Size} from "@/components/custom-ui/auto-sizable-panel.tsx";
-import {QpsLineMetricsRecordOutput} from "@/constant/api/monitor-metrics/route-metrics/types";
-import {EChartsOption} from "echarts-for-react";
+import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts"
+import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
 
 /**
  * qps 折线图
@@ -21,6 +20,18 @@ function QpsLineChart({size}: { size: Size }) {
       ...maxPoint(size.width - 70, dateRange)
     }));
 
+  const chartData = data?.records || []
+
+  const chartConfig = {
+    views: {
+      label: "qps",
+    },
+    value: {
+      label: "qps",
+      color: "hsl(var(--chart-1))",
+    },
+  } satisfies ChartConfig
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -30,71 +41,42 @@ function QpsLineChart({size}: { size: Size }) {
         {loading ? (<Spinner className={"w-4 h-4"}/>) : (<Activity className={"w-4 h-4"}/>)}
       </CardHeader>
       <CardContent>
-        <Charts style={{height: 200}} option={chartOptions(data)}/>
+        <ChartContainer config={chartConfig} style={{height: "200px", width: "100%"}}>
+          <LineChart accessibilityLayer
+                     data={chartData}
+                     margin={{left: 0, right: 0, top: 0}}
+          >
+            <CartesianGrid vertical={false}/>
+
+            <XAxis dataKey="unit"
+                   tickLine={false}
+                   axisLine={false}
+                   tickMargin={8}
+                   minTickGap={32}
+            />
+
+            <YAxis dataKey="value"/>
+
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  className="w-[150px]"
+                  nameKey="views"
+                />
+              }
+            />
+
+            <Line
+              dataKey="value"
+              type="monotone"
+              strokeWidth={2}
+              dot={false}
+            />
+          </LineChart>
+        </ChartContainer>
       </CardContent>
     </Card>
   )
-}
-
-function chartOptions(record?: QpsLineMetricsRecordOutput): EChartsOption {
-  if (!record || !record.records || record.records.length === 0) {
-    return {
-      title: {
-        text: '暂无数据',
-        x: 'center',
-        y: 'center',
-        textStyle: {
-          fontSize: 14,
-          fontWeight: 'normal',
-        }
-      }
-    }
-  }
-
-  const records = record.records;
-
-  const xData = new Array<string>(records.length);
-  const yData = new Array<number>(records.length);
-
-  records.forEach((record, i) => {
-    xData[i] = record.unit
-    yData[i] = record.value
-  })
-
-  return {
-    title: {
-      text: ""
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-      },
-    },
-    grid: {
-      top: "10",
-      left: '0',
-      right: '10',
-      bottom: '0',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: xData,
-      boundaryGap: ['5%', '5%']
-    },
-    yAxis: {
-      type: 'value',
-      boundaryGap: ['0', '20%'],
-      axisLabel: {formatter: '{value}/s'},
-    },
-    series: [
-      {
-        type: 'line',
-        data: yData
-      }
-    ]
-  }
 }
 
 export default function () {

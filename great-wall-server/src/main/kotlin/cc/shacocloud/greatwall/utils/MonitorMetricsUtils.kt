@@ -21,15 +21,13 @@ enum class DateRangeDurationUnit(
  */
 object MonitorMetricsUtils {
 
-
     /**
      * 时间范围数据补全
      * @param sourceData 源数据
      */
-    fun <T : LineMetricsOutput, R> dateRangeDataCompletion(
+    fun <R> dateRangeDataCompletion(
         input: RouteLineMetricsInput,
-        sourceData: List<T>,
-        transform: (T?, String) -> R
+        transform: (String) -> R
     ): List<R> {
         val interval = input.rawInterval
         val unit = input.rawIntervalType
@@ -45,10 +43,24 @@ object MonitorMetricsUtils {
         val gap = (to - from).toSeconds() / durationUnit.duration.toSeconds()
         val number = gap / interval + if (gap % interval > 0) 1 else 0
 
-        val unitMap = sourceData.associateBy { it.unit }
         return (0..number).map { i ->
             val time = (from + (i * interval).toDuration(durationUnit)).format(unit.format)
-            transform(unitMap[time], time)
+            transform(time)
+        }
+    }
+
+    /**
+     * 折线图时间范围数据补全
+     * @param sourceData 源数据
+     */
+    fun <T : LineMetricsOutput, R> lineMetricsDateRangeDataCompletion(
+        input: RouteLineMetricsInput,
+        sourceData: List<T>,
+        transform: (T?, String) -> R
+    ): List<R> {
+        val unitMap = sourceData.associateBy { it.unit }
+        return dateRangeDataCompletion(input) {
+            transform(unitMap[it], it)
         }
     }
 

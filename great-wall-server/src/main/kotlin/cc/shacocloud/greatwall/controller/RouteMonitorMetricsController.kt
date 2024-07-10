@@ -115,7 +115,7 @@ class RouteMonitorMetricsController(
     @PostMapping("/line/top-qps")
     suspend fun topQpsLineMetrics(
         @RequestBody @Validated input: TopRouteLineMetricsInput
-    ): List<TopQpsLineMetricsOutput> {
+    ): TopQpsLineMetricsOutput {
         return routeMonitorMetricsService.topQpsLineMetrics(input)
     }
 

@@ -30,5 +30,17 @@ export const TopQpsLineValueMetricsSchema = z.object({
 })
 
 
-export const TopQpsLineMetricsRecordSchema = getRecordSchema(TopQpsLineValueMetricsSchema)
+export const TopQpsApiKeyMappingSchema = z.object({
+  label: z.string({required_error: "不可以为空"}),
+  key: z.string({required_error: "不可以为空"})
+})
+
+const TopQpsDataSchema = z.record(z.string({required_error: "不可以为空"}),
+  z.union([z.string({required_error: "不可以为空"}), z.number({required_error: "不可以为空"})]));
+
+
+export const TopQpsLineMetricsRecordSchema = z.object({
+  mapping: z.array(TopQpsApiKeyMappingSchema),
+  data: z.array(TopQpsDataSchema)
+})
 export type TopQpsLineMetricsRecordValues = z.infer<typeof TopQpsLineMetricsRecordSchema>

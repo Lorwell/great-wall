@@ -9,6 +9,7 @@ import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
+import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.lineMetricsDateRangeDataCompletion
 import io.r2dbc.spi.Readable
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 基于 h2 实现的 [RouteMonitorMetricsService]
@@ -271,7 +273,7 @@ class RouteMonitorMetricsServiceByH2Impl(
         val result = lineMetrics(input, sqlProvider, resultExtract)
 
         // 数据补全
-        return dateRangeDataCompletion(input, result) { it, unit ->
+        return lineMetricsDateRangeDataCompletion(input, result) { it, unit ->
             QpsLineMetricsOutput(unit, it?.value ?: 0)
         }
     }
@@ -307,7 +309,7 @@ class RouteMonitorMetricsServiceByH2Impl(
         val result = lineMetrics(input, sqlProvider, resultExtract)
 
         // 数据补全
-        return dateRangeDataCompletion(input, result) { it, unit ->
+        return lineMetricsDateRangeDataCompletion(input, result) { it, unit ->
             DurationLineMetricsOutput(unit, it?.avgValue ?: 0.toDouble(), it?.maxValue ?: 0)
         }
     }
@@ -315,7 +317,7 @@ class RouteMonitorMetricsServiceByH2Impl(
     /**
      * top qps 折线图
      */
-    override suspend fun topQpsLineMetrics(input: TopRouteLineMetricsInput): List<TopQpsLineMetricsOutput> {
+    override suspend fun topQpsLineMetrics(input: TopRouteLineMetricsInput): TopQpsLineMetricsOutput {
         // 查询的sql
         val sqlProvider: (LineMetricsInfo) -> String =
             { info ->
@@ -343,16 +345,31 @@ class RouteMonitorMetricsServiceByH2Impl(
 
         // 查询指标
         val result = lineMetrics(input, sqlProvider, resultExtract)
+        val unitMap = result.groupBy { it.unit }
+
+        // api 地址和映射信息
+        val apiNumber = AtomicInteger(0)
+        val endpointMap = result.groupBy { it.endpoint }.asSequence()
+            .associate { it.key to "api${apiNumber.incrementAndGet()}" }
+
+        // 数据填充
+        val data = dateRangeDataCompletion(input) { unit ->
+            val item = mutableMapOf<String, Any>()
+            item["unit"] = unit
+
+            val metricsMo = unitMap[unit]?.associate { it.endpoint to it.value } ?: mapOf()
+
+            endpointMap.forEach { (endpoint, apiKey) ->
+                item[apiKey] = metricsMo[endpoint] ?: 0
+            }
+
+            item
+        }
+
+        val mapping = endpointMap.map { TopQpsApiKeyMappingOutput(it.key, it.value) }
 
         // 数据补全
-        return result.groupBy { it.endpoint }
-            .map { entry ->
-                val data =
-                    dateRangeDataCompletion(input, entry.value) { it, unit ->
-                        QpsLineMetricsOutput(unit, it?.value ?: 0)
-                    }
-                TopQpsLineMetricsOutput(entry.key, data)
-            }
+        return TopQpsLineMetricsOutput(mapping, data)
     }
 
 

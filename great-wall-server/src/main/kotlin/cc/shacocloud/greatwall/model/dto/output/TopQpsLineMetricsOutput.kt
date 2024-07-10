@@ -6,7 +6,12 @@ package cc.shacocloud.greatwall.model.dto.output
  */
 data class TopQpsLineMetricsOutput(
 
-    val api: String,
+    val mapping: List<TopQpsApiKeyMappingOutput>,
 
-    val data: List<QpsLineMetricsOutput>
+    val data: List<Map<String, Any>>
+)
+
+data class TopQpsApiKeyMappingOutput(
+    val label: String,
+    val key: String
 )

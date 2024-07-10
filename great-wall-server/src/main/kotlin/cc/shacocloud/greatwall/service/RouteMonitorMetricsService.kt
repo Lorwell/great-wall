@@ -63,6 +63,6 @@ interface RouteMonitorMetricsService {
     /**
      * top qps 折线图
      */
-    suspend fun topQpsLineMetrics(input: TopRouteLineMetricsInput): List<TopQpsLineMetricsOutput>
+    suspend fun topQpsLineMetrics(input: TopRouteLineMetricsInput): TopQpsLineMetricsOutput
 
 }
