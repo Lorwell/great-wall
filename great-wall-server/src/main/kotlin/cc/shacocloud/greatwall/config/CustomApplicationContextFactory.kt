@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.config
 
+import cc.shacocloud.greatwall.config.web.AutoTLSReactiveWebServerApplicationContext
 import org.springframework.boot.ApplicationContextFactory
 import org.springframework.boot.WebApplicationType
 import org.springframework.context.ConfigurableApplicationContext

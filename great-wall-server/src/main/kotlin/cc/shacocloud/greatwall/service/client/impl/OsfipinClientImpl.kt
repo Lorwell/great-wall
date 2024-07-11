@@ -1,15 +1,14 @@
 package cc.shacocloud.greatwall.service.client.impl
 
-import cc.shacocloud.greatwall.config.InputStreamHttpMessageConverter
 import cc.shacocloud.greatwall.config.OsfipinProperties
+import cc.shacocloud.greatwall.controller.converter.InputStreamHttpMessageConverter
+import cc.shacocloud.greatwall.model.mo.OsfipinTlsConfig
 import cc.shacocloud.greatwall.service.client.LogLevel
 import cc.shacocloud.greatwall.service.client.OsfipinClient
 import cc.shacocloud.greatwall.service.client.RestTemplateLogRequestInterceptor
-import cc.shacocloud.greatwall.service.client.dto.output.CertificateDetailOutput
-import cc.shacocloud.greatwall.service.client.dto.output.CertificateListOutput
-import cc.shacocloud.greatwall.utils.Json
-import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import cc.shacocloud.greatwall.utils.json.Json
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -50,11 +49,11 @@ class OsfipinClientImpl(
             clientHttpRequestFactory.setReadTimeout(Duration.ofSeconds(30))
 
             // 提供对传出/传入流的缓冲,可以让响应body多次读取(如果不配置,拦截器读取了Response流,再响应数据时会返回body=null)
-            restTemplate.setRequestFactory(BufferingClientHttpRequestFactory(clientHttpRequestFactory));
+            restTemplate.requestFactory = BufferingClientHttpRequestFactory(clientHttpRequestFactory)
             // 拦截器
             restTemplate.interceptors = arrayListOf<ClientHttpRequestInterceptor>(
                 RestTemplateLogRequestInterceptor(
-                    logLevel = LogLevel.BODY,
+                    logLevel = LogLevel.NONE,
                     printLevel = Level.INFO
                 )
             )
@@ -63,7 +62,7 @@ class OsfipinClientImpl(
 
             // 使用自定义的json转换器
             messageConverters.removeIf { it is AbstractJackson2HttpMessageConverter }
-            messageConverters.add(MappingJackson2HttpMessageConverter(Json.mapper))
+            messageConverters.add(MappingJackson2HttpMessageConverter(Json.mapper()))
 
             // 新增支持 InputStream 的消息转换器
             messageConverters.add(InputStreamHttpMessageConverter())
@@ -73,15 +72,15 @@ class OsfipinClientImpl(
     }
 
     /**
-     * 下载证书《为一个zip文件
+     * 下载证书为一个zip文件
      *
      * [文档](https://www.yuque.com/osfipin/letsencrypt/xv6h1y)
      */
-    override fun download(): ZipFile {
-        val autoId = osfipinProperties.autoId
+    override fun download(config: OsfipinTlsConfig): ZipFile {
+        val autoId = config.autoId
 
         val requestEntity = RequestEntity<Void>(
-            getHttpHeaders(),
+            getHttpHeaders(config),
             HttpMethod.GET,
             URI("${osfipinProperties.baseUrl.removeSuffix("/")}/order/down?id=${autoId}&type=auto")
         )
@@ -101,65 +100,6 @@ class OsfipinClientImpl(
         }
 
         return OsfipinCertificateZipFile(tempFile)
-    }
-
-    /**
-     * 证书详情
-     */
-    override fun certificateDetail(id: String): CertificateDetailOutput {
-        val requestEntity = RequestEntity<Void>(
-            getHttpHeaders(),
-            HttpMethod.GET,
-            URI("${osfipinProperties.baseUrl.removeSuffix("/")}/order/detail?id=$id")
-        )
-
-        val responseEntity = restTemplate.exchange(requestEntity, CertificateDetailOutput::class.java)
-        assertResponseSuccess(requestEntity, responseEntity)
-
-        return responseEntity.body ?: throw IllegalStateException("证书详情主体为空！")
-    }
-
-    /**
-     * 当前域名的证书详情
-     * @param
-     */
-    override fun currentDomainCertificateDetail(): CertificateDetailOutput {
-        val domain = osfipinProperties.domain
-
-        var page = 1
-        while (true) {
-            val certificateList = certificateList(page)
-            val (_, mpage, _, _, list) = certificateList.v
-
-            // 域名可以匹配则返回其证书详情
-            val dataOutput = list.firstOrNull { domain in it.domains }
-            if (dataOutput != null) {
-                return certificateDetail(dataOutput.id)
-            }
-
-            if (page >= mpage) {
-                throw IllegalArgumentException("未能匹配到域名 $domain 对应的证书！")
-            }
-
-            page++
-        }
-
-    }
-
-    /**
-     * 证书列表
-     */
-    override fun certificateList(page: Int): CertificateListOutput {
-        val requestEntity = RequestEntity<Void>(
-            getHttpHeaders(),
-            HttpMethod.GET,
-            URI("${osfipinProperties.baseUrl.removeSuffix("/")}/order/list?page=${page}")
-        )
-
-        val responseEntity = restTemplate.exchange(requestEntity, CertificateListOutput::class.java)
-        assertResponseSuccess(requestEntity, responseEntity)
-
-        return responseEntity.body ?: throw IllegalStateException("证书列表第${page}页主体为空！")
     }
 
     /**
@@ -185,24 +125,27 @@ class OsfipinClientImpl(
     /**
      * 获取认证的请求头
      */
-    fun getHttpHeaders(): HttpHeaders {
+    fun getHttpHeaders(config: OsfipinTlsConfig): HttpHeaders {
         val httpHeaders = HttpHeaders()
-        httpHeaders[HttpHeaders.AUTHORIZATION] = getAuthorizationHeader()
+        httpHeaders[HttpHeaders.AUTHORIZATION] = getAuthorizationHeader(config)
         return httpHeaders
     }
 
     /**
      * 获取认证的值
      */
-    fun getAuthorizationHeader(): String {
-        return "Bearer ${osfipinProperties.token}:${osfipinProperties.user}"
+    fun getAuthorizationHeader(config: OsfipinTlsConfig): String {
+        return "Bearer ${config.token}:${config.user}"
     }
 
     /**
      * 证书文件，关闭时自动删除
      */
-    @Slf4j
     class OsfipinCertificateZipFile(private val file: File) : ZipFile(file) {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(OsfipinCertificateZipFile::class.java)
+        }
 
         override fun close() {
             try {

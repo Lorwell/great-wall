@@ -1,44 +1,64 @@
 server:
-  port: 443
+  port: ${TLS_PORT:443}
+  config-server:
+    port: ${CONFIG_SERVER_PORT:8080}
+  main-server:
+    port: ${PORT:80}
   http2:
-    enabled: false
+    enabled: true
   ssl:
     enabled: false
 
 spring:
+  jackson:
+    # 解决 jackson @JsonFormat 序列化时差
+    time-zone: GMT+8
+    serialization:
+      # 将时间转为时间戳输出
+      write-dates-as-timestamps: true
+      write-null-map-values: true
+      write-empty-json-arrays: true
+    default-property-inclusion: non_null
   threads:
     virtual:
-      # 虚拟线程开启后将导致web server重启后关闭
       enabled: false
   cloud:
     gateway:
-      # 路由配置
-      routes:
-        - id: true-nas
-          uri: ${TRUE_NAS_ADDRESS:http://192.168.1.145:80}
-          predicates:
-            - Host=true-nas.shacocloud.cc
-          filters:
-            - PreserveHostHeader
-        - id: qilin-pavilion
-          uri: ${QILIN_PAVILION_ADDRESS:http://192.168.1.145:9546}
-          predicates:
-            - Host=qilin-pavilion.shacocloud.cc
-        - id: ddns
-          uri: ${DDNS_ADDRESS:http://192.168.1.145:9876}
-          predicates:
-            - Host=ddns.shacocloud.cc
       httpclient:
         websocket:
           # 设置 ws 最大帧数字节长度
-          max-frame-payload-length: 6553500
-        connect-timeout: 3000
-        response-timeout: 10S
+          max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
+        # 代理请求连接池
         pool:
-          type: fixed
-          max-idle-time: 5000
-          max-connections: 200
-          acquire-timeout: 45000
+          type: ELASTIC
+          name: great-wall-proxy
+          max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:60S}
+          max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
+          eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
+      predicate:
+        host:
+          # host 匹配不导入端口
+          include-port: false
+  # r2dbc 配置
+  r2dbc:
+    url: file:${H2_FILE_DIR:./data/db}/db;MODE=MYSQL
+    username: ${H2_USER:faLhBysh}
+    password: ${H2_PASS:aclmUe6#!aq1tb0VL}
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 10
+      validation-query: select 1
+  # 初始化sql
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath*:sql/schema.sql
+      encoding: UTF-8
+  web:
+    resources:
+      static-locations: classpath:/static/
 
 site:
   tls:
@@ -46,13 +66,12 @@ site:
       # 基于来此加密的tls证书提供着
       osfipin:
         base-url: https://api.osfipin.com/letsencrypt/api
-        token: f9c22e612cc15056fdc3c7c902b5882e
-        user: 1679924785@qq.com
-        auto-id: 5r8r9e
-        domain: "*.shacocloud.cc"
-
+  auth:
+    admin:
+      password: ${ADMIN_PASSWORD:123456789}
 
 logging:
   level:
-    root: info
-    "reactor.netty.http.server.AccessLog": info
+    # 忽略只读告警
+    "io.r2dbc.h2.H2Connection": error
+#    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug
