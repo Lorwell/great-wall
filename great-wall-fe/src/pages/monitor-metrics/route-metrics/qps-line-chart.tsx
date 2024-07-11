@@ -8,6 +8,16 @@ import AutoSizablePanel, {Size} from "@/components/custom-ui/auto-sizable-panel.
 import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
 
+const chartConfig = {
+  views: {
+    label: "qps",
+  },
+  value: {
+    label: "qps",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig
+
 /**
  * qps 折线图
  * @constructor
@@ -21,16 +31,6 @@ function QpsLineChart({size}: { size: Size }) {
     }));
 
   const chartData = data?.records || []
-
-  const chartConfig = {
-    views: {
-      label: "qps",
-    },
-    value: {
-      label: "qps",
-      color: "hsl(var(--chart-1))",
-    },
-  } satisfies ChartConfig
 
   return (
     <Card>
@@ -55,7 +55,7 @@ function QpsLineChart({size}: { size: Size }) {
                    minTickGap={32}
             />
 
-            <YAxis dataKey="value"/>
+            <YAxis/>
 
             <ChartTooltip
               content={

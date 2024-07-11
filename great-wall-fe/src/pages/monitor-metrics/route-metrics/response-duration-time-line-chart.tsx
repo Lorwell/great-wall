@@ -7,6 +7,21 @@ import {maxPoint} from "@/pages/monitor-metrics/utils.ts";
 import {AudioWaveform} from "lucide-react";
 import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
+import {useState} from "react";
+import {cn} from "@/utils/shadcnUtils.ts";
+
+const chartConfig = {
+  avgValue: {
+    label: "平均值",
+    color: "hsl(var(--chart-1))",
+  },
+  maxValue: {
+    label: "最大值",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig
+
+type chartKey = keyof typeof chartConfig
 
 /**
  * 响应持续时间折线图
@@ -22,17 +37,7 @@ function ResponseDurationTimeLineChart({size}: { size: Size }) {
 
   const chartData = data?.records || []
 
-  const chartConfig = {
-    avgValue: {
-      label: "平均值",
-      color: "hsl(var(--chart-1))",
-    },
-    maxValue: {
-      label: "最大值",
-      color: "hsl(var(--chart-2))",
-    },
-  } satisfies ChartConfig
-
+  const [activeChart, setActiveChart] = useState<chartKey>("avgValue")
 
   return (
     <Card>
@@ -43,6 +48,7 @@ function ResponseDurationTimeLineChart({size}: { size: Size }) {
         {loading ? (<Spinner className={"w-4 h-4"}/>) : (<AudioWaveform className={"w-4 h-4"}/>)}
       </CardHeader>
       <CardContent>
+        {/*@ts-ignore*/}
         <ChartContainer config={chartConfig} style={{height: "200px", width: "100%"}}>
           <LineChart accessibilityLayer
                      data={chartData}
@@ -57,7 +63,7 @@ function ResponseDurationTimeLineChart({size}: { size: Size }) {
                    minTickGap={32}
             />
 
-            <YAxis dataKey="maxValue" tickFormatter={value => `${value}/ms`}/>
+            <YAxis tickFormatter={value => `${value}/ms`}/>
 
             <ChartTooltip
               content={
@@ -68,21 +74,36 @@ function ResponseDurationTimeLineChart({size}: { size: Size }) {
             />
 
             <Line
-              dataKey="avgValue"
+              dataKey={activeChart}
               type="monotone"
-              stroke="var(--color-avgValue)"
+              stroke={`var(--color-${activeChart})`}
               strokeWidth={2}
               dot={false}
             />
 
-            <Line
-              dataKey="maxValue"
-              type="monotone"
-              stroke="var(--color-maxValue)"
-              strokeWidth={2}
-              dot={false}
-            />
           </LineChart>
+          <div className={"flex flex-row items-center justify-center gap-8"}>
+
+            {Object.keys(chartConfig).map((key) => {
+              const ck = key as chartKey
+              return (
+                <div key={ck}
+                     className={cn("flex flex-row items-center gap-2 cursor-pointer",
+                       {
+                         "opacity-50": activeChart !== ck
+                       }
+                     )}
+                     onClick={() => setActiveChart(ck)}
+                >
+                  <div className={"shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg] h-2.5 w-2.5"}
+                       style={{background: `var(--color-${ck})`}}>
+                  </div>
+                  <span>{chartConfig[ck].label}</span>
+                </div>
+              )
+            })}
+
+          </div>
         </ChartContainer>
       </CardContent>
     </Card>

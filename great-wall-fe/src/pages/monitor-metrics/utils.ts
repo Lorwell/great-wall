@@ -101,10 +101,9 @@ const partitionInterval: Array<SecondIntervalMetrics> = [
 export function maxPoint(width: number,
                          dateRange: MetricsDateRange): IntervalMetrics {
   const second = maxSecond(dateRange);
-  const point = second / width;
+  const point = second / width * 5;
 
   const maxPoint = partitionInterval.find(num => point < num.maxPoint) || partitionInterval[partitionInterval.length - 1];
-
 
   return {interval: maxPoint.interval, intervalType: maxPoint.intervalType};
 }

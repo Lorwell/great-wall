@@ -256,7 +256,7 @@ class RouteMonitorMetricsServiceByH2Impl(
                     select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
                            sum(request_count)                                                                                       as val
                     from $tableName
-                    where $requestTimeFragment
+                    where ${requestTimeFragment.get()}
                     group by time
                 """.trimIndent()
             }
@@ -291,7 +291,7 @@ class RouteMonitorMetricsServiceByH2Impl(
                            ROUND(sum(handle_time) / sum(request_count), 2) as val,
                            max(max_time) as max_time
                     from $tableName
-                    where $requestTimeFragment
+                    where ${requestTimeFragment.get()}
                     group by time
                 """.trimIndent()
             }
@@ -323,14 +323,18 @@ class RouteMonitorMetricsServiceByH2Impl(
             { info ->
                 val (tableName, requestTimeFragment, second, _, furtherUnitSecond) = info
                 """
-                    select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
-                           endpoint,
-                           sum(request_count)  as val
-                    from $tableName
-                    where $requestTimeFragment
-                    group by time, endpoint
-                    order by val desc
-                    limit ${input.top}
+                    select (r.request_time - (r.request_time % $furtherUnitSecond)) + ((r.request_time % $furtherUnitSecond) / $second * $second) as time,
+                           r.endpoint,
+                           sum(r.request_count)  as val
+                    from $tableName as r
+                    join (select endpoint, count(request_count) as count 
+                          from $tableName 
+                          group by endpoint 
+                          order by count desc
+                          limit ${input.top}) as temp1
+                     on temp1.endpoint = r.endpoint
+                    where ${requestTimeFragment.get("r")}
+                    group by time, r.endpoint
                 """.trimIndent()
             }
 
@@ -404,6 +408,14 @@ class RouteMonitorMetricsServiceByH2Impl(
         return ValueMetricsOutput(value)
     }
 
+    /**
+     * 支持带别名的片段
+     */
+    interface AliasFragment {
+
+        fun get(alias: String? = ""): String
+
+    }
 
     /**
      * 折线图指标指标
@@ -434,7 +446,13 @@ class RouteMonitorMetricsServiceByH2Impl(
         val tableName =
             if (tableNames.size == 1) tableNames[0]
             else "( ${tableNames.joinToString(separator = " union all ") { "select * from $it" }} )"
-        val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+
+        val fragment = object : AliasFragment {
+            override fun get(alias: String?): String {
+                val realAlias = if (alias.isNullOrBlank()) "" else "${alias}."
+                return "${realAlias}request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+            }
+        }
         val info = LineMetricsInfo(tableName, fragment, second, furtherUnit, furtherUnitSecond)
         return databaseClient.sql(sqlProvider(info))
             .map { readable: Readable -> resultExtract(readable, info) }
@@ -445,7 +463,7 @@ class RouteMonitorMetricsServiceByH2Impl(
 
     data class LineMetricsInfo(
         val tableName: String,
-        val requestTimeFragment: String,
+        val requestTimeFragment: AliasFragment,
         val second: Long,
         val furtherUnit: DateRangeDurationUnit,
         val furtherUnitSecond: Long

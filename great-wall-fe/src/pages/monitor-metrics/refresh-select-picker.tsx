@@ -16,7 +16,7 @@ export interface RefreshSelectPickerProps {
  */
 export default function RefreshSelectPicker(props: RefreshSelectPickerProps) {
   const {onRefresh} = props
-  const [interval, setInterval] = useState<number>(10);
+  const [interval, setInterval] = useState<number>(30);
 
   const clear = useInterval(() => {
     onRefresh?.()

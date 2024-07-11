@@ -3,7 +3,6 @@ import {Spinner} from "@/components/custom-ui/spinner.tsx";
 import AutoSizablePanel, {Size} from "@/components/custom-ui/auto-sizable-panel.tsx";
 import {useApiRequestMetrics} from "@/pages/monitor-metrics/context.ts";
 import {topQpsLineMetrics} from "@/constant/api/monitor-metrics/route-metrics";
-import {isEmpty} from "lodash";
 import {maxPoint} from "@/pages/monitor-metrics/utils.ts";
 import {GitCommitHorizontal} from "lucide-react";
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/chart.tsx";
@@ -34,8 +33,6 @@ function TopApiQpsLineChartCard({size}: { size: Size, }) {
     }
   })
 
-  const yDataKey = !isEmpty(mapping) ? mapping[0].key : undefined
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -59,7 +56,7 @@ function TopApiQpsLineChartCard({size}: { size: Size, }) {
                    minTickGap={32}
             />
 
-            <YAxis dataKey={yDataKey}/>
+            <YAxis/>
 
             <ChartTooltip
               content={
