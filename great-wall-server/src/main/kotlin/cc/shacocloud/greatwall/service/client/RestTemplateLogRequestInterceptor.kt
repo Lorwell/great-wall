@@ -1,7 +1,7 @@
 package cc.shacocloud.greatwall.service.client
 
-import cc.shacocloud.greatwall.utils.Slf4j
-import cc.shacocloud.greatwall.utils.Slf4j.Companion.log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpRequest
@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit
  * [RestTemplate] 的请求日志拦截器
  * @author 思追(shaco)
  */
-@Slf4j
 class RestTemplateLogRequestInterceptor(
 
     /**
@@ -32,6 +31,10 @@ class RestTemplateLogRequestInterceptor(
     private val printLevel: Level
 
 ) : ClientHttpRequestInterceptor {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(RestTemplateLogRequestInterceptor::class.java)
+    }
 
     @Throws(IOException::class)
     override fun intercept(
@@ -101,7 +104,8 @@ class RestTemplateLogRequestInterceptor(
         val responseBody = response.body
         val headers = response.headers
 
-        val contentLength = if (headers.contentLength != -1L) "${headers.contentLength}-byte" else "${responseBody.available()}-byte"
+        val contentLength =
+            if (headers.contentLength != -1L) "${headers.contentLength}-byte" else "${responseBody.available()}-byte"
         println("<-- ${response.statusCode} ${response.statusText} ${request.uri} ( ${tookMs}ms${if (logHeaders) ", $contentLength body" else ""})")
 
         if (logHeaders) {
