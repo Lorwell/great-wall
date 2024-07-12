@@ -1,6 +1,8 @@
 package cc.shacocloud.greatwall
 
 import java.lang.management.ManagementFactory
+import java.lang.management.ThreadInfo
+
 
 class MonitorServer {
 
@@ -11,9 +13,36 @@ class MonitorServer {
 
     }
 
+    fun threadMonitor() {
 
-    fun monitor(): MonitorInfoModel {
-        val monitorInfoModel = MonitorInfoModel()
+        // 获取当前活动线程的枚举
+        val threadMXBean = ManagementFactory.getThreadMXBean()
+        val threadIds: LongArray = threadMXBean.allThreadIds
+
+        // 根据线程ID获取线程信息
+        val threadInfos: Array<ThreadInfo> = threadMXBean.getThreadInfo(threadIds)
+
+        for (info in threadInfos) {
+            println("Thread Name: " + info.threadName)
+            println("Thread ID: " + info.threadId)
+            println("Thread State: " + info.threadState)
+
+
+            // 可以进一步获取堆栈跟踪、锁信息等
+            if (info.lockName != null) {
+                println("Locked on: " + info.lockName)
+            }
+
+            if (info.isInNative) {
+                println("Executing in native code")
+            }
+
+            println("------------------------")
+        }
+    }
+
+    fun monitor() {
+        val infoModel = MonitorInfoModel()
 
         val memoryMXBean = ManagementFactory.getMemoryMXBean()
         val heapMemoryUsage = memoryMXBean.heapMemoryUsage
@@ -24,10 +53,10 @@ class MonitorServer {
         val usedNonHeapMemory = nonHeapMemoryUsage.used
         val maxNonHeapMemory = nonHeapMemoryUsage.max
 
-        monitorInfoModel.usedHeapMemoryInfo = decimalFormat.format(1.0 * usedHeapMemory / MB) + "MB"
-        monitorInfoModel.maxHeapMemoryInfo = decimalFormat.format(1.0 * maxHeapMemory / MB) + "MB"
-        monitorInfoModel.usedNonHeapMemoryInfo = decimalFormat.format(1.0 * usedNonHeapMemory / MB) + "MB"
-        monitorInfoModel.maxNonHeapMemoryInfo = if (maxNonHeapMemory == -1L) {
+        infoModel.usedHeapMemoryInfo = decimalFormat.format(1.0 * usedHeapMemory / MB) + "MB"
+        infoModel.maxHeapMemoryInfo = decimalFormat.format(1.0 * maxHeapMemory / MB) + "MB"
+        infoModel.usedNonHeapMemoryInfo = decimalFormat.format(1.0 * usedNonHeapMemory / MB) + "MB"
+        infoModel.maxNonHeapMemoryInfo = if (maxNonHeapMemory == -1L) {
             "-"
         } else {
             decimalFormat.format(1.0 * maxNonHeapMemory / MB) + "MB"
@@ -36,56 +65,49 @@ class MonitorServer {
 
         val operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean()
 
-        monitorInfoModel.arch = operatingSystemMXBean.arch
-        monitorInfoModel.name = operatingSystemMXBean.name
-        monitorInfoModel.version = operatingSystemMXBean.version
+        infoModel.arch = operatingSystemMXBean.arch
+        infoModel.name = operatingSystemMXBean.name
+        infoModel.version = operatingSystemMXBean.version
 
         if (operatingSystemMXBean is com.sun.management.OperatingSystemMXBean) {
             val cpuLoad = operatingSystemMXBean.cpuLoad
-            monitorInfoModel.cpuLoadInfo = decimalFormat.format(cpuLoad * 100) + "%"
+            infoModel.cpuLoadInfo = decimalFormat.format(cpuLoad * 100) + "%"
 
             val processCpuLoad = operatingSystemMXBean.processCpuLoad
-            monitorInfoModel.processCpuLoadInfo = decimalFormat.format(processCpuLoad * 100) + "%"
+            infoModel.processCpuLoadInfo = decimalFormat.format(processCpuLoad * 100) + "%"
 
             val totalMemorySize = operatingSystemMXBean.totalMemorySize
             val freeMemorySize = operatingSystemMXBean.freeMemorySize
 
-            monitorInfoModel.totalMemoryInfo = decimalFormat.format(1.0 * totalMemorySize / GB) + "GB"
-            monitorInfoModel.freeMemoryInfo = decimalFormat.format(1.0 * freeMemorySize / GB) + "GB"
-            monitorInfoModel.useMemoryInfo = decimalFormat.format(1.0 * (totalMemorySize - freeMemorySize) / GB) + "GB"
-            monitorInfoModel.memoryUseRatioInfo =
+            infoModel.totalMemoryInfo = decimalFormat.format(1.0 * totalMemorySize / GB) + "GB"
+            infoModel.freeMemoryInfo = decimalFormat.format(1.0 * freeMemorySize / GB) + "GB"
+            infoModel.useMemoryInfo = decimalFormat.format(1.0 * (totalMemorySize - freeMemorySize) / GB) + "GB"
+            infoModel.memoryUseRatioInfo =
                 decimalFormat.format((1.0 * (totalMemorySize - freeMemorySize) / totalMemorySize * 100)) + "%"
 
             val freeSwapSpaceSize = operatingSystemMXBean.freeSwapSpaceSize
             val totalSwapSpaceSize = operatingSystemMXBean.totalSwapSpaceSize
 
-            monitorInfoModel.freeSwapSpaceInfo = decimalFormat.format(1.0 * freeSwapSpaceSize / GB) + "GB"
-            monitorInfoModel.totalSwapSpaceInfo = decimalFormat.format(1.0 * totalSwapSpaceSize / GB) + "GB"
-            monitorInfoModel.useSwapSpaceInfo =
+            infoModel.freeSwapSpaceInfo = decimalFormat.format(1.0 * freeSwapSpaceSize / GB) + "GB"
+            infoModel.totalSwapSpaceInfo = decimalFormat.format(1.0 * totalSwapSpaceSize / GB) + "GB"
+            infoModel.useSwapSpaceInfo =
                 decimalFormat.format(1.0 * (totalSwapSpaceSize - freeSwapSpaceSize) / GB) + "GB"
-            monitorInfoModel.swapUseRatioInfo =
+            infoModel.swapUseRatioInfo =
                 decimalFormat.format((1.0 * (totalSwapSpaceSize - freeSwapSpaceSize) / totalSwapSpaceSize * 100)) + "%"
         }
-        return monitorInfoModel
-    }
-}
 
-fun main(args: Array<String>) {
-    val monitorServer = MonitorServer()
-    val infoModel: MonitorInfoModel = monitorServer.monitor()
-
-    println(
-        """
+        println(
+            """
                         堆内存使用情况：
                         使用中的堆内存：${infoModel.usedHeapMemoryInfo}
                         最大堆内存：${infoModel.maxHeapMemoryInfo}
                         使用中的非堆内存：${infoModel.usedNonHeapMemoryInfo}
                         最大非堆内存：${infoModel.maxNonHeapMemoryInfo}
                         """.trimIndent()
-    )
+        )
 
-    println(
-        """
+        println(
+            """
                         系统信息：
                         系统架构：${infoModel.arch}
                         系统名称：${infoModel.name}
@@ -101,7 +123,14 @@ fun main(args: Array<String>) {
                         交换内存使用率：${infoModel.swapUseRatioInfo}
                         
                         """.trimIndent()
-    )
+        )
+    }
+}
+
+fun main(args: Array<String>) {
+    val monitorServer = MonitorServer()
+    monitorServer.monitor()
+    monitorServer.threadMonitor()
 }
 
 
