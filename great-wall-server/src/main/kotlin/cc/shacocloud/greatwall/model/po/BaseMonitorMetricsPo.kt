@@ -12,7 +12,8 @@ open class BaseMonitorMetricsPo(
 
     enum class Type {
 
-        ROUTE
+        ROUTE,
+        SYSTEM
     }
 
 }

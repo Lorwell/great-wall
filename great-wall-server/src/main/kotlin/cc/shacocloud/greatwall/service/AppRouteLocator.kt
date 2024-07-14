@@ -126,7 +126,7 @@ class AppRouteLocator(
                     // 插件配置
                     // TODO 这边先固定一部分插件
 
-                    // 转发请求头网关过滤器
+                    // 转发请求头 Host 网关过滤器
                     val preserveHostHeaderGatewayFilter =
                         gatewayFilterFactoryMap["PreserveHostHeader"]!!.apply { }
                     routeBuilder.filter(preserveHostHeaderGatewayFilter)
