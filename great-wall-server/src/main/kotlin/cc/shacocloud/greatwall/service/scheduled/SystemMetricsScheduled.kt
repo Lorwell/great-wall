@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
 /**
- *
+ * 系统指标调度器
  * @author 思追(shaco)
  */
 @Service
@@ -53,8 +53,8 @@ class SystemMetricsScheduled(
      */
     suspend fun delayStartOfSecond(timeUnit: Instant) {
         val milliStr = timeUnit.toEpochMilli().toString()
-        val milli = milliStr.substring(milliStr.length - 4).toLong()
-        delay(milli)
+        val milli = milliStr.substring(milliStr.length - 3).toLong()
+        delay((1000 - milli) + 1)
     }
 
     /**
