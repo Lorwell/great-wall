@@ -1,7 +1,7 @@
 package cc.shacocloud.greatwall.service.impl
 
 import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
-import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.LineMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.*
 import cc.shacocloud.greatwall.model.mo.TopQpsLineMetricsMo
@@ -25,6 +25,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * 基于 h2 实现的 [RouteMonitorMetricsService]
@@ -246,7 +247,7 @@ class RouteMonitorMetricsServiceByH2Impl(
     /**
      * qps 折线图指标
      */
-    override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<QpsLineMetricsOutput> {
+    override suspend fun qpsLineMetrics(input: LineMetricsInput): List<QpsLineMetricsOutput> {
 
         // 查询的sql
         val sqlProvider: (LineMetricsInfo) -> String =
@@ -281,7 +282,7 @@ class RouteMonitorMetricsServiceByH2Impl(
     /**
      * duration 折线图指标
      */
-    override suspend fun durationLineMetrics(input: RouteLineMetricsInput): List<DurationLineMetricsOutput> {
+    override suspend fun durationLineMetrics(input: LineMetricsInput): List<DurationLineMetricsOutput> {
         // 查询的sql
         val sqlProvider: (LineMetricsInfo) -> String =
             { info ->
@@ -356,6 +357,9 @@ class RouteMonitorMetricsServiceByH2Impl(
         val endpointMap = result.groupBy { it.endpoint }.asSequence()
             .associate { it.key to "api${apiNumber.incrementAndGet()}" }
 
+        // 统计端口值，用于排序
+        val endpointTotalMap = mutableMapOf<String, AtomicLong>()
+
         // 数据填充
         val data = dateRangeDataCompletion(input) { unit ->
             val item = mutableMapOf<String, Any>()
@@ -364,13 +368,18 @@ class RouteMonitorMetricsServiceByH2Impl(
             val metricsMo = unitMap[unit]?.associate { it.endpoint to it.value } ?: mapOf()
 
             endpointMap.forEach { (endpoint, apiKey) ->
-                item[apiKey] = metricsMo[endpoint] ?: 0
+                val value = metricsMo[endpoint] ?: 0
+                item[apiKey] = value
+                endpointTotalMap.computeIfAbsent(apiKey) { AtomicLong(0) }.addAndGet(value)
             }
 
             item
         }
 
-        val mapping = endpointMap.map { TopQpsApiKeyMappingOutput(it.key, it.value) }
+        val mapping = endpointMap
+            .map { TopQpsApiKeyMappingOutput(it.key, it.value) }
+            // 根据排名进行倒叙
+            .sortedByDescending { endpointTotalMap[it.key]?.toLong() ?: (0.toLong()) }
 
         // 数据补全
         return TopQpsLineMetricsOutput(mapping, data)
@@ -382,7 +391,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      */
     suspend fun countMetrics(
         input: RouteCountMetricsInput,
-        sqlProvider: (tableName: String, requestTimeFragment: String) -> String
+        sqlProvider: (tableName: String, requestTimeFragment: String) -> String,
     ): ValueMetricsOutput {
         val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
@@ -421,9 +430,9 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 折线图指标指标
      */
     suspend fun <T : LineMetricsOutput> lineMetrics(
-        input: RouteLineMetricsInput,
+        input: LineMetricsInput,
         sqlProvider: (LineMetricsInfo) -> String,
-        resultExtract: (Readable, LineMetricsInfo) -> T
+        resultExtract: (Readable, LineMetricsInfo) -> T,
     ): List<T> {
         val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
@@ -466,6 +475,6 @@ class RouteMonitorMetricsServiceByH2Impl(
         val requestTimeFragment: AliasFragment,
         val second: Long,
         val furtherUnit: DateRangeDurationUnit,
-        val furtherUnitSecond: Long
+        val furtherUnitSecond: Long,
     )
 }

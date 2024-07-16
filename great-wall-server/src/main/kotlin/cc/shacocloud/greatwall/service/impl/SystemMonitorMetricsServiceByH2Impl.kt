@@ -1,13 +1,13 @@
 package cc.shacocloud.greatwall.service.impl
 
-import cc.shacocloud.greatwall.config.R2dbcConfiguration.Companion.bindByIndex
 import cc.shacocloud.greatwall.config.R2dbcConfiguration.Companion.bindByName
+import cc.shacocloud.greatwall.model.dto.input.LineMetricsInput
+import cc.shacocloud.greatwall.model.dto.output.MemoryLineMetricsOutput
 import cc.shacocloud.greatwall.model.po.SystemMetricsRecordPo
 import cc.shacocloud.greatwall.service.SystemMonitorMetricsService
 import cc.shacocloud.greatwall.utils.DATE_TIME_DAY_NO_SEP_FORMAT
 import cc.shacocloud.greatwall.utils.days
 import cc.shacocloud.greatwall.utils.toEpochSecond
-import cc.shacocloud.greatwall.utils.toLocalDateTime
 import io.r2dbc.spi.Readable
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
@@ -115,10 +115,12 @@ class SystemMonitorMetricsServiceByH2Impl(
             (
                 id                         BIGINT PRIMARY KEY AUTO_INCREMENT,
                 second_unit                BIGINT        NOT NULL unique,
-                used_heap_memory           BIGINT        NOT NULL,
-                max_heap_memory            BIGINT        NOT NULL,
-                used_non_heap_memory       BIGINT        NOT NULL,
-                max_non_heap_memory        BIGINT        NOT NULL,
+                heap_memory_use            BIGINT        NOT NULL,
+                heap_memory_committed      BIGINT        NOT NULL,
+                heap_memory_max            BIGINT        NOT NULL,
+                non_heap_memory_use        BIGINT        NOT NULL,
+                non_heap_memory_committed  BIGINT        NOT NULL,
+                non_heap_memory_max        BIGINT        NOT NULL,
                 cpu_load                   decimal(3, 2) NOT NULL,
                 process_cpu_load           decimal(3, 2) NOT NULL,
                 thread_total               INT           NOT NULL,
@@ -152,23 +154,25 @@ class SystemMonitorMetricsServiceByH2Impl(
 
         databaseClient.sql(
             """
-            insert into ${tableName}(second_unit, used_heap_memory, max_heap_memory, used_non_heap_memory, max_non_heap_memory, cpu_load,
-                process_cpu_load, thread_total, thread_new_count, thread_runnable_count, thread_blocked_count,
-                thread_waiting_count, thread_timed_waiting_count, thread_terminated_count, loaded_class_count,
-                loaded_class_total, unloaded_classes, direct_memory_use, direct_memory_committed, direct_memory_max,
-                gc_infos)
-           values (:secondUnit, :usedHeapMemory, :maxHeapMemory, :usedNonHeapMemory, :maxNonHeapMemory, :cpuLoad,
-                :processCpuLoad, :threadTotal, :threadNewCount, :threadRunnableCount, :threadBlockedCount,
-                :threadWaitingCount, :threadTimedWaitingCount, :threadTerminatedCount, :loadedClassCount,
-                :loadedClassTotal, :unloadedClasses, :directMemoryUse, :directMemoryCommitted, :directMemoryMax,
-                :gcInfos)
+            insert into ${tableName}(second_unit, heap_memory_use, heap_memory_committed, heap_memory_max, non_heap_memory_use, 
+            non_heap_memory_committed, non_heap_memory_max, cpu_load, process_cpu_load, thread_total, thread_new_count, 
+            thread_runnable_count, thread_blocked_count, thread_waiting_count, thread_timed_waiting_count, 
+            thread_terminated_count, loaded_class_count, loaded_class_total, unloaded_classes, direct_memory_use, 
+            direct_memory_committed, direct_memory_max, gc_infos)
+           values (:secondUnit, :heapMemoryUse,:heapMemoryCommitted, :heapMemoryMax, :nonHeapMemoryUse, 
+                   :nonHeapMemoryCommitted,  :nonHeapMemoryMax, :cpuLoad, :processCpuLoad, :threadTotal, :threadNewCount, 
+                   :threadRunnableCount, :threadBlockedCount, :threadWaitingCount, :threadTimedWaitingCount, 
+                   :threadTerminatedCount, :loadedClassCount, :loadedClassTotal, :unloadedClasses, :directMemoryUse, 
+                   :directMemoryCommitted, :directMemoryMax, :gcInfos)
         """.trimIndent()
         )
             .bindByName("secondUnit", record.timeUnit.toEpochSecond())
-            .bindByName("usedHeapMemory", record.usedHeapMemory)
-            .bindByName("maxHeapMemory", record.maxHeapMemory)
-            .bindByName("usedNonHeapMemory", record.usedNonHeapMemory)
-            .bindByName("maxNonHeapMemory", record.maxNonHeapMemory)
+            .bindByName("heapMemoryUse", record.heapMemoryUse)
+            .bindByName("heapMemoryCommitted", record.heapMemoryCommitted)
+            .bindByName("heapMemoryMax", record.heapMemoryMax)
+            .bindByName("nonHeapMemoryUse", record.nonHeapMemoryUse)
+            .bindByName("nonHeapMemoryCommitted", record.nonHeapMemoryCommitted)
+            .bindByName("nonHeapMemoryMax", record.nonHeapMemoryMax)
             .bindByName("cpuLoad", record.cpuLoad)
             .bindByName("processCpuLoad", record.processCpuLoad)
             .bindByName("threadTotal", record.threadTotal)
@@ -186,6 +190,10 @@ class SystemMonitorMetricsServiceByH2Impl(
             .bindByName("directMemoryMax", record.directMemoryMax)
             .bindByName("gcInfos", Json.encodeToString(record.gcInfos))
             .await()
+    }
+
+    override suspend fun headMemoryLineMetrics(input: LineMetricsInput): List<MemoryLineMetricsOutput> {
+        TODO("Not yet implemented")
     }
 
 

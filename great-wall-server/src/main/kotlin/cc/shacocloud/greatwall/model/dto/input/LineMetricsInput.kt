@@ -5,10 +5,10 @@ import cc.shacocloud.greatwall.utils.toDuration
 import jakarta.validation.constraints.Min
 
 /**
- * 路由统计监控
+ * 折线图统计监控入参
  * @author 思追(shaco)
  */
-open class RouteLineMetricsInput(
+open class LineMetricsInput(
     override val type: Type,
     override val lastDataEnum: LastDateEnum?,
     override val dateRange: DateRange?,
@@ -22,9 +22,9 @@ open class RouteLineMetricsInput(
     /**
      * 间隔类型
      */
-    open val intervalType: DateRangeDurationUnit
+    open val intervalType: DateRangeDurationUnit,
 
-) : MetricsDateRangeInput(type, lastDataEnum, dateRange) {
+    ) : MetricsDateRangeInput(type, lastDataEnum, dateRange) {
 
     val rawInterval by lazy {
         val second = getIntervalSecond()

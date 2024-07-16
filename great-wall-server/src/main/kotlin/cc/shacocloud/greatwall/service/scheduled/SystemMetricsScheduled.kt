@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
  */
 @Service
 class SystemMetricsScheduled(
-    private val monitorMetricsService: CompositionMonitorMetricsService
+    private val monitorMetricsService: CompositionMonitorMetricsService,
 ) : DisposableBean {
 
     private val dispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
@@ -77,9 +77,8 @@ class SystemMetricsScheduled(
 
         // 线程相关
         val threadMXBean = ManagementFactory.getThreadMXBean()
-        val allThread = threadMXBean.getThreadInfo(threadMXBean.allThreadIds)
-        val threadStateMap = allThread
-            .groupBy { it.threadState }
+        val allThread = threadMXBean.getThreadInfo(threadMXBean.allThreadIds).filterNotNull()
+        val threadStateMap = allThread.groupBy { it.threadState }
 
         // 类加载器相关
         val classLoadingMXBean = ManagementFactory.getClassLoadingMXBean()
@@ -102,10 +101,12 @@ class SystemMetricsScheduled(
 
         val systemMetricsRecordPo = SystemMetricsRecordPo(
             timeUnit = timeUnit,
-            usedHeapMemory = heapMemoryUsage.used,
-            maxHeapMemory = heapMemoryUsage.max,
-            usedNonHeapMemory = nonHeapMemoryUsage.used,
-            maxNonHeapMemory = nonHeapMemoryUsage.max,
+            heapMemoryUse = heapMemoryUsage.used,
+            heapMemoryCommitted = heapMemoryUsage.committed,
+            heapMemoryMax = heapMemoryUsage.max,
+            nonHeapMemoryUse = nonHeapMemoryUsage.used,
+            nonHeapMemoryCommitted = nonHeapMemoryUsage.committed,
+            nonHeapMemoryMax = nonHeapMemoryUsage.max,
             cpuLoad = cpuLoad,
             processCpuLoad = processCpuLoad,
             threadTotal = allThread.size,

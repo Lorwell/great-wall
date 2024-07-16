@@ -1,10 +1,18 @@
 package cc.shacocloud.greatwall
 
+import cc.shacocloud.greatwall.utils.DATE_TIME_FORMAT
+import cc.shacocloud.greatwall.utils.zoneOffset
 import com.sun.management.OperatingSystemMXBean
-import java.lang.System.*
+import java.lang.System.getProperty
+import java.lang.System.getenv
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryType
 import java.lang.management.ThreadInfo
+import java.time.Instant
+import java.time.LocalDateTime
+import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.DurationUnit
 
 
 class MonitorServer {
@@ -13,7 +21,6 @@ class MonitorServer {
         const val GB = (1024 * 1024 * 1024).toLong()
         const val MB = (1024 * 1024).toLong()
         val decimalFormat = java.text.DecimalFormat("0.0")
-
     }
 
     fun monitor() {
@@ -27,14 +34,14 @@ class MonitorServer {
         val maxNonHeapMemory = nonHeapMemoryUsage.max
 
         println("使用中的堆内存：${decimalFormat.format(1.0 * usedHeapMemory / MB)}MB")
-        println("使用中的非堆内存：${decimalFormat.format(1.0 * maxHeapMemory / MB)}MB")
+        println("使用中的最大堆内存：${decimalFormat.format(1.0 * maxHeapMemory / MB)}MB")
         println("使用中的非堆内存：${decimalFormat.format(1.0 * usedNonHeapMemory / MB)}MB")
         val maxNonHeapMemoryInfo = if (maxNonHeapMemory == -1L) {
             "-"
         } else {
             decimalFormat.format(1.0 * maxNonHeapMemory / MB) + "MB"
         }
-        println("最大非堆内存：${maxNonHeapMemoryInfo}MB")
+        println("最大非堆内存：${maxNonHeapMemoryInfo}")
 
 
         val operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean()
@@ -115,12 +122,20 @@ class MonitorServer {
         val runtimeMxBean = ManagementFactory.getRuntimeMXBean()
 
         // 获取JVM已经运行的时间（毫秒）
-        val uptime = runtimeMxBean.uptime
-        println("JVM 运行时间：$uptime 毫秒")
+
+        val startTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(runtimeMxBean.startTime), zoneOffset)
+            .format(DATE_TIME_FORMAT)
+        println("JVM 启动时间：$startTime")
+
+        val uptime = runtimeMxBean.uptime.milliseconds.toString(DurationUnit.SECONDS, 0)
+        println("JVM 运行时间：$uptime")
     }
 }
 
 fun main(args: Array<String>) {
+    val timeZoneId = getProperty("TIME_ZONE_ID", getenv("TIME_ZONE_ID")) ?: "Asia/Shanghai"
+    TimeZone.setDefault(TimeZone.getTimeZone(timeZoneId))
+
     val monitorServer = MonitorServer()
     monitorServer.monitor()
 }

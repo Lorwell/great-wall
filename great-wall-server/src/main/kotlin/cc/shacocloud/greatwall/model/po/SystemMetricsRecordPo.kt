@@ -18,22 +18,32 @@ data class SystemMetricsRecordPo(
     /**
      * 使用中的堆内存信息
      */
-    val usedHeapMemory: Long,
+    val heapMemoryUse: Long,
+
+    /**
+     * 提交的堆内存信息
+     */
+    val heapMemoryCommitted: Long,
 
     /**
      * 最大堆内存信息
      */
-    val maxHeapMemory: Long,
+    val heapMemoryMax: Long,
 
     /**
      * 使用中的非堆内存信息
      */
-    val usedNonHeapMemory: Long,
+    val nonHeapMemoryUse: Long,
+
+    /**
+     * 提交的非堆内存信息
+     */
+    val nonHeapMemoryCommitted: Long,
 
     /**
      * 最大非堆内存信息
      */
-    val maxNonHeapMemory: Long,
+    val nonHeapMemoryMax: Long,
 
     /**
      * 系统cpu负载
@@ -113,9 +123,9 @@ data class SystemMetricsRecordPo(
     /**
      * gc 信息
      */
-    val gcInfos: List<GCInfoMo>
+    val gcInfos: List<GCInfoMo>,
 
 
-) : BaseMonitorMetricsPo(Type.SYSTEM)
+    ) : BaseMonitorMetricsPo(Type.SYSTEM)
 
 
