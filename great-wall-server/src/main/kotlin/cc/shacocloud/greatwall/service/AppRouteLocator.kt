@@ -9,7 +9,9 @@ import kotlinx.coroutines.reactor.flux
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
+import org.springframework.cloud.gateway.filter.OrderedGatewayFilter
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
+import org.springframework.cloud.gateway.filter.factory.PreserveHostHeaderGatewayFilterFactory
 import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
@@ -30,7 +32,7 @@ class AppRouteLocator(
     val appRouteService: AppRouteService,
     val routePredicateFactory: RoutePredicateFactory,
     val weightRoutePredicateFactory: WeightRoutePredicateFactory,
-    gatewayFilterFactories: List<GatewayFilterFactory<Any>>
+    gatewayFilterFactories: List<GatewayFilterFactory<Any>>,
 ) : RouteLocator {
 
     /**
@@ -128,8 +130,8 @@ class AppRouteLocator(
 
                     // 转发请求头 Host 网关过滤器
                     val preserveHostHeaderGatewayFilter =
-                        gatewayFilterFactoryMap["PreserveHostHeader"]!!.apply { }
-                    routeBuilder.filter(preserveHostHeaderGatewayFilter)
+                        (gatewayFilterFactoryMap["PreserveHostHeader"] as PreserveHostHeaderGatewayFilterFactory).apply()
+                    routeBuilder.filter(OrderedGatewayFilter(preserveHostHeaderGatewayFilter, 0))
 
                     send(routeBuilder.build())
                 }
