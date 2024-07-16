@@ -9,6 +9,7 @@ import kotlinx.coroutines.reactor.flux
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
+import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
 import org.springframework.cloud.gateway.filter.factory.PreserveHostHeaderGatewayFilterFactory
@@ -17,6 +18,7 @@ import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.support.RouteMetadataUtils
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
+import org.springframework.core.Ordered
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URI
@@ -51,6 +53,16 @@ class AppRouteLocator(
          */
         fun refreshRoutes() {
             ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
+        }
+
+        /**
+         * 添加过滤器
+         */
+        fun Route.AsyncBuilder.addFilter(gatewayFilter: GatewayFilter): Route.AsyncBuilder {
+            if (gatewayFilter is Ordered) {
+                return filter(gatewayFilter)
+            }
+            return filter(OrderedGatewayFilter(gatewayFilter, 0))
         }
 
     }
@@ -131,7 +143,7 @@ class AppRouteLocator(
                     // 转发请求头 Host 网关过滤器
                     val preserveHostHeaderGatewayFilter =
                         (gatewayFilterFactoryMap["PreserveHostHeader"] as PreserveHostHeaderGatewayFilterFactory).apply()
-                    routeBuilder.filter(OrderedGatewayFilter(preserveHostHeaderGatewayFilter, 0))
+                    routeBuilder.addFilter(preserveHostHeaderGatewayFilter)
 
                     send(routeBuilder.build())
                 }
