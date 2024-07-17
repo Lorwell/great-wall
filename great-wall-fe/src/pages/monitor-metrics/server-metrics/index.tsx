@@ -1,13 +1,21 @@
-import TopApiQpsLineChart from "@/pages/monitor-metrics/route-metrics/top-api-qps-line-chart.tsx";
-import UpTimeMetrics from "@/pages/monitor-metrics/server-metrics/up-time-metrics.tsx";
-import NonHeadMemoryMetrics from "@/pages/monitor-metrics/server-metrics/non-head-memory-metrics.tsx";
-import HeadMemoryMetrics from "@/pages/monitor-metrics/server-metrics/head-memory-metrics.tsx";
-import DirectMemoryMetrics from "@/pages/monitor-metrics/server-metrics/direct-memory-metrics.tsx";
-import ProcessCpuMetrics from "@/pages/monitor-metrics/server-metrics/process-cpu-metrics.tsx";
-import ThreadTotalMetrics from "@/pages/monitor-metrics/server-metrics/thread-total-metrics.tsx";
-import HeadMemoryLineChart from "@/pages/monitor-metrics/server-metrics/head-memory-line-chart.tsx";
-import NonHeadMemoryLineChart from "@/pages/monitor-metrics/server-metrics/non-head-memory-line-chart.tsx";
-import DirectHeadMemoryLineChart from "@/pages/monitor-metrics/server-metrics/direct-head-memory-line-chart.tsx";
+import UpTimeMetrics from "./up-time-metrics.tsx";
+import NonHeadMemoryMetrics from "./non-head-memory-metrics.tsx";
+import HeadMemoryMetrics from "./head-memory-metrics.tsx";
+import DirectMemoryMetrics from "./direct-memory-metrics.tsx";
+import ProcessCpuMetrics from "./process-cpu-metrics.tsx";
+import ThreadTotalMetrics from "./thread-total-metrics.tsx";
+import MemoryLineChart from "./memory-line-chart.tsx";
+import {
+  directMemoryLineMetrics,
+  gcCountLineMetrics,
+  gcTimeLineMetrics,
+  headMemoryLineMetrics,
+  nonHeadMemoryLineMetrics
+} from "@/constant/api/monitor-metrics/system-metrics";
+import CpuLineChart from "./cpu-line-chart.tsx";
+import ThreadLineChart from "./thread-line-chart";
+import LoadedClassLineChart from "./loaded-class-line-chart.tsx";
+import GcLineChart from "@/pages/monitor-metrics/server-metrics/gc-line-chart.tsx";
 
 /**
  * 服务指标
@@ -24,14 +32,23 @@ export default function ServerMetrics() {
         <DirectMemoryMetrics/>
         <ThreadTotalMetrics/>
       </div>
+      <div className="grid gap-4 grid-cols-1">
+        <CpuLineChart/>
+      </div>
       <div className="grid gap-4 grid-cols-3">
-        <HeadMemoryLineChart/>
-        <NonHeadMemoryLineChart/>
-        <DirectHeadMemoryLineChart/>
+        <MemoryLineChart title={"堆内存"} service={headMemoryLineMetrics}/>
+        <MemoryLineChart title={"非堆内存"} service={nonHeadMemoryLineMetrics}/>
+        <MemoryLineChart title={"直接内存"} service={directMemoryLineMetrics}/>
       </div>
 
-      <div className={"grid grid-cols-1"}>
-        <TopApiQpsLineChart/>
+      <div className={"grid gap-4 grid-cols-2"}>
+        <ThreadLineChart/>
+        <LoadedClassLineChart/>
+      </div>
+
+      <div className={"grid gap-4 grid-cols-2"}>
+        <GcLineChart title={"GC 次数"} service={gcCountLineMetrics}/>
+        <GcLineChart title={"GC 时间"} service={gcTimeLineMetrics} tickFormatter={value => `${value}ms`}/>
       </div>
     </div>
   )

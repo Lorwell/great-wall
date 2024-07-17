@@ -12,8 +12,18 @@ data class MemoryLineMetricsOutput(
     override val unit: String,
 
     /**
-     * 值
+     * 使用
      */
-    val value: Long,
+    val use: Long? = null,
+
+    /**
+     * 提交
+     */
+    val committed: Long? = null,
+
+    /**
+     * 最大
+     */
+    val max: Long? = null,
 
     ) : LineMetricsOutput(unit)

@@ -84,7 +84,6 @@ export const removeSuffix = (str: string, suffix: string) => {
   return str.substring(0, str.length - suffix.length)
 }
 
-
 /**
  *  大小转换
  * @param size
@@ -123,4 +122,17 @@ export const downloadFile = (filename: string,
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+/**
+ *  百分比转换
+ * @param size
+ * @param defaultValue 默认值
+ */
+export const percentageFormat = (size?: number,
+                                 defaultValue?: string): string => {
+  if (!size)
+    return defaultValue || "";
+
+  return Math.round(size * 10000) / 100 + '%'
 }

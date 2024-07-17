@@ -138,4 +138,76 @@ class SystemMonitorMetricsController(
     ): List<MemoryLineMetricsOutput> {
         return systemMonitorMetricsService.headMemoryLineMetrics(input)
     }
+
+    /**
+     * 非堆内存折现图指标
+     */
+    @PostMapping("/line/non-head-memory")
+    suspend fun nonHeadMemoryLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): List<MemoryLineMetricsOutput> {
+        return systemMonitorMetricsService.nonHeadMemoryLineMetrics(input)
+    }
+
+    /**
+     * 直接内存折现图指标
+     */
+    @PostMapping("/line/direct-memory")
+    suspend fun directMemoryLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): List<MemoryLineMetricsOutput> {
+        return systemMonitorMetricsService.directMemoryLineMetrics(input)
+    }
+
+    /**
+     * cpu折现图指标
+     */
+    @PostMapping("/line/cpu")
+    suspend fun cpuLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): List<CpuLineMetricsOutput> {
+        return systemMonitorMetricsService.cpuLineMetrics(input)
+    }
+
+    /**
+     * 线程折现图指标
+     */
+    @PostMapping("/line/thread")
+    suspend fun threadLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): List<ThreadLineMetricsOutput> {
+        return systemMonitorMetricsService.threadLineMetrics(input)
+    }
+
+    /**
+     * 类加载折现图指标
+     */
+    @PostMapping("/line/loaded-class")
+    suspend fun loadedClassLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): List<LoadedClassLineMetricsOutput> {
+        return systemMonitorMetricsService.loadedClassLineMetrics(input)
+    }
+
+    /**
+     * gc 次数折现图指标
+     */
+    @PostMapping("/line/gc-count")
+    suspend fun gcCountLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): GcLineMetricsOutput {
+        return systemMonitorMetricsService.gcCountLineMetrics(input)
+    }
+
+    /**
+     * gc 时间折现图指标
+     */
+    @PostMapping("/line/gc-time")
+    suspend fun gcTimeLineMetrics(
+        @RequestBody @Validated input: LineMetricsInput,
+    ): GcLineMetricsOutput {
+        return systemMonitorMetricsService.gcTimeLineMetrics(input)
+    }
+
+
 }

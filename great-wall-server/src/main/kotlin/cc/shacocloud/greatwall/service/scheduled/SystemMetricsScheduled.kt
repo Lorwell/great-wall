@@ -23,6 +23,20 @@ class SystemMetricsScheduled(
     private val monitorMetricsService: CompositionMonitorMetricsService,
 ) : DisposableBean {
 
+    companion object {
+        fun <T : Number> T.lessThanZeroLet(defaultValue: T?): T? {
+            return when (this) {
+                is Int -> if (this >= 0) this else defaultValue
+                is Long -> if (this >= 0) this else defaultValue
+                is Double -> if (this >= 0) this else defaultValue
+                is Float -> if (this >= 0) this else defaultValue
+                is Short -> if (this >= 0) this else defaultValue
+                is Byte -> if (this >= 0) this else defaultValue
+                else -> if (toInt() >= 0) this else defaultValue
+            }
+        }
+    }
+
     private val dispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
     init {
@@ -70,9 +84,11 @@ class SystemMetricsScheduled(
         // cpu 相关
         val (cpuLoad, processCpuLoad) =
             if (operatingSystemMXBean is OperatingSystemMXBean) {
-                operatingSystemMXBean.cpuLoad to operatingSystemMXBean.processCpuLoad
+                val cpuLoad = operatingSystemMXBean.cpuLoad
+                val processCpuLoad = operatingSystemMXBean.processCpuLoad
+                cpuLoad.lessThanZeroLet(0.0) to processCpuLoad.lessThanZeroLet(0.0)
             } else {
-                -1.0 to -1.0
+                null to null
             }
 
         // 线程相关
@@ -103,10 +119,10 @@ class SystemMetricsScheduled(
             timeUnit = timeUnit,
             heapMemoryUse = heapMemoryUsage.used,
             heapMemoryCommitted = heapMemoryUsage.committed,
-            heapMemoryMax = heapMemoryUsage.max,
+            heapMemoryMax = if (heapMemoryUsage.max < 0) null else heapMemoryUsage.max,
             nonHeapMemoryUse = nonHeapMemoryUsage.used,
             nonHeapMemoryCommitted = nonHeapMemoryUsage.committed,
-            nonHeapMemoryMax = nonHeapMemoryUsage.max,
+            nonHeapMemoryMax = if (nonHeapMemoryUsage.max < 0) null else nonHeapMemoryUsage.max,
             cpuLoad = cpuLoad,
             processCpuLoad = processCpuLoad,
             threadTotal = allThread.size,
@@ -119,9 +135,9 @@ class SystemMetricsScheduled(
             loadedClassTotal = totalLoadedClassCount,
             loadedClassCount = loadedClassCount,
             unloadedClasses = unloadedClasses,
-            directMemoryUse = directMemoryPool?.usage?.used ?: (-1).toLong(),
-            directMemoryCommitted = directMemoryPool?.usage?.committed ?: (-1).toLong(),
-            directMemoryMax = directMemoryPool?.usage?.max ?: (-1).toLong(),
+            directMemoryUse = directMemoryPool?.usage?.used,
+            directMemoryCommitted = directMemoryPool?.usage?.committed,
+            directMemoryMax = directMemoryPool?.usage?.max?.let { if (it < 0) null else it },
             gcInfos = gcInfos,
         )
 

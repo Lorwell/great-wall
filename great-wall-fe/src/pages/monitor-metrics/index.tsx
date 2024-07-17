@@ -23,7 +23,7 @@ export default function MonitorMetrics() {
 
   const [dateRange, setDateRange] = useState<MetricsDateRange>({
     type: "LastDateEnum",
-    lastDataEnum: LastDateEnum.Last12Hour
+    lastDataEnum: LastDateEnum.Last30Minute
   });
 
   useEffect(() => {

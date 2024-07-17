@@ -28,7 +28,7 @@ data class SystemMetricsRecordPo(
     /**
      * 最大堆内存信息
      */
-    val heapMemoryMax: Long,
+    val heapMemoryMax: Long? = null,
 
     /**
      * 使用中的非堆内存信息
@@ -43,17 +43,17 @@ data class SystemMetricsRecordPo(
     /**
      * 最大非堆内存信息
      */
-    val nonHeapMemoryMax: Long,
+    val nonHeapMemoryMax: Long? = null,
 
     /**
      * 系统cpu负载
      */
-    val cpuLoad: Double,
+    val cpuLoad: Double? = null,
 
     /**
      * JVM进程 cpu负载
      */
-    val processCpuLoad: Double,
+    val processCpuLoad: Double? = null,
 
     /**
      * 线程统计
@@ -108,17 +108,17 @@ data class SystemMetricsRecordPo(
     /**
      * 使用的直接内存
      */
-    val directMemoryUse: Long,
+    val directMemoryUse: Long? = null,
 
     /**
      * 直接内存已提交
      */
-    val directMemoryCommitted: Long,
+    val directMemoryCommitted: Long? = null,
 
     /**
      * 直接内存最大值
      */
-    val directMemoryMax: Long,
+    val directMemoryMax: Long? = null,
 
     /**
      * gc 信息
