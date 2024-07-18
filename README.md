@@ -68,3 +68,18 @@ docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencent
 ![image-20240718105709099](./assets/image-20240718105709099.png)
 
 ![image-20240718105721332](./assets/image-20240718105721332.png)
+
+## 使用技术
+
+本项目使用了以下语言或框架，感谢开源
+
+* [SpringBoot3 + SpringCloudGateway](https://spring.io/projects/spring-cloud-gateway)
+* [kotlin](https://book.kotlincn.net/text/getting-started.html)
+* [react](https://zh-hans.react.dev/learn)
+* [shadcn ui](https://ui.shadcn.com/)
+* [type script](https://www.tslang.cn/)
+* [graalvm](https://www.graalvm.org/)
+* [gradle](https://gradle.org/)
+* [vite](https://vitejs.cn/vite3-cn/guide/)
+* 等等….
+
