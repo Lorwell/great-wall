@@ -20,4 +20,4 @@ data class TopRouteLineMetricsInput(
     @field:Max(value = 100)
     val top: Int
 
-) : RouteLineMetricsInput(type, lastDataEnum, dateRange, interval, intervalType)
+) : LineMetricsInput(type, lastDataEnum, dateRange, interval, intervalType)

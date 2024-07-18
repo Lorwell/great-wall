@@ -16,22 +16,26 @@ export interface RefreshSelectPickerProps {
  */
 export default function RefreshSelectPicker(props: RefreshSelectPickerProps) {
   const {onRefresh} = props
-  const [interval, setInterval] = useState<number>(30);
+  const [[sourceInterval, interval], setInterval] = useState<[number, number]>([30, 30_000]);
 
   const clear = useInterval(() => {
     onRefresh?.()
-  }, interval * 1000);
+  }, interval);
 
   useEffect(() => {
-    return clear
+    return () => clear()
   }, []);
 
   const handleRefresh = useLockFn(async () => {
     await onRefresh?.()
+    handleSetInterval(sourceInterval)
   });
 
-  function handleSelectChange(value: string) {
-    setInterval(parseInt(value));
+  function handleSetInterval(value: string | number) {
+    // 使用随机数保证每次都可以刷新时间
+    const randomNumber = Math.random() * (50 - 1) + 1
+    const sourceInterval = typeof value === "string" ? parseInt(value) : value
+    setInterval([sourceInterval, (sourceInterval * 1000) + randomNumber]);
   }
 
   return (
@@ -40,7 +44,7 @@ export default function RefreshSelectPicker(props: RefreshSelectPickerProps) {
         <RefreshCcw className="h-4 w-4"/>
       </Button>
       <Separator orientation="vertical"/>
-      <Select defaultValue={"10"} value={String(interval)} onValueChange={handleSelectChange}>
+      <Select defaultValue={"10"} value={String(sourceInterval)} onValueChange={handleSetInterval}>
         <SelectTrigger className="w-[70px] border-none">
           <SelectValue/>
         </SelectTrigger>

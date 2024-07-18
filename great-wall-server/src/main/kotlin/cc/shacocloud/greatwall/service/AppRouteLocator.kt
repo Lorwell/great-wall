@@ -9,12 +9,16 @@ import kotlinx.coroutines.reactor.flux
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
+import org.springframework.cloud.gateway.filter.GatewayFilter
+import org.springframework.cloud.gateway.filter.OrderedGatewayFilter
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
+import org.springframework.cloud.gateway.filter.factory.PreserveHostHeaderGatewayFilterFactory
 import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.support.RouteMetadataUtils
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
+import org.springframework.core.Ordered
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URI
@@ -30,7 +34,7 @@ class AppRouteLocator(
     val appRouteService: AppRouteService,
     val routePredicateFactory: RoutePredicateFactory,
     val weightRoutePredicateFactory: WeightRoutePredicateFactory,
-    gatewayFilterFactories: List<GatewayFilterFactory<Any>>
+    gatewayFilterFactories: List<GatewayFilterFactory<Any>>,
 ) : RouteLocator {
 
     /**
@@ -49,6 +53,16 @@ class AppRouteLocator(
          */
         fun refreshRoutes() {
             ApplicationContextHolder.getInstance().publishEvent(RefreshRoutesEvent(this))
+        }
+
+        /**
+         * 添加过滤器
+         */
+        fun Route.AsyncBuilder.addFilter(gatewayFilter: GatewayFilter): Route.AsyncBuilder {
+            if (gatewayFilter is Ordered) {
+                return filter(gatewayFilter)
+            }
+            return filter(OrderedGatewayFilter(gatewayFilter, 0))
         }
 
     }
@@ -126,10 +140,10 @@ class AppRouteLocator(
                     // 插件配置
                     // TODO 这边先固定一部分插件
 
-                    // 转发请求头网关过滤器
+                    // 转发请求头 Host 网关过滤器
                     val preserveHostHeaderGatewayFilter =
-                        gatewayFilterFactoryMap["PreserveHostHeader"]!!.apply { }
-                    routeBuilder.filter(preserveHostHeaderGatewayFilter)
+                        (gatewayFilterFactoryMap["PreserveHostHeader"] as PreserveHostHeaderGatewayFilterFactory).apply()
+                    routeBuilder.addFilter(preserveHostHeaderGatewayFilter)
 
                     send(routeBuilder.build())
                 }

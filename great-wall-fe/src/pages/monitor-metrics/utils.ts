@@ -1,4 +1,4 @@
-import {IntervalMetrics, IntervalType} from "@/constant/api/monitor-metrics/route-metrics/types.ts";
+import {IntervalMetrics, IntervalType} from "@/constant/api/monitor-metrics/types";
 import {MetricsDateRange} from "@/pages/monitor-metrics/metrics-date-range-picker.tsx";
 
 interface SecondIntervalMetrics extends IntervalMetrics {

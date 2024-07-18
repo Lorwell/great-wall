@@ -2,7 +2,9 @@ package cc.shacocloud.greatwall.service
 
 import cc.shacocloud.greatwall.model.po.BaseMonitorMetricsPo
 import cc.shacocloud.greatwall.model.po.BaseMonitorMetricsPo.Type.ROUTE
+import cc.shacocloud.greatwall.model.po.BaseMonitorMetricsPo.Type.SYSTEM
 import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
+import cc.shacocloud.greatwall.model.po.SystemMetricsRecordPo
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -22,7 +24,8 @@ import java.util.concurrent.Executors
  */
 @Service
 class CompositionMonitorMetricsService(
-    val routeMonitorMetricsService: RouteMonitorMetricsService
+    val systemMonitorMetricsService: SystemMonitorMetricsService,
+    val routeMonitorMetricsService: RouteMonitorMetricsService,
 ) : DisposableBean {
 
     companion object {
@@ -33,23 +36,27 @@ class CompositionMonitorMetricsService(
         capacity = UNLIMITED
     )
 
+    private val nThreads = 2
+
     /**
      *  监控指标数据写入调度器
      */
-    val monitorMetricsWriteDispatcher = Executors.newFixedThreadPool(1)
+    private val monitorMetricsWriteDispatcher = Executors.newFixedThreadPool(nThreads)
         .asCoroutineDispatcher()
 
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
-            launch(monitorMetricsWriteDispatcher) {
-                try {
-                    while (!channel.isClosedForReceive) {
-                        val record = channel.receive()
-                        consumerData(record)
+            repeat(nThreads) {
+                launch(monitorMetricsWriteDispatcher) {
+                    try {
+                        while (!channel.isClosedForReceive) {
+                            val record = channel.receive()
+                            consumerData(record)
+                        }
+                    } catch (_: ClosedReceiveChannelException) {
                     }
-                } catch (_: ClosedReceiveChannelException) {
                 }
             }
         }
@@ -79,6 +86,7 @@ class CompositionMonitorMetricsService(
     suspend fun consumerData(record: BaseMonitorMetricsPo) {
         when (record.type) {
             ROUTE -> routeMonitorMetricsService.addRouteRecord(record as RouteMetricsRecordPo)
+            SYSTEM -> systemMonitorMetricsService.addRouteRecord(record as SystemMetricsRecordPo)
         }
     }
 

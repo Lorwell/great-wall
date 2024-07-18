@@ -24,19 +24,16 @@ export const DurationLineValueMetricsSchema = z.object({
 export const DurationLineMetricsRecordSchema = getRecordSchema(DurationLineValueMetricsSchema)
 export type DurationLineMetricsRecordValues = z.infer<typeof DurationLineMetricsRecordSchema>
 
-export const TopQpsLineValueMetricsSchema = z.object({
-  api: z.string({required_error: "不可以为空"}),
-  data: z.array(QpsLineValueMetricsSchema)
-})
-
 
 export const TopQpsApiKeyMappingSchema = z.object({
   label: z.string({required_error: "不可以为空"}),
   key: z.string({required_error: "不可以为空"})
 })
 
-const TopQpsDataSchema = z.record(z.string({required_error: "不可以为空"}),
-  z.union([z.string({required_error: "不可以为空"}), z.number({required_error: "不可以为空"})]));
+const TopQpsDataSchema = z.record(
+  z.string({required_error: "不可以为空"}),
+  z.union([z.string({required_error: "不可以为空"}), z.number({required_error: "不可以为空"})])
+);
 
 
 export const TopQpsLineMetricsRecordSchema = z.object({

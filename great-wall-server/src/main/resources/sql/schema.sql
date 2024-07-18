@@ -54,3 +54,9 @@ WHEN NOT MATCHED THEN
     INSERT (settings_name, settings_value, create_time, last_update_time)
     VALUES (s.settings_name, s.settings_value, s.current_timestamp_millis,
             s.current_timestamp_millis);
+
+CREATE TABLE IF NOT EXISTS system_gc_type
+(
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    type_name VARCHAR(255) NOT NULL unique
+);

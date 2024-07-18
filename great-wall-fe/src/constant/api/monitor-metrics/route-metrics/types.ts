@@ -5,30 +5,17 @@ import {
   QpsLineMetricsRecordValues,
   TopQpsLineMetricsRecordValues
 } from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
+import {IntervalMetrics, LineMetricsInput} from "@/constant/api/monitor-metrics/types.ts";
 
 export interface RouteCountMetricsInput extends MetricsDateRange {
 
 }
 
-export interface RouteLineMetricsInput extends IntervalMetrics, MetricsDateRange {
-}
+export type RouteLineMetricsInput = LineMetricsInput
 
 export interface TopRouteLineMetricsInput extends IntervalMetrics, MetricsDateRange {
 
   top: number
-}
-
-
-export interface IntervalMetrics {
-  interval: number
-  intervalType: IntervalType
-}
-
-export enum IntervalType {
-  SECONDS = "SECONDS",
-  MINUTES = "MINUTES",
-  HOURS = "HOURS",
-  DAYS = "DAYS"
 }
 
 export type CountMetricsOutput = CountMetricsValues

@@ -2,7 +2,7 @@ package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
-import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.LineMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.DurationLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
@@ -93,7 +93,7 @@ class RouteMonitorMetricsController(
      */
     @PostMapping("/line/qps")
     suspend fun qpsLineMetrics(
-        @RequestBody @Validated input: RouteLineMetricsInput
+        @RequestBody @Validated input: LineMetricsInput
     ): List<QpsLineMetricsOutput> {
         return routeMonitorMetricsService.qpsLineMetrics(input)
     }
@@ -103,7 +103,7 @@ class RouteMonitorMetricsController(
      */
     @PostMapping("/line/duration")
     suspend fun durationLineMetrics(
-        @RequestBody @Validated input: RouteLineMetricsInput
+        @RequestBody @Validated input: LineMetricsInput
     ): List<DurationLineMetricsOutput> {
         return routeMonitorMetricsService.durationLineMetrics(input)
     }

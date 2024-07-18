@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.utils
 
-import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.LineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.LineMetricsOutput
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -26,7 +26,7 @@ object MonitorMetricsUtils {
      * @param sourceData 源数据
      */
     fun <R> dateRangeDataCompletion(
-        input: RouteLineMetricsInput,
+        input: LineMetricsInput,
         transform: (String) -> R
     ): List<R> {
         val interval = input.rawInterval
@@ -54,7 +54,7 @@ object MonitorMetricsUtils {
      * @param sourceData 源数据
      */
     fun <T : LineMetricsOutput, R> lineMetricsDateRangeDataCompletion(
-        input: RouteLineMetricsInput,
+        input: LineMetricsInput,
         sourceData: List<T>,
         transform: (T?, String) -> R
     ): List<R> {
