@@ -12,9 +12,10 @@ import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.lineMetricsDateRangeDat
 import io.r2dbc.spi.Readable
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
-import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.await
 import org.springframework.scheduling.annotation.Scheduled
@@ -49,16 +50,15 @@ class SystemMonitorMetricsServiceByH2Impl(
     // gc 类型名称集合
     private var gcTypeNameMap: MutableMap<String, Int> = ConcurrentHashMap()
 
-    init {
-        runBlocking {
-            val tableNames = getAllSystemMonitorMetricsTables()
-            tableNameSet.addAll(tableNames)
+    @EventListener(ApplicationReadyEvent::class)
+    fun appReady() = mono {
+        val tableNames = getAllSystemMonitorMetricsTables()
+        tableNameSet.addAll(tableNames)
 
-            val gcTableNames = getAllSystemGcMonitorMetricsTables()
-            gcTableNameSet.addAll(gcTableNames)
+        val gcTableNames = getAllSystemGcMonitorMetricsTables()
+        gcTableNameSet.addAll(gcTableNames)
 
-            gcTypeNameMap.putAll(getSystemGcTypeMap())
-        }
+        gcTypeNameMap.putAll(getSystemGcTypeMap())
     }
 
     /**
