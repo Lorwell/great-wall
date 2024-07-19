@@ -6,7 +6,6 @@ import cc.shacocloud.greatwall.model.dto.output.*
 import cc.shacocloud.greatwall.model.mo.GcLineMetricsMo
 import cc.shacocloud.greatwall.model.po.SystemMetricsRecordPo
 import cc.shacocloud.greatwall.service.SystemMonitorMetricsService
-import cc.shacocloud.greatwall.service.scheduled.SystemMetricsScheduled.Companion.lessThanZeroLet
 import cc.shacocloud.greatwall.utils.*
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.dateRangeDataCompletion
 import cc.shacocloud.greatwall.utils.MonitorMetricsUtils.lineMetricsDateRangeDataCompletion
@@ -523,7 +522,7 @@ class SystemMonitorMetricsServiceByH2Impl(
                     select 
                         (second_unit - (second_unit % $furtherUnitSecond)) + ((second_unit % $furtherUnitSecond) / $second * $second) as time_unit,
                          type_id,
-                         sum(count)
+                         max(count) - min(count)
                     from $tableName
                     where ${requestTimeFragment.get()}
                     group by time_unit, type_id
@@ -534,10 +533,10 @@ class SystemMonitorMetricsServiceByH2Impl(
     override suspend fun gcTimeLineMetrics(input: LineMetricsInput): GcLineMetricsOutput {
         return gcLineMetrics(input) { (tableName, requestTimeFragment, second, furtherUnitSecond) ->
             """
-                    select
+                    select 
                         (second_unit - (second_unit % $furtherUnitSecond)) + ((second_unit % $furtherUnitSecond) / $second * $second) as time_unit,
                          type_id,
-                         sum(time)
+                         max(time) - min(time)
                     from $tableName
                     where ${requestTimeFragment.get()}
                     group by time_unit, type_id
@@ -579,9 +578,6 @@ class SystemMonitorMetricsServiceByH2Impl(
             .associate { (id, label) -> "gcType${id}" to label }
 
 
-        // 记录上一个窗口的值，用于计算
-        val overMap = mutableMapOf<String, Long>()
-
         // 数据填充
         val data = dateRangeDataCompletion(input) { unit ->
             val item = mutableMapOf<String, Any?>()
@@ -594,12 +590,7 @@ class SystemMonitorMetricsServiceByH2Impl(
             gcTypeMapping.forEach { (key, _) ->
                 val value = metricsMo[key]
                 if (value != null) {
-                    val overVal = overMap[key]
-                    item[key] = (if (overVal != null) value - overVal else 0).lessThanZeroLet(null)
-                    overMap[key] = value
-                } else {
-                    overMap.remove(key)
-                    item[key] = null
+                    item[key] = value
                 }
             }
 
