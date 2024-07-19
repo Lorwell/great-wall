@@ -2,8 +2,7 @@ package cc.shacocloud.greatwall.utils
 
 import java.time.*
 import java.time.temporal.ChronoUnit
-import java.util.Date
-import kotlin.math.abs
+import java.util.*
 
 /**
  * 系统时区的偏移量
@@ -62,7 +61,7 @@ operator fun LocalDateTime.minus(localDateTime: LocalDateTime): Duration {
  * 将 1970-01-01T00:00:00Z 纪元开始的秒数转为 [LocalDateTime]
  */
 fun Long.toLocalDateTimeByEpochSecond(
-    offset: ZoneOffset = zoneOffset
+    offset: ZoneOffset = zoneOffset,
 ): LocalDateTime {
     return LocalDateTime.ofEpochSecond(this, 0, offset)
 }
@@ -96,10 +95,21 @@ fun LocalDateTime.toDate(): Date {
 }
 
 /**
- * 计算 2个 [LocalDateTime] 之间相差的天数，如果是在同一天则为 0
+ * 计算 2个 [LocalDateTime] 之间包含的的天数，如果是在同一天则为 0
  */
-fun Pair<LocalDateTime, LocalDateTime>.diffDays(abs: Boolean = true): Long {
-    val (from, to) = this
-    val days = (to - from).toDays()
-    return if (abs) abs(days) else days
+fun Pair<LocalDateTime, LocalDateTime>.includedDays(abs: Boolean = true): Long {
+    var (from, to) = this
+    from = LocalDateTime.of(from.toLocalDate(), LocalTime.MIN)
+    to = LocalDateTime.of(to.toLocalDate(), LocalTime.MAX)
+
+    return if (from > to) {
+        if (abs) {
+            (from - to).toDays()
+        } else {
+            -((from - to).toDays())
+        }
+    } else {
+        (to - from).toDays()
+    }
+
 }
