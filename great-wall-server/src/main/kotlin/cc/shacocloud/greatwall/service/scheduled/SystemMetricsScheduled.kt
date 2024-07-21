@@ -7,6 +7,8 @@ import cc.shacocloud.greatwall.utils.toLocalDateTime
 import com.sun.management.OperatingSystemMXBean
 import kotlinx.coroutines.*
 import org.springframework.beans.factory.DisposableBean
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryType
@@ -39,7 +41,8 @@ class SystemMetricsScheduled(
 
     private val dispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
-    init {
+    @EventListener(ApplicationReadyEvent::class)
+    fun init() {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
             launch(dispatcher) {
