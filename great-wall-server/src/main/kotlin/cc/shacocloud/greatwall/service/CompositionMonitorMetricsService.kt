@@ -84,9 +84,15 @@ class CompositionMonitorMetricsService(
      * 消费数据方法
      */
     suspend fun consumerData(record: BaseMonitorMetricsPo) {
-        when (record.type) {
-            ROUTE -> routeMonitorMetricsService.addRouteRecord(record as RouteMetricsRecordPo)
-            SYSTEM -> systemMonitorMetricsService.addRouteRecord(record as SystemMetricsRecordPo)
+        try {
+            when (record.type) {
+                ROUTE -> routeMonitorMetricsService.addRouteRecord(record as RouteMetricsRecordPo)
+                SYSTEM -> systemMonitorMetricsService.addRouteRecord(record as SystemMetricsRecordPo)
+            }
+        } catch (e: Exception) {
+            if (log.isWarnEnabled) {
+                log.warn("消费类型 ${record.type} 的数据发生例外！", e)
+            }
         }
     }
 

@@ -44,23 +44,20 @@ class SystemMetricsScheduled(
     @EventListener(ApplicationReadyEvent::class)
     fun init() {
         @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch {
-            launch(dispatcher) {
-                try {
-                    var timeUnit = Instant.now()
-                    delayStartOfSecond(timeUnit)
+        GlobalScope.launch(dispatcher) {
+            try {
+                delayStartOfSecond()
 
-                    while (true) {
-                        timeUnit = Instant.now()
+                while (true) {
+                    val timeUnit = Instant.now().toLocalDateTime()
 
-                        launch(dispatcher) {
-                            metrics(timeUnit.toLocalDateTime())
-                        }
-
-                        delayStartOfSecond(timeUnit)
+                    launch(dispatcher) {
+                        metrics(timeUnit)
                     }
-                } catch (_: InterruptedException) {
+
+                    delayStartOfSecond()
                 }
+            } catch (_: InterruptedException) {
             }
         }
     }
@@ -68,8 +65,8 @@ class SystemMetricsScheduled(
     /**
      * 延迟到秒的开始
      */
-    suspend fun delayStartOfSecond(timeUnit: Instant) {
-        val milliStr = timeUnit.toEpochMilli().toString()
+    suspend fun delayStartOfSecond() {
+        val milliStr = System.currentTimeMillis().toString()
         val milli = milliStr.substring(milliStr.length - 3).toLong()
         delay((1000 - milli) + 1)
     }

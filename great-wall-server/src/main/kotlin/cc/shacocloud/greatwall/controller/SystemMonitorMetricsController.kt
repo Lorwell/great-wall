@@ -120,12 +120,8 @@ class SystemMonitorMetricsController(
     @GetMapping("/thread-total")
     suspend fun threadTotalMetrics(): ThreadTotalOutput {
         val threadMXBean = ManagementFactory.getThreadMXBean()
-        val total = threadMXBean.getThreadInfo(threadMXBean.allThreadIds)
-            .filterNotNull()
-            .size
-        return ThreadTotalOutput(
-            value = total
-        )
+        val total = threadMXBean.threadCount
+        return ThreadTotalOutput(value = total)
     }
 
     /**

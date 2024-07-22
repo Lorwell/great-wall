@@ -4,8 +4,10 @@ FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.build
 ADD . /build
 WORKDIR /build
 
+ARG g1gc=""
+
 # 执行编译
-RUN bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile"
+RUN bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile $g1gc"
 
 
 # 运行时镜像
@@ -21,6 +23,7 @@ EXPOSE 443
 EXPOSE 80
 EXPOSE 8080
 
-ENV GREAT_WALL_MAX_MEMORY 200m
+ARG greatWallMaxMemory=200m
+ENV GREAT_WALL_MAX_MEMORY ${greatWallMaxMemory}
 
 CMD [ "sh", "-c", "/workspace/app -Xmx$GREAT_WALL_MAX_MEMORY -xms$GREAT_WALL_MAX_MEMORY -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]

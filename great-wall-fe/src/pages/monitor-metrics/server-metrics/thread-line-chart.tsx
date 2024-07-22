@@ -85,7 +85,7 @@ function ThreadLineChart({size}: { size: Size, }) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[150px]"
+                  className="w-[180px]"
                 />
               }
             />
