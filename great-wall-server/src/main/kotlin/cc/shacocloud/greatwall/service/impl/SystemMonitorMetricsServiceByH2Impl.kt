@@ -520,11 +520,12 @@ class SystemMonitorMetricsServiceByH2Impl(
         return gcLineMetrics(input) { (tableName, requestTimeFragment, second, furtherUnitSecond) ->
             """
                     select 
-                        (second_unit - (second_unit % $furtherUnitSecond)) + ((second_unit % $furtherUnitSecond) / $second * $second) as time,
+                        (second_unit - (second_unit % $furtherUnitSecond)) + ((second_unit % $furtherUnitSecond) / $second * $second) as time_unit,
                          type_id,
-                         count
+                         max(count) - min(count)
                     from $tableName
                     where ${requestTimeFragment.get()}
+                    group by time_unit, type_id
                 """.trimIndent()
         }
     }
@@ -533,11 +534,12 @@ class SystemMonitorMetricsServiceByH2Impl(
         return gcLineMetrics(input) { (tableName, requestTimeFragment, second, furtherUnitSecond) ->
             """
                     select 
-                        (second_unit - (second_unit % $furtherUnitSecond)) + ((second_unit % $furtherUnitSecond) / $second * $second) as time,
+                        (second_unit - (second_unit % $furtherUnitSecond)) + ((second_unit % $furtherUnitSecond) / $second * $second) as time_unit,
                          type_id,
-                         time
+                         max(time) - min(time)
                     from $tableName
                     where ${requestTimeFragment.get()}
+                    group by time_unit, type_id
                 """.trimIndent()
         }
     }
@@ -566,11 +568,15 @@ class SystemMonitorMetricsServiceByH2Impl(
         // 查询指标
         val result = lineMetrics(input, sqlProvider, resultExtract) { getGcTableNameOfExists(it) }
         val unitMap = result.groupBy { it.unit }
+        val typeIdSet = result.map { it.typeId }.toSet()
 
         val gcTypeMap = getSystemGcTypeMap()
-        val gcTypeMapping = gcTypeMap.map { it.value to it.key }
+        val gcTypeMapping = gcTypeMap
+            .filter { typeIdSet.contains(it.value) }
+            .map { it.value to it.key }
             .sortedBy { it.first }
             .associate { (id, label) -> "gcType${id}" to label }
+
 
         // 数据填充
         val data = dateRangeDataCompletion(input) { unit ->
@@ -656,7 +662,7 @@ class SystemMonitorMetricsServiceByH2Impl(
         val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
 
-        val tableNames = (0..dateRangeMs.diffDays()).mapNotNull {
+        val tableNames = (0..dateRangeMs.includedDays()).mapNotNull {
             val day = (form + it.toDuration(ChronoUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_FORMAT)
             getTableName(day)
         }
@@ -682,7 +688,9 @@ class SystemMonitorMetricsServiceByH2Impl(
 
         val second = input.getIntervalSecond()
         val info = LineMetricsInfo(tableName, fragment, second, furtherUnitSecond)
-        return databaseClient.sql(sqlProvider(info))
+        val sql = sqlProvider(info)
+
+        return databaseClient.sql(sql)
             .map { readable: Readable -> resultExtract(readable, info) }
             .all()
             .collectList()

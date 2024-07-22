@@ -109,7 +109,22 @@ tasks.withType<ProcessResources> {
 }
 
 graalvmNative {
+
+    // 是否启用 g1 gc
+    val glEnable = if (project.hasProperty("gl.enable")) {
+        val enable = project.properties["gl.enable"]
+        "true" == enable?.toString()
+    } else {
+        false
+    }
+
     binaries.all {
+
+        if (glEnable) {
+            println("使用 G1GC 作为本地化镜像的垃圾回收器")
+            buildArgs.add("--gc=G1")
+        }
+
         buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
         buildArgs.add("--initialize-at-build-time=kotlin.DeprecationLevel")
         // 配合 jni-config.json 解决 javax.naming.directory.InitialDirContext fails on windows
@@ -186,7 +201,7 @@ task("copyFeBuildResultToBe") {
 // 打印进程日志文件
 fun printProcessLogFile(
     logFile: File,
-    process: Process
+    process: Process,
 ) {
     RandomAccessFile(logFile, "r").use { accessFile ->
         while (true) {

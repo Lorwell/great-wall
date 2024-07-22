@@ -1,6 +1,6 @@
 # Great Wall
 
-> 基于 springboot3 + kotlin + graalvm21 构建的个人云网关
+> 基于 springboot3 + kotlin + graalvm21 构建的人云网关
 
 ## 说明
 
@@ -24,7 +24,11 @@
 本项目每个版本都构建了基于 graalvm 的本地镜像放置在 `ccr.ccs.tencentyun.com/shaco_work/great-wall`上，因受到限制，正在寻找国内的公开镜像库，暂时保存在 [腾讯云](https://console.cloud.tencent.com/tcr/publicimage/tag?rid=1&reponame=shaco_work%2Fgreat-wall)，建议使用 `2.0` 之后的版本
 
 ```bash
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.0
+// 使用 serial gc(串行垃圾回收器)，串行垃圾回收针对低占用空间和小型 Java 堆大小进行了优化，适合小内存应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.4
+
+// 使用 g1 gc(G1 垃圾回收器)，G1 是一种分代的、增量的、并行的、主要是并发的、会暂停世界的和疏散的垃圾回收器，它旨在在延迟和吞吐量之间提供最佳平衡。适合大内存高吞吐低延迟的应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.4_g1gc
 ```
 
 ### 本地编译
@@ -45,10 +49,14 @@ docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencent
 | HTTPCLIENT_POOL_MAX_LIFE_TIME      | http 链接最大存活时间，默认10H                       |
 | HTTPCLIENT_POOL_EVICTION_INTERVAL  | http 链接存货检测时间间隔，默认 10S                  |
 | ADMIN_PASSWORD                     | 管理员密码配置，**强烈建议：生产环境进行必要的修改** |
+| GREAT_WALL_MAX_MEMORY              | 配置java最大堆内存，默认为200m，g1gc下默认为1g       |
 
 ## 规划
 
 - [ ] 路由支持插件配置
+- [ ] 防火墙相关功能
+- [ ] 支持一些服务发现插件，进行动态刷新路由
+- [ ] 支持开放api，通过接口的方式动态配置路由
 - [ ] 支持集群模式
 
 ## 系统截图
