@@ -14,8 +14,7 @@ import java.lang.management.MemoryType
 import java.time.Instant
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrElse
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.DurationUnit
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 系统监控指标
@@ -40,7 +39,7 @@ class SystemMonitorMetricsController(
     @GetMapping("/up-time")
     suspend fun upTimeMetrics(): UptimeOutput {
         val runtimeMxBean = ManagementFactory.getRuntimeMXBean()
-        val uptime = runtimeMxBean.uptime.milliseconds.toString(DurationUnit.SECONDS, 0)
+        val uptime = (runtimeMxBean.uptime / 1000).seconds.toString().replace(" ", "")
         val startTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(runtimeMxBean.startTime), zoneOffset)
             .format(DATE_TIME_FORMAT)
         return UptimeOutput(
@@ -121,12 +120,8 @@ class SystemMonitorMetricsController(
     @GetMapping("/thread-total")
     suspend fun threadTotalMetrics(): ThreadTotalOutput {
         val threadMXBean = ManagementFactory.getThreadMXBean()
-        val total = threadMXBean.getThreadInfo(threadMXBean.allThreadIds)
-            .filterNotNull()
-            .size
-        return ThreadTotalOutput(
-            value = total
-        )
+        val total = threadMXBean.threadCount
+        return ThreadTotalOutput(value = total)
     }
 
     /**

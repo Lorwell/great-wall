@@ -396,7 +396,7 @@ class RouteMonitorMetricsServiceByH2Impl(
         val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
 
-        val tableNames = (0..dateRangeMs.diffDays()).mapNotNull {
+        val tableNames = (0..dateRangeMs.includedDays()).mapNotNull {
             val day = (form + it.toDuration(ChronoUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_FORMAT)
             getTableNameOfExists(day)
         }
@@ -443,7 +443,7 @@ class RouteMonitorMetricsServiceByH2Impl(
         val furtherUnit = input.getFurtherUnit()
         val furtherUnitSecond = 1.toDuration(furtherUnit.unit).toSeconds()
 
-        val tableNames = (0..dateRangeMs.diffDays()).mapNotNull {
+        val tableNames = (0..dateRangeMs.includedDays()).mapNotNull {
             val day = (form + it.toDuration(ChronoUnit.DAYS)).format(DATE_TIME_DAY_NO_SEP_FORMAT)
             getTableNameOfExists(day)
         }

@@ -61,7 +61,7 @@ function TopApiQpsLineChartCard({size}: { size: Size, }) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[350px]"
+                  className="w-[420px]"
                 />
               }
             />
