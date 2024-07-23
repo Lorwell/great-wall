@@ -7,5 +7,6 @@ package cc.shacocloud.greatwall.model.dto.input
 data class RouteCountMetricsInput(
     override val type: Type,
     override val lastDataEnum: LastDateEnum?,
-    override val dateRange: DateRange?
+    override val dateRange: DateRange?,
+    val appRouteId: Long? = null,
 ) : MetricsDateRangeInput(type, lastDataEnum, dateRange)

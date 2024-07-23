@@ -1,24 +1,18 @@
 package cc.shacocloud.greatwall.model.dto.input
 
 import cc.shacocloud.greatwall.utils.DateRangeDurationUnit
-import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 
 /**
- * 路由统计监控
+ *
  * @author 思追(shaco)
  */
-data class TopRouteLineMetricsInput(
+open class RouteLineMetricsInput(
     override val type: Type,
     override val lastDataEnum: LastDateEnum?,
     override val dateRange: DateRange?,
     @field:Min(value = 1)
     override val interval: Int,
     override val intervalType: DateRangeDurationUnit,
-    override val appRouteId: Long? = null,
-
-    @field:Min(value = 5)
-    @field:Max(value = 100)
-    val top: Int,
-
-    ) : RouteLineMetricsInput(type, lastDataEnum, dateRange, interval, intervalType, appRouteId)
+    open val appRouteId: Long? = null,
+) : LineMetricsInput(type, lastDataEnum, dateRange, interval, intervalType)

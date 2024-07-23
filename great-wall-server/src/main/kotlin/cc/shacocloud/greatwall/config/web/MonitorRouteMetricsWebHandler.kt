@@ -161,6 +161,8 @@ class MonitorRouteMetricsWebHandler(
                 responseBodySize = responseBodySize
             )
 
+            println(metricsRecord)
+
             @OptIn(DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.Unconfined) {
                 monitorMetricsService.addMetricsRecord(metricsRecord)

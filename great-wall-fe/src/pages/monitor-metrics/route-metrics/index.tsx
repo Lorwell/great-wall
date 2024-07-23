@@ -14,7 +14,6 @@ import ResponseTrafficMetrics from "@/pages/monitor-metrics/route-metrics/respon
  */
 export default function RouteMetrics() {
 
-
   return (
     <div className={"w-full h-full space-y-4"}>
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">

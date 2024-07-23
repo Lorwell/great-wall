@@ -1,7 +1,8 @@
 package cc.shacocloud.greatwall.service.impl
 
-import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.LineMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
+import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.*
 import cc.shacocloud.greatwall.model.mo.TopQpsLineMetricsMo
@@ -128,10 +129,18 @@ class RouteMonitorMetricsServiceByH2Impl(
                 request_body_size  BIGINT       NOT NULL,
                 response_body_size BIGINT       NOT NULL,
                 request_count      INT          NOT NULL,
-                constraint uk_${tableName.replace("_", "")} unique (request_time, status_code, ip, method, endpoint)
+                app_route_id       BIGINT       NULL,
+                constraint uk_${tableName.replace("_", "")} unique (request_time, status_code, ip, method, endpoint),
+                index (app_route_id)
             )
         """.trimIndent()
         databaseClient.sql(createTableSql).await()
+
+        // 创建索引
+        val appRouteIdIndexSql = """
+            create index idx_${tableName.replace("_", "")}_approuteid on $tableName (app_route_id)
+        """.trimIndent()
+        databaseClient.sql(appRouteIdIndexSql).await()
 
         // 添加表
         tableNameSet.add(tableName)
@@ -159,7 +168,8 @@ class RouteMonitorMetricsServiceByH2Impl(
                     USING (
                         SELECT '${record.ip}' AS ip, '${record.method}' AS method, '${record.endpoint}' AS endpoint, 
                         $requestSecondTime AS request_time, $handleTime AS handle_time, ${record.statusCode} AS status_code,
-                        ${record.requestBodySize} AS request_body_size, ${record.responseBodySize} AS response_body_size
+                        ${record.requestBodySize} AS request_body_size, ${record.responseBodySize} AS response_body_size, 
+                        ${record.appRouteId} as app_route_id
                     ) s
                     ON (
                         t.request_time = s.request_time AND t.status_code = s.status_code AND t.ip = s.ip
@@ -174,11 +184,11 @@ class RouteMonitorMetricsServiceByH2Impl(
                     WHEN NOT MATCHED THEN
                         INSERT (
                             ip, method, endpoint, request_time, handle_time, status_code, 
-                            request_body_size, response_body_size, request_count, max_time
+                            request_body_size, response_body_size, request_count, max_time, app_route_id
                         ) 
                         VALUES (
                             s.ip, s.method, s.endpoint, s.request_time, s.handle_time, s.status_code, s.request_body_size, 
-                            s.response_body_size, 1, s.handle_time
+                            s.response_body_size, 1, s.handle_time, s.app_route_id
                         )
             """.trimIndent()
             )
@@ -194,8 +204,8 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 请求统计指标
      */
     override suspend fun requestCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return countMetrics(input) { tableName, requestTimeFragment ->
-            "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment"
+        return countMetrics(input) { tableName, fragment ->
+            "SELECT sum(request_count) FROM $tableName WHERE $fragment"
         }
     }
 
@@ -203,8 +213,8 @@ class RouteMonitorMetricsServiceByH2Impl(
      * ip 统计指标
      */
     override suspend fun ipCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return countMetrics(input) { tableName, requestTimeFragment ->
-            "SELECT count(distinct ip) FROM $tableName WHERE $requestTimeFragment"
+        return countMetrics(input) { tableName, fragment ->
+            "SELECT count(distinct ip) FROM $tableName WHERE $fragment"
         }
     }
 
@@ -212,8 +222,8 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 请求流量指标
      */
     override suspend fun requestTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return countMetrics(input) { tableName, requestTimeFragment ->
-            "SELECT sum(request_body_size) FROM $tableName WHERE $requestTimeFragment"
+        return countMetrics(input) { tableName, fragment ->
+            "SELECT sum(request_body_size) FROM $tableName WHERE $fragment"
         }
     }
 
@@ -221,8 +231,8 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 响应流量指标
      */
     override suspend fun responseTrafficSumMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return countMetrics(input) { tableName, requestTimeFragment ->
-            "SELECT sum(response_body_size) FROM $tableName WHERE $requestTimeFragment"
+        return countMetrics(input) { tableName, fragment ->
+            "SELECT sum(response_body_size) FROM $tableName WHERE $fragment"
         }
     }
 
@@ -230,8 +240,8 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 状态码 4xx 统计指标
      */
     override suspend fun status4xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return countMetrics(input) { tableName, requestTimeFragment ->
-            "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment AND status_code >= 400 AND status_code < 500"
+        return countMetrics(input) { tableName, fragment ->
+            "SELECT sum(request_count) FROM $tableName WHERE $fragment AND status_code >= 400 AND status_code < 500"
         }
     }
 
@@ -239,25 +249,25 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 状态码 5xx 统计指标
      */
     override suspend fun status5xxCountMetrics(input: RouteCountMetricsInput): ValueMetricsOutput {
-        return countMetrics(input) { tableName, requestTimeFragment ->
-            "SELECT sum(request_count) FROM $tableName WHERE $requestTimeFragment AND status_code >= 500"
+        return countMetrics(input) { tableName, fragment ->
+            "SELECT sum(request_count) FROM $tableName WHERE $fragment AND status_code >= 500"
         }
     }
 
     /**
      * qps 折线图指标
      */
-    override suspend fun qpsLineMetrics(input: LineMetricsInput): List<QpsLineMetricsOutput> {
+    override suspend fun qpsLineMetrics(input: RouteLineMetricsInput): List<QpsLineMetricsOutput> {
 
         // 查询的sql
         val sqlProvider: (LineMetricsInfo) -> String =
             { info ->
-                val (tableName, requestTimeFragment, second, _, furtherUnitSecond) = info
+                val (tableName, fragment, second, _, furtherUnitSecond) = info
                 """
                     select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
                            sum(request_count)                                                                                       as val
                     from $tableName
-                    where ${requestTimeFragment.get()}
+                    where ${fragment.get()}
                     group by time
                 """.trimIndent()
             }
@@ -282,17 +292,17 @@ class RouteMonitorMetricsServiceByH2Impl(
     /**
      * duration 折线图指标
      */
-    override suspend fun durationLineMetrics(input: LineMetricsInput): List<DurationLineMetricsOutput> {
+    override suspend fun durationLineMetrics(input: RouteLineMetricsInput): List<DurationLineMetricsOutput> {
         // 查询的sql
         val sqlProvider: (LineMetricsInfo) -> String =
             { info ->
-                val (tableName, requestTimeFragment, second, _, furtherUnitSecond) = info
+                val (tableName, fragment, second, _, furtherUnitSecond) = info
                 """
                     select (request_time - (request_time % $furtherUnitSecond)) + ((request_time % $furtherUnitSecond) / $second * $second) as time,
                            ROUND(sum(handle_time) / sum(request_count), 2) as val,
                            max(max_time) as max_time
                     from $tableName
-                    where ${requestTimeFragment.get()}
+                    where ${fragment.get()}
                     group by time
                 """.trimIndent()
             }
@@ -391,7 +401,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      */
     suspend fun countMetrics(
         input: RouteCountMetricsInput,
-        sqlProvider: (tableName: String, requestTimeFragment: String) -> String,
+        sqlProvider: (tableName: String, fragment: String) -> String,
     ): ValueMetricsOutput {
         val dateRangeMs = input.getDateRange()
         val (form, to) = dateRangeMs
@@ -408,7 +418,10 @@ class RouteMonitorMetricsServiceByH2Impl(
         val tableName =
             if (tableNames.size == 1) tableNames[0]
             else "( ${tableNames.joinToString(separator = " union all ") { "select * from $it" }} )"
-        val fragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+
+        val appRouteIdFragment = input.appRouteId?.let { "app_route_id = ${it} and " } ?: ""
+        val requestTimeFragment = "request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+        val fragment = appRouteIdFragment + requestTimeFragment
         val value = databaseClient.sql(sqlProvider(tableName, fragment))
             .map { readable: Readable -> (readable.get(0) as Number?)?.toLong() ?: 0 }
             .one()
@@ -430,7 +443,7 @@ class RouteMonitorMetricsServiceByH2Impl(
      * 折线图指标指标
      */
     suspend fun <T : LineMetricsOutput> lineMetrics(
-        input: LineMetricsInput,
+        input: RouteLineMetricsInput,
         sqlProvider: (LineMetricsInfo) -> String,
         resultExtract: (Readable, LineMetricsInfo) -> T,
     ): List<T> {
@@ -459,7 +472,8 @@ class RouteMonitorMetricsServiceByH2Impl(
         val fragment = object : AliasFragment {
             override fun get(alias: String?): String {
                 val realAlias = if (alias.isNullOrBlank()) "" else "${alias}."
-                return "${realAlias}request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
+                val appRouteIdFragment = input.appRouteId?.let { "${realAlias}app_route_id = $it and " } ?: ""
+                return "$appRouteIdFragment ${realAlias}request_time between ${form.toEpochSecond()} and ${to.toEpochSecond()}"
             }
         }
         val info = LineMetricsInfo(tableName, fragment, second, furtherUnit, furtherUnitSecond)

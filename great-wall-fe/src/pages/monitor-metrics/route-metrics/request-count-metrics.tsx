@@ -9,7 +9,8 @@ import {requestCountMetrics} from "@/constant/api/monitor-metrics/route-metrics"
  * @constructor
  */
 export default function RequestCountMetrics() {
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => requestCountMetrics(dateRange));
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) =>
+    requestCountMetrics({...dateRange, appRouteId}));
 
   return (
     <Card>
