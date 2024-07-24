@@ -140,7 +140,7 @@ export function maxSecond(dateRange: MetricsDateRange): number {
       break
     case "DateRange":
       let {from, to} = dateRange.dateRange!!;
-      return (from!!.getTime() - (to || new Date()).getTime()) / 1000
+      return ((to || new Date()).getTime() - from!!.getTime()) / 1000
   }
   throw new Error()
 }

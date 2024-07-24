@@ -3,6 +3,7 @@ package cc.shacocloud.greatwall.config.web
 import cc.shacocloud.greatwall.model.po.RouteMetricsRecordPo
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
+import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService.Companion.monitorMetricsWriteDispatcher
 import cc.shacocloud.greatwall.utils.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -161,10 +162,8 @@ class MonitorRouteMetricsWebHandler(
                 responseBodySize = responseBodySize
             )
 
-            println(metricsRecord)
-
             @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(Dispatchers.Unconfined) {
+            GlobalScope.launch(monitorMetricsWriteDispatcher) {
                 monitorMetricsService.addMetricsRecord(metricsRecord)
             }
 

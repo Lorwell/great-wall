@@ -25,7 +25,7 @@ object MonitorMetricsUtils {
      * 时间范围数据补全
      * @param sourceData 源数据
      */
-    fun <R> dateRangeDataCompletion(
+    fun <R>  dateRangeDataCompletion(
         input: LineMetricsInput,
         transform: (String) -> R
     ): List<R> {
@@ -36,9 +36,7 @@ object MonitorMetricsUtils {
         // 计算差值
         var (from, to) = input.getDateRange()
 
-        val furtherUnit = input.getFurtherUnit()
-        val modulus = 1.toDuration(furtherUnit.unit).toSeconds()
-
+        val modulus = input.getIntervalSecond()
         from = (from.toEpochSecond() / modulus * modulus).toLocalDateTimeByEpochSecond()
         val gap = (to - from).toSeconds() / durationUnit.duration.toSeconds()
         val number = gap / interval + if (gap % interval > 0) 1 else 0

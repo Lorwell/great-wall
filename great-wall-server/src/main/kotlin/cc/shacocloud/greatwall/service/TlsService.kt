@@ -1,7 +1,7 @@
 package cc.shacocloud.greatwall.service
 
-import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
+import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.model.po.TlsPo
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -42,6 +42,11 @@ interface TlsService {
      * 在指定路径生成 zip 文件
      */
     suspend fun genZipFile(path: Path)
+
+    /**
+     * 移除证书
+     */
+    suspend fun delete()
 
 
 }

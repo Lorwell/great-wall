@@ -11,13 +11,13 @@ import LoadingBlock from "@/components/custom-ui/loading-block";
  */
 export default function Tls() {
 
-  const {data, loading} = useApiRequest(tlsDetails);
+  const {data, loading, run} = useApiRequest(tlsDetails);
 
   return (
     <div className={"w-full h-full"}>
       <LoadingBlock loading={loading}>
         {isNull(data) && (<EmptyTls/>)}
-        {!isNull(data) && (<Details data={data!!}/>)}
+        {!isNull(data) && (<Details data={data!!} onRefresh={run}/>)}
       </LoadingBlock>
     </div>
   )

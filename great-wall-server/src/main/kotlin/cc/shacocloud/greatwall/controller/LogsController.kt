@@ -3,11 +3,14 @@ package cc.shacocloud.greatwall.controller
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.output.LogListOutput
+import org.springframework.core.io.buffer.DataBufferUtils
+import org.springframework.core.io.buffer.DefaultDataBufferFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Mono
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -38,8 +41,8 @@ class LogsController {
     }
 
     @GetMapping
-    fun list(
-        @RequestParam(required = false) type: LogTypeEnum? = null
+    suspend fun list(
+        @RequestParam(required = false) type: LogTypeEnum? = null,
     ): List<LogListOutput> {
         return LogTypeEnum.entries
             .filter { type == null || it == type }
@@ -47,11 +50,34 @@ class LogsController {
             .sortedByDescending { it.lastUpdateTime }
     }
 
+    /**
+     * 下载日志文件
+     */
+    @GetMapping("/type/{type}/name/{name}/download")
+    fun download(
+        @PathVariable type: LogTypeEnum,
+        @PathVariable name: String,
+        response: ServerHttpResponse,
+    ): Mono<Void> {
+        val logFile = Paths.get(rootDir.invariantSeparatorsPathString, type.dirName, name)
+        if (Files.exists(logFile)) {
+
+            // 设置响应类型
+            response.headers.contentType = MediaType.TEXT_PLAIN
+
+            val dataBufferFlux = DataBufferUtils.read(logFile, DefaultDataBufferFactory(), 1024)
+            return response.writeWith(dataBufferFlux)
+        }
+
+        response.setStatusCode(HttpStatus.NOT_FOUND)
+        return response.setComplete()
+    }
+
 
     // ----------
 
     fun Path.toLogList(
-        type: LogTypeEnum
+        type: LogTypeEnum,
     ): List<LogListOutput> {
         return Files.list(Paths.get(invariantSeparatorsPathString, type.dirName))
             .filter { !it.isDirectory() && it.extension == "log" }
