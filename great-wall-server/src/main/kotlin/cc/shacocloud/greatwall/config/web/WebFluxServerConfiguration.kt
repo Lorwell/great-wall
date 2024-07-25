@@ -6,6 +6,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.autoconfigure.web.ServerProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.embedded.netty.NettyServerCustomizer
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.web.reactive.HandlerAdapter
 import org.springframework.web.reactive.HandlerMapping
+import org.springframework.web.reactive.result.SimpleHandlerAdapter
 import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerAdapter
 import reactor.netty.http.server.HttpServer
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,7 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class WebFluxServerConfiguration(
     private val applicationContext: ApplicationContext,
     val configServerProperties: ConfigServerProperties,
-    val mainServerProperties: MainServerProperties
+    val mainServerProperties: MainServerProperties,
+    val serverProperties: ServerProperties,
 ) : NettyReactiveWebServerFactory() {
 
     companion object {
@@ -118,11 +121,19 @@ class WebFluxServerConfiguration(
         // 主服务只绑定一个条件处理器
         val dispatcherHandler = object : WebFluxDispatcherHandler(applicationContext) {
 
+            override fun handlerAdapters(adapters: List<HandlerAdapter>) {
+                val handlers = adapters.filterIsInstance<SimpleHandlerAdapter>()
+                super.handlerAdapters(handlers)
+            }
+
             override fun handlerMapping(mappings: List<HandlerMapping>) {
                 val handlers = mappings.filterIsInstance<RoutePredicateHandlerMapping>()
                 super.handlerMapping(handlers)
             }
         }
+
+        // 定制的异常处理器
+        val exceptionHandler = MainServerErrorHandler()
 
         // 使用监控指标处理器来委托目标处理器
         val mainWebHandler = MonitorRouteMetricsWebHandler(
@@ -132,9 +143,11 @@ class WebFluxServerConfiguration(
 
         return WebFluxHttpHandlerBuilder(applicationContext)
             .applyApplicationContext(
-                webHandler = false
+                webHandler = false,
+                exceptionHandler = false
             )
             .webHandler(mainWebHandler)
+            .exceptionHandler(listOf(exceptionHandler))
             .build()
     }
 
@@ -144,7 +157,7 @@ class WebFluxServerConfiguration(
      */
     @Bean
     fun mainWebServer(
-        @Qualifier(MAIN_HTTP_HANDLER_BEAN_NAME) httpHandler: HttpHandler
+        @Qualifier(MAIN_HTTP_HANDLER_BEAN_NAME) httpHandler: HttpHandler,
     ): SimpleWebServer {
         mainPortInit.set(true)
         try {

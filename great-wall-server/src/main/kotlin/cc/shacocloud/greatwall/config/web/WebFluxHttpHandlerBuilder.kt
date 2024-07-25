@@ -242,7 +242,7 @@ class WebFluxHttpHandlerBuilder(
     fun applyApplicationContext(
         webHandler: Boolean = true,
         webFilter: Boolean = true,
-        webExceptionHandler: Boolean = true,
+        exceptionHandler: Boolean = true,
         httpHandlerDecoratorFactory: Boolean = true,
         observationRegistry: Boolean = true,
         serverRequestObservationConvention: Boolean = true,
@@ -265,7 +265,7 @@ class WebFluxHttpHandlerBuilder(
             )
         }
 
-        if (webExceptionHandler) {
+        if (exceptionHandler) {
             exceptionHandler(
                 applicationContext
                     .getBeanProvider(WebExceptionHandler::class.java)

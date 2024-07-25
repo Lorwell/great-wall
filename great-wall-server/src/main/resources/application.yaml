@@ -21,7 +21,7 @@ spring:
     default-property-inclusion: non_null
   threads:
     virtual:
-      enabled: false
+      enabled: ${VIRTUAL_THREAD:false}
   cloud:
     gateway:
       httpclient:
@@ -30,7 +30,7 @@ spring:
           max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
         # 代理请求连接池
         pool:
-          type: ELASTIC
+          type: elastic
           name: great-wall-proxy
           max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:60S}
           max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}

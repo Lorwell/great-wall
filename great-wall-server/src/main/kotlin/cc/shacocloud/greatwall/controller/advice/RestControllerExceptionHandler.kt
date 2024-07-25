@@ -35,7 +35,6 @@ class RestControllerExceptionHandler {
         private val log: Logger = LoggerFactory.getLogger(RestControllerExceptionHandler::class.java)
     }
 
-
     /**
      * 消息不可读
      */
