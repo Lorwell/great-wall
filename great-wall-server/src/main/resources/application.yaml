@@ -25,6 +25,8 @@ spring:
   cloud:
     gateway:
       httpclient:
+        # 请求链接超时时间
+        connect-timeout: ${HTTPCLIENT_CONNECT_TIMEOUT:3000}
         websocket:
           # 设置 ws 最大帧数字节长度
           max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
@@ -32,9 +34,10 @@ spring:
         pool:
           type: elastic
           name: great-wall-proxy
-          max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:60S}
+          max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:PT1S}
           max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
           eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
+
       predicate:
         host:
           # host 匹配不导入端口

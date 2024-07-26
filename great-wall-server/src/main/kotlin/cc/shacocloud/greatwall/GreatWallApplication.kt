@@ -21,6 +21,9 @@ fun main(args: Array<String>) {
     val timeZoneId = System.getProperty("TIME_ZONE_ID", System.getenv("TIME_ZONE_ID")) ?: "Asia/Shanghai"
     TimeZone.setDefault(TimeZone.getTimeZone(timeZoneId))
 
+    // 设置 netty 链接策略，
+    System.setProperty("reactor.netty.pool.leasingStrategy", "lifo")
+
     val application = SpringApplication(GreatWallApplication::class.java)
 
     // 自定义应用上下文工厂
