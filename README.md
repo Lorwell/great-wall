@@ -25,10 +25,10 @@
 
 ```bash
 // 使用 serial gc(串行垃圾回收器)，适合小内存应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.10
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.12
 
 // 使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.10_g1gc
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.12_g1gc
 ```
 
 ### 本地编译
@@ -39,17 +39,19 @@ docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencent
 
 当前服务支持的环境变量配置一览
 
-| 名称                               | 说明                                                 |
-| ---------------------------------- | ---------------------------------------------------- |
-| TLS_PORT                           | 证书绑定的端口，默认为 443                           |
-| PORT                               | 非证书绑定端口，默认为 80                            |
-| CONFIG_SERVER_PORT                 | 后台管理页面端口，默认为 8080                        |
-| WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH | 代理 websockt 最大帧数字节长度，默认为 6553500       |
-| HTTPCLIENT_POOL_MAX_IDLE_TIME      | http 链接最大空闲时间，默认60S                       |
-| HTTPCLIENT_POOL_MAX_LIFE_TIME      | http 链接最大存活时间，默认10H                       |
-| HTTPCLIENT_POOL_EVICTION_INTERVAL  | http 链接存货检测时间间隔，默认 10S                  |
-| ADMIN_PASSWORD                     | 管理员密码配置，**强烈建议：生产环境进行必要的修改** |
-| GREAT_WALL_MAX_MEMORY              | 配置java最大堆内存，默认为200m，g1gc下默认为1g       |
+| 名称                               | 说明                                                         |
+| ---------------------------------- | ------------------------------------------------------------ |
+| TLS_PORT                           | 证书绑定的端口，默认为 443                                   |
+| PORT                               | 非证书绑定端口，默认为 80                                    |
+| CONFIG_SERVER_PORT                 | 后台管理页面端口，默认为 8080                                |
+| WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH | 代理 websockt 最大帧数字节长度，默认为 6553500               |
+| HTTPCLIENT_POOL_MAX_IDLE_TIME      | http 链接最大空闲时间，默认60S                               |
+| HTTPCLIENT_POOL_MAX_LIFE_TIME      | http 链接最大存活时间，默认10H                               |
+| HTTPCLIENT_POOL_EVICTION_INTERVAL  | http 链接存货检测时间间隔，默认 10S                          |
+| ADMIN_PASSWORD                     | 管理员密码配置，**强烈建议：生产环境进行必要的修改**         |
+| GREAT_WALL_MAX_MEMORY              | 配置java最大堆内存，默认为200m，g1gc下默认为1g               |
+| MAIN_SERVER_IO_SELECT_COUNT        | 选择器线程数，默认为1，用于接受请求                          |
+| MAIN_SERVER_IO_WORK_COUNT          | 工作线程数，默认为当前处理器内核数量，最小值为4，用于处理请求 |
 
 ## 规划
 

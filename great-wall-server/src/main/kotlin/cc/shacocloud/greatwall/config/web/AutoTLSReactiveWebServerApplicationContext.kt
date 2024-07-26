@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.config.web.WebFluxServerConfiguration.Companion.MAIN_HTTP_HANDLER_BEAN_NAME
+import cc.shacocloud.greatwall.config.web.MainNettyReactiveWebServerFactory.Companion.MAIN_HTTP_HANDLER_BEAN_NAME
+import cc.shacocloud.greatwall.config.web.MainNettyReactiveWebServerFactory.Companion.MAIN_NETTY_REACTIVE_WEB_SERVER_FACTORY_BEAN_NAME
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry
 import org.springframework.boot.autoconfigure.ssl.JksSslBundleProperties
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.ssl.SslBundleProperties
 import org.springframework.boot.ssl.SslBundle
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext
+import org.springframework.boot.web.reactive.server.ReactiveWebServerFactory
 import org.springframework.boot.web.server.Ssl
 import org.springframework.context.SmartLifecycle
 import org.springframework.http.server.reactive.HttpHandler
@@ -25,18 +27,12 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
     private val builtSslBundleName = "_built_ssl_bundle"
 
     /**
-     * 将主端口的服务只绑定一个网关的转发路由映射处理器
-     */
-    override fun getHttpHandler(): HttpHandler {
-        return getBean(MAIN_HTTP_HANDLER_BEAN_NAME, HttpHandler::class.java)
-    }
-
-    /**
      * 重启 web 服务
      */
     fun refreshWebserver() {
         val customSslBundleRegistry = getBean(CustomSslBundleRegistry::class.java)
-        val nettyReactiveWebServerFactory = getBean(NettyReactiveWebServerFactory::class.java)
+        val nettyReactiveWebServerFactory =
+            getWebServerFactory(webServerFactoryBeanName) as MainNettyReactiveWebServerFactory
 
         // 判断该证书配置是否存在，存在设置为 web ssl 证书
         if (customSslBundleRegistry.existsBundle(builtSslBundleName)) {
@@ -110,4 +106,18 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         return sslBundle
     }
 
+    /**
+     * 将主端口的服务只绑定一个网关的转发路由映射处理器
+     */
+    override fun getHttpHandler(): HttpHandler {
+        return getBean(MAIN_HTTP_HANDLER_BEAN_NAME, HttpHandler::class.java)
+    }
+
+    override fun getWebServerFactoryBeanName(): String {
+        return MAIN_NETTY_REACTIVE_WEB_SERVER_FACTORY_BEAN_NAME
+    }
+
+    override fun getWebServerFactory(factoryBeanName: String): ReactiveWebServerFactory {
+        return getBean(factoryBeanName, NettyReactiveWebServerFactory::class.java)
+    }
 }
