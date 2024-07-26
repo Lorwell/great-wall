@@ -5,7 +5,12 @@ import cc.shacocloud.greatwall.model.po.SystemMetricsRecordPo
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
 import cc.shacocloud.greatwall.utils.toLocalDateTime
 import com.sun.management.OperatingSystemMXBean
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
@@ -26,6 +31,9 @@ class SystemMetricsScheduled(
 ) : DisposableBean {
 
     companion object {
+
+        private val log: Logger = LoggerFactory.getLogger(SystemMetricsScheduled::class.java)
+
         fun <T : Number> T.lessThanZeroLet(defaultValue: T?): T? {
             return when (this) {
                 is Int -> if (this >= 0) this else defaultValue
@@ -43,32 +51,55 @@ class SystemMetricsScheduled(
 
     @EventListener(ApplicationReadyEvent::class)
     fun init() {
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch(dispatcher) {
+
+        val runnable = Runnable {
+
             try {
                 delayStartOfSecond()
+            } catch (e: Exception) {
+                if (log.isErrorEnabled) {
+                    log.error("系统指标定时调度发生例外!", e)
+                }
+            }
 
-                while (true) {
+            while (true) {
+                try {
                     val timeUnit = Instant.now().toLocalDateTime()
 
-                    launch(dispatcher) {
+                    @OptIn(DelicateCoroutinesApi::class)
+                    GlobalScope.launch(dispatcher) {
                         metrics(timeUnit)
                     }
 
                     delayStartOfSecond()
+                } catch (e: Exception) {
+
+                    if (e is InterruptedException) {
+                        if (log.isWarnEnabled) {
+                            log.warn("系统指标定时调度收到中断信息！")
+                        }
+                        break
+                    }
+
+                    if (log.isErrorEnabled) {
+                        log.error("系统指标定时调度发生例外！", e)
+                    }
                 }
-            } catch (_: InterruptedException) {
             }
         }
+
+        val thread = Thread(runnable, "SystemMetricsScheduled")
+        thread.isDaemon = true
+        thread.start()
     }
 
     /**
      * 延迟到秒的开始
      */
-    suspend fun delayStartOfSecond() {
+    fun delayStartOfSecond() {
         val milliStr = System.currentTimeMillis().toString()
         val milli = milliStr.substring(milliStr.length - 3).toLong()
-        delay((1000 - milli) + 1)
+        Thread.sleep((1000 - milli) + 1)
     }
 
     /**
