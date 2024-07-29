@@ -34,13 +34,13 @@ class AppRouteLocator(
     val appRouteService: AppRouteService,
     val routePredicateFactory: RoutePredicateFactory,
     val weightRoutePredicateFactory: WeightRoutePredicateFactory,
-    gatewayFilterFactories: List<GatewayFilterFactory<Any>>,
+    gatewayFilters: List<GatewayFilterFactory<*>>,
 ) : RouteLocator {
 
     /**
      * 以网关的 [GatewayFilterFactory.name] 作为键，转为一个 map 对象，用于快速匹配
      */
-    private val gatewayFilterFactoryMap = gatewayFilterFactories.associateBy { it.name() }
+    private val gatewayFilterFactoryMap = gatewayFilters.associateBy { it.name() }
 
     companion object {
 

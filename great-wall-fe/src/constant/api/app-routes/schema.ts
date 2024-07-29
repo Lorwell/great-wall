@@ -1,5 +1,10 @@
 import {z} from "zod";
-import {AppRouteStatusEnum, PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
+import {
+  AppRouteStatusEnum,
+  PredicateTypeEnum,
+  RouteFilterEnum,
+  RoutePredicateOperatorEnum
+} from "@/constant/api/app-routes/types.ts";
 import {baseOutputSchema, getPageRecordSchema} from "@/constant/api/schema.ts";
 
 // 基础信息
@@ -121,6 +126,20 @@ export const predicatesFormSchema = z.object({
 export type PredicatesFormValues = z.infer<typeof predicatesFormSchema>
 
 // -------------------------- 插件配置
+
+export const basicAuthFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.BasicAuth]),
+  username: z.string({required_error: "不可以为空"}),
+  password: z.string({required_error: "不可以为空"}),
+})
+export type BasicAuthFilterSchemaValues = z.infer<typeof basicAuthFilterSchema>
+
+export const filterSchema = z.union([
+  basicAuthFilterSchema,
+  basicAuthFilterSchema
+]);
+export const filtersSchema = z.array(filterSchema)
+export type FiltersFormValues = z.infer<typeof filtersSchema>
 
 
 // -------------------------- 配置结果集

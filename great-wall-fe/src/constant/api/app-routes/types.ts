@@ -60,6 +60,12 @@ export enum PredicateTypeEnum {
 
 }
 
+export enum RouteFilterEnum {
+
+  BasicAuth = "BasicAuth"
+
+}
+
 export type AppRouteInput = Partial<AppRoutesConfValues>
 export type AppRouteOutput = Partial<AppRouteOutputValues>
 export type AppRouteListOutput = AppRouteOutput
