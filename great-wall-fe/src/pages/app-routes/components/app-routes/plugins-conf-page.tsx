@@ -9,6 +9,8 @@ import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/l
 import {useEffect} from "react";
 import {ChevronLeft, ChevronRight, Fingerprint} from "lucide-react";
 import FilterCard from "@/pages/app-routes/components/app-routes/FilterCard.tsx";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
+import BasicAuth from "@/pages/app-routes/components/app-routes/filter/basic-auth.tsx";
 
 const filtersFrom = z.object({filters: filtersSchema})
 export type FiltersFormValues = z.infer<typeof filtersFrom>
@@ -63,7 +65,7 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
 
-          <div className={"text-base"}>
+          <div className={"text-lg"}>
             已开启插件
           </div>
 
@@ -85,7 +87,6 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
                 &nbsp;HTTP 身份验证
               </FilterCard>
 
-
             </div>
 
             <div className="flex">
@@ -98,9 +99,36 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
         </form>
       </Form>
 
-      <div className={"text-base mt-6"}>
+      <PluginCenter/>
+    </div>
+  )
+}
+
+/**
+ * 插件中心
+ * @constructor
+ */
+function PluginCenter() {
+  return (
+    <div>
+      <div className={"text-lg mt-4"}>
         插件中心
       </div>
+
+      <Tabs defaultValue="authentication" className={"mt-4"}>
+        <TabsList className={"mb-2"}>
+          <TabsTrigger value="authentication">身份验证</TabsTrigger>
+          <TabsTrigger value="security-protection">安全防护</TabsTrigger>
+          <TabsTrigger value="flow-control">流量控制</TabsTrigger>
+        </TabsList>
+        <TabsContent value="authentication">
+          <BasicAuth/>
+        </TabsContent>
+        <TabsContent value="security-protection">
+        </TabsContent>
+        <TabsContent value="flow-control">
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

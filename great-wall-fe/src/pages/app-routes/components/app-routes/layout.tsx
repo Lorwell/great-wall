@@ -116,7 +116,7 @@ export default function Layout(props: LayoutProps) {
 
   return (
 
-    <div className={"w-full h-full p-10 flex flex-col gap-8"}>
+    <div className={"w-full h-full p-10 pt-0 flex flex-col gap-8"}>
 
       <div className="w-full max-w-6xl">
         <h1 className="text-2xl font-semibold">
@@ -125,7 +125,7 @@ export default function Layout(props: LayoutProps) {
       </div>
 
       <div
-        className="flex-auto flex flex-row w-full max-w-6xl items-start gap-6">
+        className="flex-auto flex flex-row w-full items-start">
         <nav className={"flex flex-col gap-4 text-sm text-muted-foreground md:w-[180px] lg:w-[250px]"}>
           {items.map((item, index) => {
             const active = pathname.endsWith(item.to);

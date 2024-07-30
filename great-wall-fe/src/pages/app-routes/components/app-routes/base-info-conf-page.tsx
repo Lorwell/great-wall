@@ -61,7 +61,7 @@ function BaseInfoConfPage(props: BaseInfoConfPageProps) {
   }
 
   return (
-    <Card>
+    <Card className={"max-w-4xl"}>
       <CardHeader>
         <CardTitle className={"text-xl"}>基础配置</CardTitle>
         <CardDescription>

@@ -1,5 +1,5 @@
 import {Card, CardContent} from "@/components/ui/card.tsx";
-import {ReactNode, useState} from "react";
+import {ReactNode} from "react";
 import {Button} from "@/components/ui/button.tsx";
 
 export interface FilterCardProps extends FilterCardSwitchProps {
@@ -19,9 +19,8 @@ export default function FilterCard(props: FilterCardProps) {
     title,
     icon,
     children,
-    enable,
     showChildren = true,
-    onEnableChange
+    ...rest
   } = props;
 
   return (
@@ -42,7 +41,7 @@ export default function FilterCard(props: FilterCardProps) {
                <span className={"text-xs"}>
                   身份验证
                </span>
-          <FilterCardSwitch enable={enable} onEnableChange={onEnableChange}/>
+          <FilterCardSwitch {...rest}/>
         </div>
       </CardContent>
     </Card>
@@ -51,12 +50,10 @@ export default function FilterCard(props: FilterCardProps) {
 
 export interface FilterCardSwitchProps {
   enable?: boolean
-  onEnableChange?: (enable: boolean) => void
+  onClick?: () => void
 }
 
-function FilterCardSwitch(props: FilterCardSwitchProps) {
-  const {enable = false, onEnableChange} = props
-  const [checked, setChecked] = useState<boolean>(enable);
+function FilterCardSwitch({enable = false, onClick}: FilterCardSwitchProps) {
 
   return (
     <Button variant={"secondary"}
@@ -64,12 +61,9 @@ function FilterCardSwitch(props: FilterCardSwitchProps) {
             type={"button"}
             onClick={(event) => {
               event.preventDefault()
-
-              const value = !checked
-              setChecked(value);
-              onEnableChange?.(value)
+              onClick?.();
             }}>
-      {checked ? "取消" : "启用"}
+      {enable ? "编辑" : "启用"}
     </Button>
   )
 }

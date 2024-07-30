@@ -100,7 +100,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-4xl">
 
         <Card>
           <CardHeader>
