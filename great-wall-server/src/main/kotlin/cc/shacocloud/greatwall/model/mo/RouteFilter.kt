@@ -1,10 +1,17 @@
 package cc.shacocloud.greatwall.model.mo
 
+import cc.shacocloud.greatwall.config.web.filter.BasicAuthGatewayFilterFactory
 import cc.shacocloud.greatwall.model.constant.RouteFilterEnum
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+
+/**
+ * 路由过滤器集合
+ * @author 思追(shaco)
+ */
+class RouteFilters : ArrayList<RouteFilter>()
 
 /**
  * 路由过滤器
@@ -19,7 +26,13 @@ abstract class RouteFilter(
     @field:NotNull
     val type: RouteFilterEnum,
 
-    )
+    ) {
+
+    /**
+     * 填充配置
+     */
+    abstract fun <T : Any> fillConfig(config: T)
+}
 
 data class RouteBasicAuthFilter(
 
@@ -35,4 +48,11 @@ data class RouteBasicAuthFilter(
     @field:NotBlank
     val password: String,
 
-    ) : RouteFilter(RouteFilterEnum.BasicAuth)
+    ) : RouteFilter(RouteFilterEnum.BasicAuth) {
+
+    override fun <T : Any> fillConfig(config: T) {
+        config as BasicAuthGatewayFilterFactory.Config
+        config.username = username
+        config.password = password
+    }
+}

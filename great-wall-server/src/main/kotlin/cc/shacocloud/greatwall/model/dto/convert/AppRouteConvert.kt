@@ -16,6 +16,7 @@ fun AppRoutePo.toOutput(): AppRouteOutput {
         status = status,
         targetConfig = targetConfig,
         predicates = predicates,
+        filters = filters,
         createTime = createTime,
         lastUpdateTime = lastUpdateTime
     )

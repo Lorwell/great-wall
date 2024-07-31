@@ -134,17 +134,22 @@ export const basicAuthFilterSchema = z.object({
 })
 export type BasicAuthFilterSchemaValues = z.infer<typeof basicAuthFilterSchema>
 
-export const filterSchema = z.union([
-  basicAuthFilterSchema,
-  basicAuthFilterSchema
-]);
+export const filterSchema = basicAuthFilterSchema
+
+export type FilterFormValues = z.infer<typeof filterSchema>
 export const filtersSchema = z.array(filterSchema)
 export type FiltersFormValues = z.infer<typeof filtersSchema>
 
 
 // -------------------------- 配置结果集
 
-export const appRoutesConfSchema = baseInfoFormSchema.merge(predicatesFormSchema)
+export const appRoutesConfSchema =
+  z.object({
+    filters: filtersSchema
+  })
+    .merge(baseInfoFormSchema)
+    .merge(predicatesFormSchema)
+
 export type AppRoutesConfValues = z.infer<typeof appRoutesConfSchema>
 
 

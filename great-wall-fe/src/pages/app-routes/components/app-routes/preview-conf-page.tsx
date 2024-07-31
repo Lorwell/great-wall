@@ -7,11 +7,14 @@ import {toast} from "sonner";
 import {
   baseInfoFormSchema,
   BaseInfoFormValues,
+  FiltersFormValues,
+  filtersSchema,
   predicatesFormSchema,
   PredicatesFormValues
 } from "@/constant/api/app-routes/schema.ts";
 import {useRecoilValue} from "recoil";
 import {appRoutesDataOptionsState} from "@/pages/app-routes/components/app-routes/store.ts";
+import PluginsConfPage from "@/pages/app-routes/components/app-routes/plugins-conf-page.tsx";
 
 /**
  * 插件配置
@@ -25,12 +28,14 @@ export default function PreviewConfPage() {
    * 提交
    */
   function handleSubmit(): Promise<void> {
-    let baseInfoData: Partial<BaseInfoFormValues>
-    let predicates: Partial<PredicatesFormValues>
+    let baseInfoData: BaseInfoFormValues
+    let predicates: PredicatesFormValues
+    let filters: FiltersFormValues
 
     try {
       baseInfoData = baseInfoFormSchema.parse(appRoutesDataOptions.baseInfo);
       predicates = predicatesFormSchema.parse(appRoutesDataOptions.predicates);
+      filters = filtersSchema.parse(appRoutesDataOptions.filters || []);
     } catch (e) {
       toast.warning("表单存在错误的字段，请检查！",
         {
@@ -40,13 +45,14 @@ export default function PreviewConfPage() {
       return Promise.resolve()
     }
 
-    return ctx.onSubmit?.({...baseInfoData, ...predicates}) || Promise.resolve()
+    return ctx.onSubmit?.({...baseInfoData, ...predicates, filters: filters || []}) || Promise.resolve()
   }
 
   return (
     <div className={"flex flex-col space-y-6"}>
       <BaseInfoConfPage preview={true}/>
       <PredicatesConfPage preview={true}/>
+      <PluginsConfPage preview={true}/>
       <div>
         <Button onClick={handleSubmit}>确认提交</Button>
       </div>

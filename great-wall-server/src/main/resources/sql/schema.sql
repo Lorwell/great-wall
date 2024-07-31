@@ -16,10 +16,13 @@ CREATE TABLE IF NOT EXISTS app_route
     priority         INT         NOT NULL,
     target_config    LONGTEXT    NOT NULL,
     predicates       LONGTEXT    NOT NULL,
+    filters          LONGTEXT    NOT NULL,
     status           VARCHAR(20) NOT NULL,
     create_time      BIGINT      NOT NULL,
     last_update_time BIGINT      NOT NULL
 );
+
+
 
 CREATE TABLE IF NOT EXISTS app_tls
 (

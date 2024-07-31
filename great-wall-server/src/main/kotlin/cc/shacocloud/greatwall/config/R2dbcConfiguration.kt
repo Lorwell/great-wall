@@ -2,6 +2,7 @@ package cc.shacocloud.greatwall.config
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.constant.TlsTypeEnum
+import cc.shacocloud.greatwall.model.mo.RouteFilters
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
 import cc.shacocloud.greatwall.model.mo.TlsConfig
@@ -31,7 +32,7 @@ import org.springframework.transaction.reactive.TransactionalOperator
 @Configuration
 @EnableR2dbcRepositories
 class R2dbcConfiguration(
-    val r2dbcProperties: R2dbcProperties
+    val r2dbcProperties: R2dbcProperties,
 ) : AbstractR2dbcConfiguration() {
 
     companion object {
@@ -89,6 +90,8 @@ class R2dbcConfiguration(
         return mutableListOf(
             DateToLongConverter(),
             LongToDateConverter(),
+            object : BeanToJsonStringConverter<RouteFilters>() {},
+            object : JsonStringToBeanConverter<RouteFilters>() {},
             object : BeanToJsonStringConverter<RoutePredicates>() {},
             object : JsonStringToBeanConverter<RoutePredicates>() {},
             object : BeanToJsonStringConverter<RouteTargetConfig>() {},

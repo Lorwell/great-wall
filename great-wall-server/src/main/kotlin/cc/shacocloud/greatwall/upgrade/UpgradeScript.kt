@@ -21,6 +21,25 @@ class UpgradeScript(
     override fun afterPropertiesSet() {
         runBlocking {
             upRouteMetricsRecord()
+            addAppRouteFilterField()
+        }
+    }
+
+    suspend fun addAppRouteFilterField() {
+        // 判断是否存在指定列
+        val exits = databaseClient.sql(
+            """
+                     select count(1) from INFORMATION_SCHEMA.COLUMNS
+                     where TABLE_NAME = 'APP_ROUTE' AND COLUMN_NAME = 'FILTERS';
+                    """.trimIndent()
+        )
+            .map { readable: Readable -> ((readable.get(0) as Number?)?.toInt() ?: 0) > 0 }
+            .awaitSingle()
+
+        // 不存在则新增
+        if (!exits) {
+            databaseClient.sql("alter table APP_ROUTE add filters longtext default '[]' not null")
+                .await()
         }
     }
 

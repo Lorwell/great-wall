@@ -33,7 +33,8 @@ export default function UpdateAppRoutes() {
         predicates: {
           targetConfig: data.targetConfig,
           predicates: data.predicates
-        }
+        },
+        filters: data.filters
       })
     });
 

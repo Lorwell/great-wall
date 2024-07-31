@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
+import java.util.Base64
 
 /**
  * basic 认证的网关过滤器工厂
@@ -51,7 +52,10 @@ class BasicAuthGatewayFilterFactory : AbstractGatewayFilterFactory<BasicAuthGate
 
             // 认证
             if (!authHeader.isNullOrBlank()) {
-                val split = authHeader.removePrefix("Basic").trim().split(":")
+                val ciphertext = authHeader.removePrefix("Basic").trim()
+                val plaintext = Base64.getDecoder().decode(ciphertext).decodeToString()
+                val split = plaintext.split(":")
+
                 if (split.size == 2 && config.username == split[0] && config.password == split[1]) {
                     return chain.filter(exchange)
                 }

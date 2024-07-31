@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.model.po
 
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
+import cc.shacocloud.greatwall.model.mo.RouteFilters
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
 import org.springframework.data.annotation.Id
@@ -56,6 +57,12 @@ data class AppRoutePo(
     var predicates: RoutePredicates,
 
     /**
+     * 路由过滤器插件
+     */
+    @Column("filters")
+    var filters: RouteFilters,
+
+    /**
      * 创建时间
      */
     @Column("create_time")
@@ -65,6 +72,6 @@ data class AppRoutePo(
      * 最后更新时间
      */
     @Column("last_update_time")
-    var lastUpdateTime: Date
+    var lastUpdateTime: Date,
 
-)
+    )
