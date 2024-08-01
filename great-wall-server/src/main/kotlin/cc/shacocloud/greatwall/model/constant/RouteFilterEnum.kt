@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.model.constant
 
-import cc.shacocloud.greatwall.config.web.filter.BasicAuthGatewayFilterFactory
+import cc.shacocloud.greatwall.config.web.filter.*
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
 
 /**
@@ -19,4 +19,47 @@ enum class RouteFilterEnum(
      */
     BasicAuth(BasicAuthGatewayFilterFactory::class.java),
 
+
+    /* ------------------------  安全防护 ------------------------------- */
+
+
+    /* ------------------------  流量控制 ------------------------------- */
+
+    /**
+     * 令牌桶算法流量空值
+     */
+    TokenBucketRequestRateLimiter(TokenBucketRequestRateLimiterGatewayFilterFactory::class.java),
+
+
+    /* ------------------------  请求修改 ------------------------------- */
+
+    /**
+     * 添加请求标头
+     */
+    AddRequestHeaders(AddRequestHeadersGatewayFilterFactory::class.java),
+
+    /**
+     * 添加查询参数
+     */
+    AddRequestQueryParameters(AddRequestQueryParametersGatewayFilterFactory::class.java),
+
+    /**
+     * 添加响应标头
+     */
+    AddResponseHeaders(AddResponseHeadersGatewayFilterFactory::class.java),
+
+    /**
+     * 删除请求标头
+     */
+    RemoveRequestHeaders(RemoveRequestHeadersGatewayFilterFactory::class.java),
+
+    /**
+     * 删除查询参数
+     */
+    RemoveRequestQueryParameters(RemoveRequestQueryParametersGatewayFilterFactory::class.java),
+
+    /**
+     * 删除响应标头
+     */
+    RemoveResponseHeaders(RemoveResponseHeadersGatewayFilterFactory::class.java),
 }

@@ -27,6 +27,11 @@ const filterConfig: Array<FilterConfig> = [
     key: "flow-control",
     label: "流量控制",
     filters: []
+  },
+  {
+    key: "request-mutate",
+    label: "请求修改",
+    filters: []
   }
 ]
 
