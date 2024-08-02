@@ -34,6 +34,11 @@ enum class RouteFilterEnum(
     /* ------------------------  请求修改 ------------------------------- */
 
     /**
+     * 是否保留 Host 请求头
+     */
+    PreserveHostHeader(PreserveHostHeaderGatewayFilterFactory::class.java),
+
+    /**
      * 添加请求标头
      */
     AddRequestHeaders(AddRequestHeadersGatewayFilterFactory::class.java),

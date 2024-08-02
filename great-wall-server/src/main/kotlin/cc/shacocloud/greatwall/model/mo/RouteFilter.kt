@@ -31,6 +31,7 @@ class RouteFilters : ArrayList<RouteFilter>()
     JsonSubTypes.Type(value = RouteRemoveRequestQueryParametersFilter::class, name = "RemoveRequestQueryParameters"),
     JsonSubTypes.Type(value = RouteRemoveResponseHeadersFilter::class, name = "RemoveResponseHeaders"),
     JsonSubTypes.Type(value = RouteTokenBucketRequestRateLimiterFilter::class, name = "TokenBucketRequestRateLimiter"),
+    JsonSubTypes.Type(value = RoutePreserveHostHeaderFilter::class, name = "PreserveHostHeader"),
 )
 abstract class RouteFilter(
 
@@ -173,5 +174,20 @@ data class RouteTokenBucketRequestRateLimiterFilter(
         config.headers = headers
         config.body = body
         config.limit = limit
+    }
+}
+
+data class RoutePreserveHostHeaderFilter(
+
+    /**
+     * 是否保留，false 不保留，反之保留
+     */
+    val preserve: Boolean,
+
+    ) : RouteFilter(RouteFilterEnum.PreserveHostHeader) {
+
+    override fun <T : Any> fillConfig(config: T) {
+        config as PreserveHostHeaderGatewayFilterFactory.Config
+        config.preserve = preserve
     }
 }

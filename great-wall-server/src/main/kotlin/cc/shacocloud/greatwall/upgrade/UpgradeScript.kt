@@ -26,6 +26,15 @@ class UpgradeScript(
     }
 
     suspend fun addAppRouteFilterField() {
+        databaseClient.sql("show tables")
+            .map { readable: Readable -> readable.get(0) as String }
+            .all()
+            .collectList()
+            .awaitSingle()
+            .map { it.lowercase() }
+            .find { it.startsWith("app_route") }
+            ?: return
+
         // 判断是否存在指定列
         val exits = databaseClient.sql(
             """

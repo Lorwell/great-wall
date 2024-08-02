@@ -6,7 +6,6 @@ import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService.Companion.monitorMetricsWriteDispatcher
 import cc.shacocloud.greatwall.utils.*
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.reactivestreams.Publisher
@@ -33,12 +32,13 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class MonitorRouteMetricsWebHandler(
     webHandler: WebHandler,
-    private val monitorMetricsService: CompositionMonitorMetricsService
+    private val monitorMetricsService: CompositionMonitorMetricsService,
 ) : WebHandlerDecorator(webHandler) {
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(MonitorRouteMetricsWebHandler::class.java)
         private val accessLog: Logger = LoggerFactory.getLogger("accessLog")
+        private val isAccessLogEnabled = accessLog.isInfoEnabled
     }
 
     class QueryParamsMetrics : HashMap<String, List<String?>>() {
@@ -52,29 +52,25 @@ class MonitorRouteMetricsWebHandler(
         val requestTime = Instant.now()
 
         // 流量统计委托器
-        val requestDecorator = TrafficStatisticsHttpRequestDecorator(exchange.request)
-        val responseDecorator = TrafficStatisticsHttpResponseDecorator(exchange.response)
+//        val requestDecorator = TrafficStatisticsHttpRequestDecorator(exchange.request)
+//        val responseDecorator = TrafficStatisticsHttpResponseDecorator(exchange.response)
+//
+//        val newExchange = exchange.mutate()
+//            .request(requestDecorator)
+//            .response(responseDecorator)
+//            .build()
 
-        val newExchange = exchange.mutate()
-            .request(requestDecorator)
-            .response(responseDecorator)
-            .build()
-
-        return delegate.handle(newExchange)
+        return delegate.handle(exchange)
             .doOnSuccess {
                 filterCompleteCallback(
                     exchange,
-                    requestTime,
-                    requestDecorator.requestBodySize,
-                    responseDecorator.responseBodySize
+                    requestTime
                 )
             }
             .doOnError {
                 filterCompleteCallback(
                     exchange,
-                    requestTime,
-                    requestDecorator.requestBodySize,
-                    responseDecorator.responseBodySize
+                    requestTime
                 )
             }
     }
@@ -85,17 +81,15 @@ class MonitorRouteMetricsWebHandler(
     private fun filterCompleteCallback(
         exchange: ServerWebExchange,
         requestTime: Instant,
-        requestBodySize: AtomicLong,
-        responseBodySize: AtomicLong
     ) {
+
         val response = exchange.response
-        val route = exchange.attributes.remove(RouteMetricsGlobalFilter.ROUTE_ATTR) as Route?
 
         if (response.isCommitted) {
-            metricsRecordCommit(exchange, requestTime, route, requestBodySize.get(), responseBodySize.get())
+            metricsRecordCommit(exchange, requestTime)
         } else {
             response.beforeCommit {
-                metricsRecordCommit(exchange, requestTime, route, requestBodySize.get(), responseBodySize.get())
+                metricsRecordCommit(exchange, requestTime)
                 Mono.empty()
             }
         }
@@ -107,9 +101,6 @@ class MonitorRouteMetricsWebHandler(
     private fun metricsRecordCommit(
         exchange: ServerWebExchange,
         requestTime: Instant,
-        route: Route?,
-        requestBodySize: Long,
-        responseBodySize: Long
     ) {
         try {
             val responseTime = Instant.now()
@@ -124,6 +115,7 @@ class MonitorRouteMetricsWebHandler(
             val handleTime = (responseTime - requestTime).toMillis()
 
             // 路由信息
+            val route = exchange.attributes.remove(RouteMetricsGlobalFilter.ROUTE_ATTR) as Route?
             val appRouteId = route?.metadata?.get(AppRouteLocator.APP_ROUTE_ID_META_KEY) as Long?
             val targetUrl = route?.uri?.toASCIIString()
 
@@ -131,8 +123,12 @@ class MonitorRouteMetricsWebHandler(
             val queryParamsMetrics = request.queryParams
                 .map { it.key to it.value }.toMap(QueryParamsMetrics())
 
+            // 响应内容长度
+            val requestBodySize = request.getContentLength()
+            val responseBodySize = response.getContentLength()
+
             // 打印日志
-            if (accessLog.isInfoEnabled) {
+            if (isAccessLogEnabled) {
                 accessLog.info(
                     arrayOf(
                         requestTime.toLocalDateTime(),
@@ -174,52 +170,52 @@ class MonitorRouteMetricsWebHandler(
         }
     }
 
-    /**
-     * 流量统计请求委托器
-     *
-     * @author 思追(shaco)
-     */
-    class TrafficStatisticsHttpRequestDecorator(
-        request: ServerHttpRequest
-    ) : ServerHttpRequestDecorator(request) {
-        val requestBodySize = AtomicLong(0)
-        override fun getBody(): Flux<DataBuffer> {
-            return super.getBody().map {
-                requestBodySize.getAndAdd(it.readableByteCount().toLong())
+}
+
+/**
+ * 流量统计请求委托器
+ *
+ * @author 思追(shaco)
+ */
+class TrafficStatisticsHttpRequestDecorator(
+    request: ServerHttpRequest,
+) : ServerHttpRequestDecorator(request) {
+    val requestBodySize = AtomicLong(0)
+    override fun getBody(): Flux<DataBuffer> {
+        return super.getBody().map {
+            requestBodySize.getAndAdd(it.readableByteCount().toLong())
+            it
+        }
+    }
+}
+
+/**
+ * 流量统计请求委托器
+ *
+ * @author 思追(shaco)
+ */
+class TrafficStatisticsHttpResponseDecorator(
+    response: ServerHttpResponse,
+) : ServerHttpResponseDecorator(response) {
+    val responseBodySize = AtomicLong(0)
+
+    override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
+        return super.writeWith(
+            Flux.from(body).map {
+                responseBodySize.getAndAdd(it.readableByteCount().toLong())
                 it
             }
-        }
+        )
     }
 
-    /**
-     * 流量统计请求委托器
-     *
-     * @author 思追(shaco)
-     */
-    class TrafficStatisticsHttpResponseDecorator(
-        response: ServerHttpResponse
-    ) : ServerHttpResponseDecorator(response) {
-        val responseBodySize = AtomicLong(0)
-
-        override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
-            return super.writeWith(
-                Flux.from(body).map {
-                    responseBodySize.getAndAdd(it.readableByteCount().toLong())
-                    it
+    override fun writeAndFlushWith(body: Publisher<out Publisher<out DataBuffer>>): Mono<Void> {
+        return super.writeAndFlushWith(
+            Flux.from(body).map {
+                Flux.from(it).map { buf ->
+                    responseBodySize.getAndAdd(buf.readableByteCount().toLong())
+                    buf
                 }
-            )
-        }
-
-        override fun writeAndFlushWith(body: Publisher<out Publisher<out DataBuffer>>): Mono<Void> {
-            return super.writeAndFlushWith(
-                Flux.from(body).map {
-                    Flux.from(it).map { buf ->
-                        responseBodySize.getAndAdd(buf.readableByteCount().toLong())
-                        buf
-                    }
-                }
-            )
-        }
+            }
+        )
     }
-
 }

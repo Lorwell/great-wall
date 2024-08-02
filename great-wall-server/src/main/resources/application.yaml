@@ -7,7 +7,7 @@ server:
     io-select-count: ${MAIN_SERVER_IO_SELECT_COUNT:1}
     io-work-count: ${MAIN_SERVER_IO_WORK_COUNT:0}
   http2:
-    enabled: true
+    enabled: ${HTTP_2_ENABLED:true}
   ssl:
     enabled: false
 
@@ -27,6 +27,9 @@ spring:
   cloud:
     gateway:
       httpclient:
+        ssl:
+          # 是否信任所有证书
+          use-insecure-trust-manager: ${HTTPCLIENT_SSL_USE_INSECURE_TRUST_MANAGER:false}
         # 请求链接超时时间
         connect-timeout: ${HTTPCLIENT_CONNECT_TIMEOUT:3000}
         websocket:

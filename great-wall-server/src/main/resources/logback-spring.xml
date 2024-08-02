@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="false">
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{40} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-    </appender>
-
     <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>./data/logs/root/%d{yyyy-MM-dd}-%i.log</fileNamePattern>
@@ -20,6 +13,17 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
+    </appender>
+
+    <!--  系统日志异步写入   -->
+    <appender class="ch.qos.logback.classic.AsyncAppender" name="ASYNC_FILE">
+        <!-- 设置异步阻塞队列的大小，为了不丢失日志建议设置的大一些-->
+        <queueSize>10000</queueSize>
+        <!-- 设置丢弃DEBUG、TRACE、INFO日志的阀值，不丢失 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 设置队列入队时非阻塞，当队列满时会直接丢弃日志，但是对性能提升极大 -->
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="FILE"/>
     </appender>
 
     <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ACCESS_LOG_FILE">
@@ -36,19 +40,24 @@
         </encoder>
     </appender>
 
+    <!--  访问日志异步写入   -->
+    <appender class="ch.qos.logback.classic.AsyncAppender" name="ASYNC_ACCESS_LOG_FILE">
+        <!-- 设置异步阻塞队列的大小，为了不丢失日志建议设置的大一些-->
+        <queueSize>50000</queueSize>
+        <!-- 设置丢弃DEBUG、TRACE、INFO日志的阀值，不丢失 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 设置队列入队时非阻塞，当队列满时会直接丢弃日志，但是对性能提升极大 -->
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="ACCESS_LOG_FILE"/>
+    </appender>
+
     <!-- 访问日志 -->
     <logger name="accessLog" level="INFO" additivity="false">
-        <appender-ref ref="ACCESS_LOG_FILE"/>
+        <appender-ref ref="ASYNC_ACCESS_LOG_FILE"/>
     </logger>
 
-<!--    <logger name="cc.shacocloud.greatwall" level="DEBUG">-->
-<!--        <appender-ref ref="STDOUT"/>-->
-<!--        <appender-ref ref="FILE"/>-->
-<!--    </logger>-->
-
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="ASYNC_FILE"/>
     </root>
 
 </configuration>

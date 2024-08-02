@@ -73,7 +73,7 @@ class MainServerErrorHandler : WebExceptionHandler {
              </body>
              </html>
              """.trimIndent()
-        return writeStringToResponse(response, content)
+        return writeStringToResponse(response, content, MediaType.TEXT_HTML)
     }
 
     /**
@@ -84,7 +84,7 @@ class MainServerErrorHandler : WebExceptionHandler {
         status: HttpStatus,
     ): Mono<Void> {
         val content = """{"code":${status.value()},"reason":"${status.reasonPhrase}"}"""
-        return writeStringToResponse(response, content)
+        return writeStringToResponse(response, content, MediaType.APPLICATION_JSON)
     }
 
     /**
@@ -131,13 +131,19 @@ class MainServerErrorHandler : WebExceptionHandler {
     private fun writeStringToResponse(
         response: ServerHttpResponse,
         content: String,
+        contentType: MediaType,
     ): Mono<Void> {
         val inputStreamSupplier = Callable<InputStream> {
             ByteArrayInputStream(content.toByteArray(Charsets.UTF_8))
         }
 
+        val headers = response.headers
+        headers.contentLength = content.length.toLong()
+        headers.contentType = contentType
+
         val dataBufferFlux = DataBufferUtils.readInputStream(inputStreamSupplier, dataBufferFactory, 1024)
         return response.writeWith(dataBufferFlux)
+            .then(Mono.defer { response.setComplete() })
 
     }
 

@@ -30,4 +30,6 @@ fun main(args: Array<String>) {
     // 自定义应用上下文工厂
     application.setApplicationContextFactory(CustomApplicationContextFactory())
     application.run(*args)
+
+    println("Great Wall 启动成功")
 }
