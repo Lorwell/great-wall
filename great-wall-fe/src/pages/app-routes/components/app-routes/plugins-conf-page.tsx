@@ -35,7 +35,8 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
 
   const form = useForm<FiltersFormSchemaValues>({
     resolver: zodResolver(filtersFrom),
-    defaultValues: {filters: appRoutesDataOptions.filters || []}
+    defaultValues: {filters: appRoutesDataOptions.filters || []},
+    disabled: preview
   });
 
   const fieldArray = useFieldArray({
@@ -76,7 +77,7 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-row gap-4 mt-4">
+              <div className="flex flex-row gap-4">
 
                 <div className="flex">
                   <div className={"flex-auto flex justify-center items-center"}>
@@ -93,6 +94,8 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
                                 value={field}
                                 onChange={(value) => filtersUpdate(index, value)}
                                 onRemove={() => filtersRemove(index)}
+                                enable={preview ? "preview" : true}
+                                showDescription={false}
                         />
                       )
                     })
@@ -149,7 +152,7 @@ function PluginCenter({fieldArray}: PluginCenterProps) {
 
   return (
     <Tabs defaultValue="authentication">
-      <TabsList className={"mb-2"}>
+      <TabsList>
         {
           filterConfig.map((it) => (
             <TabsTrigger key={it.key} value={it.key}>{it.label}</TabsTrigger>
@@ -159,11 +162,13 @@ function PluginCenter({fieldArray}: PluginCenterProps) {
       {
         filterConfig.map((it) => (
           <TabsContent key={it.key} value={it.key}>
-            {
-              it.filters.map((type) => (
-                <PluginFilter key={type} type={type} fieldArray={fieldArray}/>
-              ))
-            }
+            <div className={"grid gap-4 md:grid-cols-2 lg:grid-cols-4"}>
+              {
+                it.filters.map((type) => (
+                  <PluginFilter key={type} type={type} fieldArray={fieldArray}/>
+                ))
+              }
+            </div>
           </TabsContent>
         ))
       }

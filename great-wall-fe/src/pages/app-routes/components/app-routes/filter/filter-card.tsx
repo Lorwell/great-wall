@@ -6,12 +6,14 @@ import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/
 export interface FilterCardProps {
   title: string
   icon: ReactNode
+  category: string | ReactNode
   description?: string | ReactNode
   children?: string | ReactNode
   onSubmit?: () => Promise<boolean | void> | void | boolean
   onRemove?: () => Promise<void> | void
-  enable?: boolean
+  enable?: boolean | "preview"
   showDescription?: boolean
+  disabled?: boolean
 }
 
 /**
@@ -23,12 +25,14 @@ export default function FilterCard(props: FilterCardProps) {
   const {
     title,
     icon,
+    category,
     description,
     children,
     onSubmit,
     onRemove,
     enable,
-    showDescription = true
+    showDescription = true,
+    disabled = false
   } = props;
 
   const [open, setOpen] = useState(false);
@@ -50,16 +54,17 @@ export default function FilterCard(props: FilterCardProps) {
           }
           <div className={"flex flex-row justify-between items-center"}>
                <span className={"text-xs"}>
-                  身份验证
+                  {category}
                </span>
             <Button variant={"secondary"}
                     className={"h-8"}
                     type={"button"}
+                    disabled={disabled}
                     onClick={(event) => {
                       event.preventDefault()
                       setOpen(true)
                     }}>
-              {enable ? "编辑" : "启用"}
+              {enable === "preview" ? "预览" : (enable ? "编辑" : "启用")}
             </Button>
           </div>
         </CardContent>
@@ -83,8 +88,9 @@ export default function FilterCard(props: FilterCardProps) {
           <div className={"mt-6 flex flex-row justify-end gap-4"}>
 
             {
-              enable && (
+              (typeof enable === "boolean" && enable) && (
                 <Button variant={"destructive"}
+                        disabled={disabled}
                         onClick={async (event) => {
                           event.preventDefault()
                           event.stopPropagation();
@@ -97,21 +103,26 @@ export default function FilterCard(props: FilterCardProps) {
               )
             }
 
-            <Button variant={"secondary"}
-                    onClick={async (event) => {
-                      event.preventDefault()
-                      event.stopPropagation();
+            {
+              enable !== "preview" && (
+                <Button variant={"secondary"}
+                        disabled={disabled}
+                        onClick={async (event) => {
+                          event.preventDefault()
+                          event.stopPropagation();
 
-                      const result = await onSubmit?.();
-                      if (result === false) {
-                        return
-                      }
+                          const result = await onSubmit?.();
+                          if (result === false) {
+                            return
+                          }
 
-                      setOpen(false);
-                    }}
-            >
-              保存
-            </Button>
+                          setOpen(false);
+                        }}
+                >
+                  保存
+                </Button>
+              )
+            }
           </div>
         </SheetContent>
       </Sheet>

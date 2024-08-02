@@ -12,7 +12,6 @@ import org.springframework.cloud.gateway.event.RefreshRoutesEvent
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
-import org.springframework.cloud.gateway.filter.factory.PreserveHostHeaderGatewayFilterFactory
 import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
@@ -136,14 +135,6 @@ class AppRouteLocator(
                         }
 
                     // 插件配置
-
-                    // 固定插件
-                    // 转发请求头 Host 网关过滤器
-                    val preserveHostHeaderGatewayFilter =
-                        findGatewayFilter(PreserveHostHeaderGatewayFilterFactory::class.java).apply()
-                    routeBuilder.addFilter(preserveHostHeaderGatewayFilter)
-
-                    // 循环添加用户配置的过滤器
                     for (filter in appRoute.filters) {
                         val gatewayFilter = findGatewayFilter(filter.type.factoryClass)
                             .apply { config -> filter.fillConfig(config) }

@@ -7,14 +7,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {RouteFilterEnum} from "@/constant/api/app-routes/types.ts";
 import {Input} from "@/components/ui/input.tsx";
 import {useEffect} from "react";
-
-export interface RoutesProps<T> {
-  value?: T,
-  onChange?: (value: T) => Promise<boolean | void> | void | boolean
-  onRemove?: () => Promise<void> | void
-  enable?: boolean
-  showDescription?: boolean
-}
+import {RoutesProps} from "@/pages/app-routes/components/app-routes/filter/config.tsx";
 
 /**
  *  basic 认证
@@ -25,18 +18,20 @@ export default function BasicAuth(props: RoutesProps<BasicAuthFilterSchemaValues
     value,
     onChange,
     onRemove,
-    enable = false,
-    showDescription
+    ...rest
   } = props;
 
   const form = useForm<BasicAuthFilterSchemaValues>({
     resolver: zodResolver(basicAuthFilterSchema),
     defaultValues: {...(value || {}), type: RouteFilterEnum.BasicAuth},
+    disabled: rest.disabled || rest.enable === "preview"
   });
 
   useEffect(() => {
-    form.setValue("username", value?.username || "")
-    form.setValue("password", value?.password || "")
+    if (!!value) {
+      form.setValue("username", value.username)
+      form.setValue("password", value.password)
+    }
   }, [value]);
 
   /**
@@ -48,11 +43,11 @@ export default function BasicAuth(props: RoutesProps<BasicAuthFilterSchemaValues
   }
 
   return (
-    <FilterCard title={"Basic Auth"}
+    <FilterCard {...rest}
+                title={"Basic Auth"}
                 icon={<Fingerprint className={"w-6 h-6"}/>}
+                category={"身份验证"}
                 description={<Description/>}
-                enable={enable}
-                showDescription={showDescription}
                 onSubmit={async () => {
                   if (!await form.trigger()) return false
                   await form.handleSubmit(onSubmit)()
@@ -60,7 +55,7 @@ export default function BasicAuth(props: RoutesProps<BasicAuthFilterSchemaValues
                 onRemove={onRemove}
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form className="space-y-8">
           <FormField control={form.control}
                      name="username"
                      render={({field}) => (
@@ -94,9 +89,9 @@ export default function BasicAuth(props: RoutesProps<BasicAuthFilterSchemaValues
 
 function Description() {
   return (
-    <div>
+    <span>
       <a className={"text-blue-600"} href={"https://datatracker.ietf.org/doc/html/rfc7235"}>RFC 7235</a>
       &nbsp;HTTP 身份验证
-    </div>
+    </span>
   )
 }

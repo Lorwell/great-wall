@@ -107,37 +107,37 @@ data class RouteAddResponseHeadersFilter(
 
 data class RouteRemoveRequestHeadersFilter(
 
-    val headerNames: List<String> = listOf(),
+    val headerNames: List<ValueMo> = listOf(),
 
     ) : RouteFilter(RouteFilterEnum.RemoveRequestHeaders) {
 
     override fun <T : Any> fillConfig(config: T) {
         config as RemoveRequestHeadersGatewayFilterFactory.Config
-        config.headerNames = headerNames
+        config.headerNames = headerNames.map { it.value }
     }
 }
 
 data class RouteRemoveRequestQueryParametersFilter(
 
-    val paramNames: List<String> = listOf(),
+    val paramNames: List<ValueMo> = listOf(),
 
     ) : RouteFilter(RouteFilterEnum.RemoveRequestQueryParameters) {
 
     override fun <T : Any> fillConfig(config: T) {
         config as RemoveRequestQueryParametersGatewayFilterFactory.Config
-        config.paramNames = paramNames
+        config.paramNames = paramNames.map { it.value }
     }
 }
 
 data class RouteRemoveResponseHeadersFilter(
 
-    val headerNames: List<String> = listOf(),
+    val headerNames: List<ValueMo> = listOf(),
 
     ) : RouteFilter(RouteFilterEnum.RemoveResponseHeaders) {
 
     override fun <T : Any> fillConfig(config: T) {
         config as RemoveResponseHeadersGatewayFilterFactory.Config
-        config.headerNames = headerNames
+        config.headerNames = headerNames.map { it.value }
     }
 }
 
