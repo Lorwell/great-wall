@@ -151,16 +151,6 @@ data class RouteTokenBucketRequestRateLimiterFilter(
     val statusCode: Int,
 
     /**
-     * 触发限流的响应头
-     */
-    val headers: List<NameValueMo> = listOf(),
-
-    /**
-     * 触发限流的响应体，为空不设置
-     */
-    val body: String? = null,
-
-    /**
      * 令牌数量限制
      */
     @field:Min(1)
@@ -171,8 +161,6 @@ data class RouteTokenBucketRequestRateLimiterFilter(
     override fun <T : Any> fillConfig(config: T) {
         config as TokenBucketRequestRateLimiterGatewayFilterFactory.Config
         config.statusCode = HttpStatusCode.valueOf(statusCode)
-        config.headers = headers
-        config.body = body
         config.limit = limit
     }
 }

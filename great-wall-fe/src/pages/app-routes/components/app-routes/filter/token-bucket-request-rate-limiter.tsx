@@ -23,7 +23,10 @@ export default function TokenBucketRequestRateLimiter(props: RoutesProps<TokenBu
 
   const form = useForm<TokenBucketFilterSchemaValues>({
     resolver: zodResolver(tokenBucketFilterSchema),
-    defaultValues: {...(value || {}), type: RouteFilterEnum.TokenBucketRequestRateLimiter},
+    defaultValues: {
+      ...(value || {headers: [{name: "", value: ""}]}),
+      type: RouteFilterEnum.TokenBucketRequestRateLimiter
+    },
     disabled: rest.disabled || rest.enable === "preview"
   });
 
@@ -54,7 +57,7 @@ export default function TokenBucketRequestRateLimiter(props: RoutesProps<TokenBu
                 onRemove={onRemove}
     >
       <Form {...form}>
-        <form className="space-y-8">
+        <form className="space-y-4">
           <FormField control={form.control}
                      name="limit"
                      render={({field}) => (
@@ -67,6 +70,20 @@ export default function TokenBucketRequestRateLimiter(props: RoutesProps<TokenBu
                        </FormItem>
                      )}
           />
+
+          <FormField control={form.control}
+                     name="statusCode"
+                     render={({field}) => (
+                       <FormItem>
+                         <FormLabel>拒绝服务响应结状态码</FormLabel>
+                         <FormControl>
+                           <Input {...field} type={"number"} min={100} max={999}/>
+                         </FormControl>
+                         <FormMessage/>
+                       </FormItem>
+                     )}
+          />
+
         </form>
       </Form>
     </FilterCard>

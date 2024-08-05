@@ -64,7 +64,9 @@ class MainNettyReactiveWebServerFactory(
      * 主服务的http处理器
      */
     @Bean(MAIN_HTTP_HANDLER_BEAN_NAME)
-    fun mainHttpHandler(): HttpHandler {
+    fun mainHttpHandler(
+        mainServerErrorHandler: MainServerErrorHandler,
+    ): HttpHandler {
         // 主服务只绑定一个条件处理器
         val dispatcherHandler = object : WebFluxDispatcherHandler(applicationContext) {
 
@@ -80,7 +82,6 @@ class MainNettyReactiveWebServerFactory(
         }
 
         // 定制的异常处理器
-        val exceptionHandler = MainServerErrorHandler()
 
         // 使用监控指标处理器来委托目标处理器
         val mainWebHandler = MonitorRouteMetricsWebHandler(
@@ -94,7 +95,7 @@ class MainNettyReactiveWebServerFactory(
                 exceptionHandler = false
             )
             .webHandler(mainWebHandler)
-            .exceptionHandler(listOf(exceptionHandler))
+            .exceptionHandler(listOf(mainServerErrorHandler))
             .build()
     }
 

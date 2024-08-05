@@ -138,6 +138,9 @@ export const tokenBucketFilterSchema = z.object({
   type: z.enum([RouteFilterEnum.TokenBucketRequestRateLimiter]),
   limit: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
     .min(1, "最小值为1"),
+  statusCode: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(100, "最小值为100")
+    .max(999, "最大值为999"),
 })
 export type TokenBucketFilterSchemaValues = z.infer<typeof tokenBucketFilterSchema>
 

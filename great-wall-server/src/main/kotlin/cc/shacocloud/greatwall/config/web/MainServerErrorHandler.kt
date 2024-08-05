@@ -1,12 +1,15 @@
 package cc.shacocloud.greatwall.config.web
 
 import org.springframework.core.annotation.MergedAnnotations
+import org.springframework.core.env.Environment
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpResponse
+import org.springframework.stereotype.Component
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.server.ResponseStatusException
@@ -23,19 +26,31 @@ import java.util.concurrent.Callable
  *
  * @author 思追(shaco)
  */
-class MainServerErrorHandler : WebExceptionHandler {
+@Component
+class MainServerErrorHandler(
+    environment: Environment,
+) : WebExceptionHandler {
 
     companion object {
         val dataBufferFactory = DefaultDataBufferFactory()
     }
 
+    private val appName = environment.getRequiredProperty("spring.application.name")
+
     /**
      * 处理异常
      */
     override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> {
+        val status = determineHttpStatus(ex)
+        return handleErrorStatus(exchange, status)
+    }
+
+    /**
+     * 处理状态异常
+     */
+    fun handleErrorStatus(exchange: ServerWebExchange, status: HttpStatusCode): Mono<Void> {
         val request = exchange.request
         val response = exchange.response
-        val status = determineHttpStatus(ex)
 
         // 设置响应状态码
         response.setStatusCode(status)
@@ -51,25 +66,22 @@ class MainServerErrorHandler : WebExceptionHandler {
      */
     private fun renderHTML(
         response: ServerHttpResponse,
-        status: HttpStatus,
+        status: HttpStatusCode,
     ): Mono<Void> {
 
         val code = status.value()
-        val reasonPhrase = status.reasonPhrase
+        val reasonPhrase = if (status is HttpStatus) " ${status.reasonPhrase}" else ""
 
         val content = """
              <html lang="zh">
              <head>
-                 <meta charset="utf-8">
-                 <title>${code}</title>
+                 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                 <title>${code}${reasonPhrase}</title>
              </head>
-             <body style="font-family: Arial, sans-serif;background-color: #fff;text-align: center;">
-             <h1 style="font-size: 2rem;margin-bottom: 1rem;line-height: 1.5;border-bottom: 1px solid #bdbdbd;">
-                 $code $reasonPhrase
-             </h1>
-             <span style="font-size: 1.2rem;line-height: 1;margin-bottom: 1rem;">
-                 great-wall
-             </span>
+             <body>
+             <div style="text-align:center"><h1>$code${reasonPhrase}</h1></div>
+             <hr>
+             <div style="text-align:center">${appName}</div>
              </body>
              </html>
              """.trimIndent()
@@ -81,9 +93,11 @@ class MainServerErrorHandler : WebExceptionHandler {
      */
     private fun renderJson(
         response: ServerHttpResponse,
-        status: HttpStatus,
+        status: HttpStatusCode,
     ): Mono<Void> {
-        val content = """{"code":${status.value()},"reason":"${status.reasonPhrase}"}"""
+        val code = status.value()
+        val reasonPhrase = if (status is HttpStatus) " ${status.reasonPhrase}" else ""
+        val content = """{"code":${code},"reason":"$reasonPhrase"}"""
         return writeStringToResponse(response, content, MediaType.APPLICATION_JSON)
     }
 
@@ -133,17 +147,22 @@ class MainServerErrorHandler : WebExceptionHandler {
         content: String,
         contentType: MediaType,
     ): Mono<Void> {
-        val inputStreamSupplier = Callable<InputStream> {
-            ByteArrayInputStream(content.toByteArray(Charsets.UTF_8))
+
+        // 已经提交则忽略
+        if (response.isCommitted) {
+            return response.setComplete()
         }
 
         val headers = response.headers
         headers.contentLength = content.length.toLong()
         headers.contentType = contentType
 
+        val inputStreamSupplier = Callable<InputStream> {
+            ByteArrayInputStream(content.toByteArray(Charsets.UTF_8))
+        }
+
         val dataBufferFlux = DataBufferUtils.readInputStream(inputStreamSupplier, dataBufferFactory, 1024)
-        return response.writeWith(dataBufferFlux)
-            .then(Mono.defer { response.setComplete() })
+        return response.writeWith(dataBufferFlux).then(Mono.defer { response.setComplete() })
 
     }
 

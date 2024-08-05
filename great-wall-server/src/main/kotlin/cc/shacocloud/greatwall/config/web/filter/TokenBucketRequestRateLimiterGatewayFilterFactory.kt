@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.config.web.filter
 
+import cc.shacocloud.greatwall.config.web.MainServerErrorHandler
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import java.util.concurrent.Semaphore
@@ -10,17 +11,19 @@ import java.util.concurrent.Semaphore
  * @author 思追(shaco)
  */
 @Component
-class TokenBucketRequestRateLimiterGatewayFilterFactory :
-    AbstractRequestRateLimiterGatewayFilterFactory<TokenBucketRequestRateLimiterGatewayFilterFactory.Config>(
-        Config::class.java
-    ) {
+class TokenBucketRequestRateLimiterGatewayFilterFactory(
+    mainServerErrorHandler: MainServerErrorHandler,
+) : AbstractRequestRateLimiterGatewayFilterFactory<TokenBucketRequestRateLimiterGatewayFilterFactory.Config>(
+    Config::class.java,
+    mainServerErrorHandler
+) {
 
     class Config : AbstractRequestRateLimiterGatewayFilterFactory.Config() {
 
         /**
          * 令牌数量
          */
-        var limit: Int = -1
+        var limit: Int = 1000
 
     }
 

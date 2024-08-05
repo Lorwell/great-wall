@@ -12,6 +12,8 @@ server:
     enabled: false
 
 spring:
+  application:
+    name: ${APP_NAME:great-wall}
   jackson:
     # 解决 jackson @JsonFormat 序列化时差
     time-zone: GMT+8
