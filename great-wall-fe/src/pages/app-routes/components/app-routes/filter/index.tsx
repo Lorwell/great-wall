@@ -14,6 +14,8 @@ import {Fingerprint} from "lucide-react";
 import FilterCard from "@/pages/app-routes/components/app-routes/filter/filter-card.tsx";
 import RemoveRequestQueryParameters
   from "@/pages/app-routes/components/app-routes/filter/remove-request-query-parameters.tsx";
+import SideWindowRequestRateLimiter
+  from "@/pages/app-routes/components/app-routes/filter/slide-window-request-rate-limiter.tsx";
 
 export interface FilterProps {
   type: RouteFilterEnum,
@@ -63,6 +65,9 @@ export default function Filter(props: FilterProps) {
     case RouteFilterEnum.RemoveResponseHeaders:
       // @ts-ignore
       return <RemoveResponseHeaders {...props}/>
+    case RouteFilterEnum.SlideWindowRequestRateLimiter:
+      // @ts-ignore
+      return <SideWindowRequestRateLimiter {...props}/>
   }
 
   return (

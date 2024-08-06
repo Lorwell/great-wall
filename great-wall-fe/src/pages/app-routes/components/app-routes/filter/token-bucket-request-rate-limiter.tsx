@@ -24,7 +24,10 @@ export default function TokenBucketRequestRateLimiter(props: RoutesProps<TokenBu
   const form = useForm<TokenBucketFilterSchemaValues>({
     resolver: zodResolver(tokenBucketFilterSchema),
     defaultValues: {
-      ...(value || {headers: [{name: "", value: ""}]}),
+      ...(value || {
+        limit: 1000,
+        statusCode: 429
+      }),
       type: RouteFilterEnum.TokenBucketRequestRateLimiter
     },
     disabled: rest.disabled || rest.enable === "preview"
@@ -93,7 +96,7 @@ export default function TokenBucketRequestRateLimiter(props: RoutesProps<TokenBu
 function Description() {
   return (
     <span>
-      请求需要先获取令牌，当没有令牌，则拒绝服务
+      请求需要先获取令牌，未获取到令牌，则拒绝服务
     </span>
   )
 }

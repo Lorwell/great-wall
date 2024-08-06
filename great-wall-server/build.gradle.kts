@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "cc.shacocloud"
-version = "2.13"
+version = "2.14"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21

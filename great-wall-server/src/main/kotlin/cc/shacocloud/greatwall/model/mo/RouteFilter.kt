@@ -2,6 +2,7 @@ package cc.shacocloud.greatwall.model.mo
 
 import cc.shacocloud.greatwall.config.web.filter.*
 import cc.shacocloud.greatwall.model.constant.RouteFilterEnum
+import cc.shacocloud.greatwall.model.constant.WindowUnit
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import jakarta.validation.Valid
@@ -32,6 +33,7 @@ class RouteFilters : ArrayList<RouteFilter>()
     JsonSubTypes.Type(value = RouteRemoveResponseHeadersFilter::class, name = "RemoveResponseHeaders"),
     JsonSubTypes.Type(value = RouteTokenBucketRequestRateLimiterFilter::class, name = "TokenBucketRequestRateLimiter"),
     JsonSubTypes.Type(value = RoutePreserveHostHeaderFilter::class, name = "PreserveHostHeader"),
+    JsonSubTypes.Type(value = RouteSlideWindowRequestRateLimiterFilter::class, name = "SlideWindowRequestRateLimiter"),
 )
 abstract class RouteFilter(
 
@@ -162,6 +164,50 @@ data class RouteTokenBucketRequestRateLimiterFilter(
         config as TokenBucketRequestRateLimiterGatewayFilterFactory.Config
         config.statusCode = HttpStatusCode.valueOf(statusCode)
         config.limit = limit
+    }
+}
+
+data class RouteSlideWindowRequestRateLimiterFilter(
+
+    /**
+     * 触发限流时响应的状态码
+     */
+    @field:Min(100)
+    @field:Max(999)
+    val statusCode: Int,
+
+    /**
+     * 令牌数量限制
+     */
+    @field:Min(1)
+    val limit: Int,
+
+    /**
+     * 窗口大小
+     */
+    @field:Min(1)
+    val window: Int = 1,
+
+    /**
+     * 窗口单位
+     */
+    val windowUnit: WindowUnit = WindowUnit.SECONDS,
+
+    /**
+     * 窗口数量
+     */
+    @field:Min(1)
+    val size: Int = 60,
+
+    ) : RouteFilter(RouteFilterEnum.SlideWindowRequestRateLimiter) {
+
+    override fun <T : Any> fillConfig(config: T) {
+        config as SlideWindowRequestRateLimiterGatewayFilterFactory.Config
+        config.statusCode = HttpStatusCode.valueOf(statusCode)
+        config.limit = limit
+        config.window = window
+        config.windowUnit = windowUnit
+        config.size = size
     }
 }
 

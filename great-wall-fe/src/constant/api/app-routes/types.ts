@@ -77,9 +77,14 @@ export enum RouteFilterEnum {
   /* ------------------------  流量控制 ------------------------------- */
 
   /**
-   * 令牌桶算法流量空值
+   * 令牌桶算法流量控制
    */
   TokenBucketRequestRateLimiter = "TokenBucketRequestRateLimiter",
+
+  /**
+   * 滑动窗口算法流量控制
+   */
+  SlideWindowRequestRateLimiter = "SlideWindowRequestRateLimiter",
 
 
   /* ------------------------  请求修改 ------------------------------- */
@@ -119,6 +124,12 @@ export enum RouteFilterEnum {
    */
   RemoveResponseHeaders = "RemoveResponseHeaders",
 
+}
+
+export enum WindowUnitEnum {
+  SECONDS = "SECONDS",
+  MINUTES = "MINUTES",
+  HOURS = "HOURS"
 }
 
 export type AppRouteInput = Partial<AppRoutesConfValues>

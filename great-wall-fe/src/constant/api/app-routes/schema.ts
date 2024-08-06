@@ -3,7 +3,8 @@ import {
   AppRouteStatusEnum,
   PredicateTypeEnum,
   RouteFilterEnum,
-  RoutePredicateOperatorEnum
+  RoutePredicateOperatorEnum,
+  WindowUnitEnum
 } from "@/constant/api/app-routes/types.ts";
 import {baseOutputSchema, getPageRecordSchema, nameValueSchema, valueSchema} from "@/constant/api/schema.ts";
 
@@ -186,6 +187,25 @@ export const removeRequestQueryParametersFilterSchema = z.object({
 })
 export type RemoveRequestQueryParametersFilterSchemaValues = z.infer<typeof removeRequestQueryParametersFilterSchema>
 
+export const slideWindowFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.SlideWindowRequestRateLimiter]),
+  limit: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+  statusCode: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(100, "最小值为100")
+    .max(999, "最大值为999"),
+  window: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+  windowUnit: z.enum([
+    WindowUnitEnum.SECONDS,
+    WindowUnitEnum.MINUTES,
+    WindowUnitEnum.HOURS,
+  ]),
+  size: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+})
+export type SlideWindowFilterSchemaValues = z.infer<typeof slideWindowFilterSchema>
+
 export const filterSchema = z.union([
   basicAuthFilterSchema,
   tokenBucketFilterSchema,
@@ -195,7 +215,8 @@ export const filterSchema = z.union([
   addResponseHeadersFilterSchema,
   removeRequestHeadersFilterSchema,
   removeResponseHeadersFilterSchema,
-  removeRequestQueryParametersFilterSchema
+  removeRequestQueryParametersFilterSchema,
+  slideWindowFilterSchema
 ]);
 
 

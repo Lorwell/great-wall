@@ -10,6 +10,7 @@ import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
 
 /**
  *
@@ -22,7 +23,7 @@ class SlideWindowRequestRateLimiterGatewayFilterFactoryTest {
     fun slideWindowRateLimiterTest() {
         val rateLimiter = SlideWindowRateLimiter(
             Config().apply {
-                limit = 100
+                limit = 10000
                 window = 1
                 windowUnit = WindowUnit.SECONDS
                 size = 60
@@ -36,7 +37,8 @@ class SlideWindowRequestRateLimiterGatewayFilterFactoryTest {
 
             repeat(10) {
                 launch {
-                    repeat(20) {
+
+                    repeat(Random.nextInt(5000)) {
                         launch {
 
                             total.incrementAndGet()
@@ -58,13 +60,14 @@ class SlideWindowRequestRateLimiterGatewayFilterFactoryTest {
                     }
                 }
 
-                delay(1000)
+                delay(Random.nextLong(1000))
             }
         }
 
         println("total: ${total.get()}  success: ${success.get()}")
 
-        rateLimiter.ringWindows.forEach {
+        val buckets = rateLimiter.getBuckets()
+        buckets.forEach {
             println(it)
         }
 

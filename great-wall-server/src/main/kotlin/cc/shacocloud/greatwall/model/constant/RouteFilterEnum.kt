@@ -26,10 +26,14 @@ enum class RouteFilterEnum(
     /* ------------------------  流量控制 ------------------------------- */
 
     /**
-     * 令牌桶算法流量空值
+     * 令牌桶算法流量控制
      */
     TokenBucketRequestRateLimiter(TokenBucketRequestRateLimiterGatewayFilterFactory::class.java),
 
+    /**
+     * 滑动窗口算法流量控制
+     */
+    SlideWindowRequestRateLimiter(SlideWindowRequestRateLimiterGatewayFilterFactory::class.java),
 
     /* ------------------------  请求修改 ------------------------------- */
 
