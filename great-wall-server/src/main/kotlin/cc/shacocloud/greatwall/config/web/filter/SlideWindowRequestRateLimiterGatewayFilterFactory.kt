@@ -223,13 +223,15 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
 
             // 使用 compareAndSet 进行设置，以防多个线程正在尝试
             // 这种情况应该不会发生，因为由于 getCurrentBucket 中提供的保护，addLast 一次只能被一个线程调用
-            if (!state.compareAndSet(currentState, newState)) {
-                if (log.isTraceEnabled) {
-                    log.trace(
-                        "SlideWindowRateLimiter 更新 state 失败，存在其他线程正在更新，这是预期之外的，" +
-                            "与其冒着进行多个 addLast 的风险，不如这里直接返回让其他线程获胜，在下一次 getCurrentBucket 时就能解决问题"
-                    )
-                }
+            if (state.compareAndSet(currentState, newState)) {
+                return
+            }
+
+            if (log.isTraceEnabled) {
+                log.trace(
+                    "SlideWindowRateLimiter 更新 state 失败，存在其他线程正在更新，这是预期之外的，" +
+                        "与其冒着进行多个 addLast 的风险，不如这里直接返回让其他线程获胜，在下一次 getCurrentBucket 时就能解决问题"
+                )
             }
         }
 
@@ -241,7 +243,7 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
                 val current = state.get()
                 val newState = current.createNew()
                 if (state.compareAndSet(current, newState)) {
-                    current.getArray().forEach { bucket -> bucket.close() }
+                    total.reset()
                     return
                 }
             }
@@ -263,6 +265,13 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
              */
             fun tail(): Bucket? {
                 return if (size == 0) null else data[convert(size - 1)]
+            }
+
+            /**
+             * 获取头部的桶
+             */
+            fun head(): Bucket? {
+                return if (size == 0) null else data[convert(0)]
             }
 
             fun addBucket(
@@ -301,7 +310,7 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
             private fun incrementTail(): ListState {
                 // 如果递增的结果大于 "length"，也就是我们应该达到的最大值，那么也递增 head（相当于 removeFirst，但以原子方式完成）
                 return if (size == numberOfBuckets) {
-                    data[head].close()
+                    data[convert(0)].close()
                     // 增加尾部和头部
                     ListState(data, dataLength, numberOfBuckets, (head + 1) % dataLength, (tail + 1) % dataLength)
                 } else {
