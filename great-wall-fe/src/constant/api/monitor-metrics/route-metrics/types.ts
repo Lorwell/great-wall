@@ -5,15 +5,17 @@ import {
   QpsLineMetricsRecordValues,
   TopQpsLineMetricsRecordValues
 } from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
-import {IntervalMetrics, LineMetricsInput} from "@/constant/api/monitor-metrics/types.ts";
+import {LineMetricsInput} from "@/constant/api/monitor-metrics/types.ts";
 
 export interface RouteCountMetricsInput extends MetricsDateRange {
-
+  appRouteId: number | undefined | null
 }
 
-export type RouteLineMetricsInput = LineMetricsInput
+export interface RouteLineMetricsInput extends LineMetricsInput {
+  appRouteId: number | undefined | null
+}
 
-export interface TopRouteLineMetricsInput extends IntervalMetrics, MetricsDateRange {
+export interface TopRouteLineMetricsInput extends RouteLineMetricsInput {
 
   top: number
 }

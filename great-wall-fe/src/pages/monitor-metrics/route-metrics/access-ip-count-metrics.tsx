@@ -9,7 +9,8 @@ import {Spinner} from "@/components/custom-ui/spinner.tsx";
  * @constructor
  */
 export default function AccessIpCountMetrics() {
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => ipCountMetrics(dateRange));
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) =>
+    ipCountMetrics({...dateRange, appRouteId}));
 
   return (
     <Card>

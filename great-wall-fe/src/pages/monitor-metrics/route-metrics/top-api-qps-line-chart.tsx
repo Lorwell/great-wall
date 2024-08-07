@@ -14,9 +14,10 @@ import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts";
  */
 function TopApiQpsLineChartCard({size}: { size: Size, }) {
 
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => topQpsLineMetrics(
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) => topQpsLineMetrics(
     {
       ...dateRange,
+      appRouteId,
       ...maxPoint(size.width - 70, dateRange),
       top: 10
     }));

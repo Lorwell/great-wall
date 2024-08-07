@@ -1,6 +1,12 @@
 import {z} from "zod";
-import {AppRouteStatusEnum, PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
-import {baseOutputSchema, getPageRecordSchema} from "@/constant/api/schema.ts";
+import {
+  AppRouteStatusEnum,
+  PredicateTypeEnum,
+  RouteFilterEnum,
+  RoutePredicateOperatorEnum,
+  WindowUnitEnum
+} from "@/constant/api/app-routes/types.ts";
+import {baseOutputSchema, getPageRecordSchema, nameValueSchema, valueSchema} from "@/constant/api/schema.ts";
 
 // 基础信息
 export const baseInfoFormSchema = z.object({
@@ -17,7 +23,7 @@ export const baseInfoFormSchema = z.object({
     })
     .optional()
     .nullable(),
-  priority: z.number({required_error: "不可以为空"}),
+  priority: z.coerce.number({invalid_type_error: "不可以为空", required_error: "不可以为空"}),
   status: z.enum(
     [AppRouteStatusEnum.ONLINE, AppRouteStatusEnum.OFFLINE],
     {required_error: "不可以为空"}
@@ -97,7 +103,7 @@ export type PredicatesOperatorSchemaValues = z.infer<typeof predicatesOperatorSc
 
 export const urlsSchema = z.object({
   url: z.string({required_error: "不可以为空"}).url({message: "请输入有效地址"}),
-  weight: z.number({required_error: "不可以为空"})
+  weight: z.coerce.number({required_error: "不可以为空"})
     .min(1, "权重最小值为1")
     .max(100, "权重最大值为100"),
 })
@@ -122,10 +128,112 @@ export type PredicatesFormValues = z.infer<typeof predicatesFormSchema>
 
 // -------------------------- 插件配置
 
+export const basicAuthFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.BasicAuth]),
+  username: z.string({required_error: "不可以为空"}),
+  password: z.string({required_error: "不可以为空"}),
+})
+export type BasicAuthFilterSchemaValues = z.infer<typeof basicAuthFilterSchema>
+
+export const tokenBucketFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.TokenBucketRequestRateLimiter]),
+  limit: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+  statusCode: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(100, "最小值为100")
+    .max(999, "最大值为999"),
+})
+export type TokenBucketFilterSchemaValues = z.infer<typeof tokenBucketFilterSchema>
+
+export const preserveHostHeaderFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.PreserveHostHeader]),
+  preserve: z.boolean({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+})
+export type PreserveHostHeaderFilterSchemaValues = z.infer<typeof preserveHostHeaderFilterSchema>
+
+export const addRequestHeadersFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.AddRequestHeaders]),
+  headers: z.array(nameValueSchema)
+})
+export type AddRequestHeadersFilterSchemaValues = z.infer<typeof addRequestHeadersFilterSchema>
+
+export const addRequestQueryParametersFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.AddRequestQueryParameters]),
+  params: z.array(nameValueSchema)
+})
+export type AddRequestQueryParametersFilterSchemaValues = z.infer<typeof addRequestQueryParametersFilterSchema>
+
+export const addResponseHeadersFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.AddResponseHeaders]),
+  headers: z.array(nameValueSchema)
+})
+export type AddResponseHeadersFilterSchemaValues = z.infer<typeof addResponseHeadersFilterSchema>
+
+export const removeRequestHeadersFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.RemoveRequestHeaders]),
+  headerNames: z.array(valueSchema)
+})
+export type RemoveRequestHeadersFilterSchemaValues = z.infer<typeof removeRequestHeadersFilterSchema>
+
+export const removeResponseHeadersFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.RemoveResponseHeaders]),
+  headerNames: z.array(valueSchema)
+})
+export type RemoveResponseHeadersFilterSchemaValues = z.infer<typeof removeResponseHeadersFilterSchema>
+
+export const removeRequestQueryParametersFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.RemoveRequestQueryParameters]),
+  paramNames: z.array(valueSchema)
+})
+export type RemoveRequestQueryParametersFilterSchemaValues = z.infer<typeof removeRequestQueryParametersFilterSchema>
+
+export const slideWindowFilterSchema = z.object({
+  type: z.enum([RouteFilterEnum.SlideWindowRequestRateLimiter]),
+  limit: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+  statusCode: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(100, "最小值为100")
+    .max(999, "最大值为999"),
+  window: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+  windowUnit: z.enum([
+    WindowUnitEnum.SECONDS,
+    WindowUnitEnum.MINUTES,
+    WindowUnitEnum.HOURS,
+  ]),
+  size: z.coerce.number({invalid_type_error: "无效的内容", required_error: "不可以为空"})
+    .min(1, "最小值为1"),
+})
+export type SlideWindowFilterSchemaValues = z.infer<typeof slideWindowFilterSchema>
+
+export const filterSchema = z.union([
+  basicAuthFilterSchema,
+  tokenBucketFilterSchema,
+  preserveHostHeaderFilterSchema,
+  addRequestHeadersFilterSchema,
+  addRequestQueryParametersFilterSchema,
+  addResponseHeadersFilterSchema,
+  removeRequestHeadersFilterSchema,
+  removeResponseHeadersFilterSchema,
+  removeRequestQueryParametersFilterSchema,
+  slideWindowFilterSchema
+]);
+
+
+export type FilterFormValues = z.infer<typeof filterSchema>
+export const filtersSchema = z.array(filterSchema)
+export type FiltersFormValues = z.infer<typeof filtersSchema>
+
 
 // -------------------------- 配置结果集
 
-export const appRoutesConfSchema = baseInfoFormSchema.merge(predicatesFormSchema)
+export const appRoutesConfSchema =
+  z.object({
+    filters: filtersSchema
+  })
+    .merge(baseInfoFormSchema)
+    .merge(predicatesFormSchema)
+
 export type AppRoutesConfValues = z.infer<typeof appRoutesConfSchema>
 
 

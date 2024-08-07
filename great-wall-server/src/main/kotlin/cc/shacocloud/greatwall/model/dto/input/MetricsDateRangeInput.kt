@@ -14,8 +14,30 @@ import java.time.LocalDateTime
 open class MetricsDateRangeInput(
     open val type: Type,
     open val lastDataEnum: LastDateEnum?,
-    open val dateRange: DateRange?
+    open val dateRange: DateRange?,
 ) {
+
+    /**
+     * 时间范围
+     */
+    private val dataRange: Pair<LocalDateTime, LocalDateTime> by lazy {
+        check()
+        when (type) {
+            Type.DateRange -> {
+                val range = dateRange!!
+                val form = range.from
+                val to = range.to ?: LocalDateTime.now()
+                form to to
+
+            }
+
+            LastDateEnum -> {
+                val from = lastDataEnum!!.toDateTime()
+                val to = LocalDateTime.now()
+                from to to
+            }
+        }
+    }
 
     /**
      * 参数检查
@@ -36,28 +58,13 @@ open class MetricsDateRangeInput(
      * 获取时间范围的毫秒数
      */
     fun getDateRange(): Pair<LocalDateTime, LocalDateTime> {
-        check()
-        return when (type) {
-            Type.DateRange -> {
-                val range = dateRange!!
-                val form = range.from
-                val to = range.to ?: LocalDateTime.now()
-                form to to
-
-            }
-
-            LastDateEnum -> {
-                val from = lastDataEnum!!.toDateTime()
-                val to = LocalDateTime.now()
-                from to to
-            }
-        }
+        return dataRange
     }
 
 
     data class DateRange(
         val from: LocalDateTime,
-        val to: LocalDateTime?
+        val to: LocalDateTime?,
     )
 
     enum class Type {

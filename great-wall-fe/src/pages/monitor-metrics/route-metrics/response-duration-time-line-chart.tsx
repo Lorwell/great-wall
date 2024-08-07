@@ -29,9 +29,10 @@ type chartKey = keyof typeof chartConfig
  */
 function ResponseDurationTimeLineChart({size}: { size: Size }) {
 
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => durationLineMetrics(
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) => durationLineMetrics(
     {
       ...dateRange,
+      appRouteId,
       ...maxPoint(size.width - 70, dateRange)
     }));
 

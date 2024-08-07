@@ -12,12 +12,12 @@ import org.springframework.cloud.gateway.event.RefreshRoutesEvent
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory
-import org.springframework.cloud.gateway.filter.factory.PreserveHostHeaderGatewayFilterFactory
 import org.springframework.cloud.gateway.handler.predicate.WeightRoutePredicateFactory
 import org.springframework.cloud.gateway.route.Route
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.support.RouteMetadataUtils
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
+import org.springframework.context.annotation.DependsOn
 import org.springframework.core.Ordered
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -30,17 +30,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author 思追(shaco)
  */
 @Service
+@DependsOn("upgradeScript")
 class AppRouteLocator(
     val appRouteService: AppRouteService,
     val routePredicateFactory: RoutePredicateFactory,
     val weightRoutePredicateFactory: WeightRoutePredicateFactory,
-    gatewayFilterFactories: List<GatewayFilterFactory<Any>>,
+    val gatewayFilters: List<GatewayFilterFactory<*>>,
 ) : RouteLocator {
 
-    /**
-     * 以网关的 [GatewayFilterFactory.name] 作为键，转为一个 map 对象，用于快速匹配
-     */
-    private val gatewayFilterFactoryMap = gatewayFilterFactories.associateBy { it.name() }
 
     companion object {
 
@@ -138,16 +135,24 @@ class AppRouteLocator(
                         }
 
                     // 插件配置
-                    // TODO 这边先固定一部分插件
-
-                    // 转发请求头 Host 网关过滤器
-                    val preserveHostHeaderGatewayFilter =
-                        (gatewayFilterFactoryMap["PreserveHostHeader"] as PreserveHostHeaderGatewayFilterFactory).apply()
-                    routeBuilder.addFilter(preserveHostHeaderGatewayFilter)
+                    for (filter in appRoute.filters) {
+                        val gatewayFilter = findGatewayFilter(filter.type.factoryClass)
+                            .apply { config -> filter.fillConfig(config) }
+                        routeBuilder.addFilter(gatewayFilter)
+                    }
 
                     send(routeBuilder.build())
                 }
             }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <C : GatewayFilterFactory<out Any>> findGatewayFilter(factoryClass: Class<C>): C {
+        val factory = gatewayFilters.find { factoryClass.isAssignableFrom(it::class.java) } as C?
+        if (factory == null) {
+            throw IllegalArgumentException("未能匹配到 $factoryClass 对应的网关过滤器工厂")
+        }
+        return factory
     }
 
 }

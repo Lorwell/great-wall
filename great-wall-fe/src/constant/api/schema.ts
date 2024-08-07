@@ -10,8 +10,8 @@ export type BaseOutputSchemaValues = z.infer<typeof baseOutputSchema>
 
 // 列表查询
 export const baseListInputSchema = z.object({
-  current: z.number().min(0).optional(),
-  size: z.number().min(0).max(1000).optional(),
+  current: z.coerce.number().min(0).optional(),
+  size: z.coerce.number().min(0).max(1000).optional(),
   orderBy: z.array(z.string()).optional(),
   orderDirection: z.enum(["ASC", "DESC"]).optional(),
   orderNullHandling: z.enum(["NATIVE", "NULLS_FIRST", "NULLS_LAST"]).optional(),
@@ -48,9 +48,9 @@ export type FieldsErrorValues = z.infer<typeof fieldsErrorSchema>
 export function getPageRecordSchema<T extends ZodRawShape>(object: ZodObject<T>) {
   return z.object({
     page: z.object({
-      current: z.number(),
-      size: z.number(),
-      total: z.number(),
+      current: z.coerce.number(),
+      size: z.coerce.number(),
+      total: z.coerce.number(),
     }),
     records: z.array(object)
   })
@@ -65,3 +65,13 @@ export function getRecordSchema<T extends ZodRawShape>(object: ZodObject<T>) {
     records: z.array(object)
   })
 }
+
+export const nameValueSchema = z.object({
+  name: z.string({required_error: "不可以为空"}).min(1, "不可以为空"),
+  value: z.string({required_error: "不可以为空"}).min(1, "不可以为空"),
+})
+
+
+export const valueSchema = z.object({
+  value: z.string({required_error: "不可以为空"}).min(1, "不可以为空"),
+})

@@ -11,9 +11,9 @@ import java.time.Duration
 data class RouteTargetConfig(
 
     /**
-     * 连接超时以毫为单位，默认为 30s
+     * 连接超时以毫为单位，默认为 3s
      */
-    val connectTimeout: Duration = Duration.ofSeconds(30),
+    val connectTimeout: Duration = Duration.ofSeconds(3),
 
     /**
      * 响应超时，默认不超时

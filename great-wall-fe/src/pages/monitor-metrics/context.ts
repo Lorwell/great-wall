@@ -7,6 +7,7 @@ import {Plugin, Service} from "ahooks/lib/useRequest/src/types";
 
 export interface RefreshMetricsParams {
   dateRange: MetricsDateRange
+  appRouteId: number | undefined | null
 }
 
 export interface MonitorMetricsContext extends RefreshMetricsParams {
@@ -20,7 +21,8 @@ export const monitorMetricsContext = createContext<MonitorMetricsContext>({
   dateRange: {
     type: "LastDateEnum",
     lastDataEnum: LastDateEnum.Last30Minute
-  }
+  },
+  appRouteId: null
 });
 
 /**

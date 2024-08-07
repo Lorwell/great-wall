@@ -6,12 +6,16 @@ import dayjs from "dayjs";
 import OsfipinDetails from "@/pages/tls/osfipin/details.tsx";
 import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 import {Button} from "@/components/ui/button";
-import {Download} from "lucide-react";
+import {Download, Eraser} from "lucide-react";
 import {downloadFile} from "@/utils/Utils.ts";
+import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import {tlsDelete} from "@/constant/api/app-tls";
 
 export interface DetailsProps {
 
   data: TlsOutput
+
+  onRefresh?: () => void
 
 }
 
@@ -19,13 +23,23 @@ export interface DetailsProps {
  * 证书详情
  * @constructor
  */
-export default function Details({data}: DetailsProps) {
+export default function Details({data, onRefresh}: DetailsProps) {
+
+  const {loading: tlsDeleteLoading, runAsync: tlsDeleteRun} = useApiRequest(tlsDelete, {manual: true});
 
   /**
    * 处理下载
    */
   function handleDownload() {
     downloadFile("tls.zip", "/api/tls/download")
+  }
+
+  /**
+   * 处理删除
+   */
+  async function handleDelete() {
+    await tlsDeleteRun()
+    onRefresh?.();
   }
 
   return (
@@ -42,6 +56,14 @@ export default function Details({data}: DetailsProps) {
             >
               <Download className={"w-6 h-6"}/>
               <span className={"ml-2"}>下载证书</span>
+            </Button>
+            <Button variant={"secondary"}
+                    className="w-32"
+                    loading={tlsDeleteLoading}
+                    onClick={handleDelete}
+            >
+              <Eraser className={"w-6 h-6"}/>
+              <span className={"ml-2"}>删除证书</span>
             </Button>
           </div>
         </div>

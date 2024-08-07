@@ -1,5 +1,10 @@
 import {createContext} from "react";
-import {AppRoutesConfValues, BaseInfoFormValues, PredicatesFormValues} from "@/constant/api/app-routes/schema.ts";
+import {
+  AppRoutesConfValues,
+  BaseInfoFormValues,
+  FiltersFormValues,
+  PredicatesFormValues
+} from "@/constant/api/app-routes/schema.ts";
 
 
 export interface AppRoutesDataOptions {
@@ -13,6 +18,11 @@ export interface AppRoutesDataOptions {
    * 路由条件
    */
   predicates?: Partial<PredicatesFormValues>
+
+  /**
+   * 路由插件
+   */
+  filters?: Partial<FiltersFormValues>
 
 }
 

@@ -1,6 +1,9 @@
 package cc.shacocloud.greatwall.utils
 
+import cc.shacocloud.greatwall.config.web.TrafficStatisticsHttpRequestDecorator
+import cc.shacocloud.greatwall.config.web.TrafficStatisticsHttpResponseDecorator
 import org.springframework.http.server.reactive.ServerHttpRequest
+import org.springframework.http.server.reactive.ServerHttpResponse
 
 const val UNKNOWN = "unknown"
 
@@ -33,4 +36,28 @@ fun ServerHttpRequest.getRealIp(): String {
  */
 fun ServerHttpRequest.getHost(): String {
     return headers.host?.hostString ?: UNKNOWN
+}
+
+/**
+ * 获取请求内容长度
+ */
+fun ServerHttpRequest.getContentLength(): Long {
+    if (this is TrafficStatisticsHttpRequestDecorator) {
+        return requestBodySize.get()
+    }
+
+    val contentLength = headers.contentLength
+    return contentLength.coerceAtLeast(0)
+}
+
+/**
+ * 获取响应内容长度
+ */
+fun ServerHttpResponse.getContentLength(): Long {
+    if (this is TrafficStatisticsHttpResponseDecorator) {
+        return responseBodySize.get()
+    }
+
+    val contentLength = headers.contentLength
+    return contentLength.coerceAtLeast(0)
 }

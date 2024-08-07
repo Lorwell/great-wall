@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.service.impl
 
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
+import cc.shacocloud.greatwall.model.event.DeleteTlsEvent
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.model.mo.TlsFile
@@ -36,7 +37,7 @@ import kotlin.io.path.invariantSeparatorsPathString
 @Transactional(rollbackFor = [Exception::class])
 class TlsServiceImpl(
     val tlsRepository: TlsRepository,
-    val tlsProvider: CompositionTlsProvider
+    val tlsProvider: CompositionTlsProvider,
 ) : TlsService {
 
     companion object {
@@ -138,6 +139,18 @@ class TlsServiceImpl(
                 certificatePath.putZipEntry(zos)
                 privateKeyPath.putZipEntry(zos)
             }
+        }
+    }
+
+    /**
+     * 移除证书
+     */
+    override suspend fun delete() {
+        val tlsPo = findTlsPo()
+
+        if (tlsPo != null) {
+            tlsRepository.delete(tlsPo).awaitSingleOrNull()
+            ApplicationContextHolder.getInstance().publishEvent(DeleteTlsEvent())
         }
     }
 

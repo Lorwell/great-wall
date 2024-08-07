@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.service.scheduled
 
+import cc.shacocloud.greatwall.model.event.DeleteTlsEvent
 import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.service.TlsService
@@ -56,7 +57,23 @@ class AutoRefreshTLSScheduled(
     }
 
     /**
-     * 刷新证书时间
+     * 删除证书事件
+     */
+    @EventListener(DeleteTlsEvent::class)
+    fun deleteTlsEvent() = mono {
+        if (log.isInfoEnabled) {
+            log.info("收到删除tls证书事件！")
+        }
+
+        if (ApplicationContextHolder.available()) {
+            val applicationContext = ApplicationContextHolder.getInstance()
+            applicationContext.deleteSslBundle()
+            applicationContext.refreshWebserver()
+        }
+    }
+
+    /**
+     * 刷新证书事件
      */
     @EventListener(RefreshTlsEvent::class)
     fun refreshTlsEvent(event: RefreshTlsEvent) = mono {

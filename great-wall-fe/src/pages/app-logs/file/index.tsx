@@ -2,16 +2,17 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {useNavigate, useParams} from "react-router-dom";
 import {CSSProperties, useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
-import {isBlank, isEmpty} from "@/utils/Utils.ts";
+import {downloadFile, isBlank, isEmpty} from "@/utils/Utils.ts";
 import {Label} from "@/components/ui/label.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
-import {Dot} from "lucide-react";
+import {Dot, FileDown} from "lucide-react";
 import {LazyLog, ScrollFollow} from "@melloware/react-logviewer";
 import useApiRequest from "@/components/hooks/useApiRequest.ts";
 import {logsList} from "@/constant/api/app-logs";
 import {logTypeChinese} from "@/constant/api/app-logs/types.ts";
+import {Button} from "@/components/ui/button.tsx";
 
 export enum ReadyState {
   Connecting = "CONNECTING",
@@ -73,6 +74,13 @@ export default function LogFile() {
     navigate(`/manage/logs/type/${type.toLowerCase()}/file/${file}`)
   }
 
+  /**
+   * 下载日志
+   */
+  function handleDownload() {
+    downloadFile(file!, `/api/logs/type/${type?.toUpperCase()}/name/${file}/download`)
+  }
+
   const host = `${window.location.host}`;
   const openTLS = 'https:' === window.location.protocol;
   const url = `${openTLS ? 'wss' : 'ws'}://${host}/api/logs/type/${type}/name/${file}`
@@ -114,9 +122,10 @@ export default function LogFile() {
                   />
                   <Label htmlFor="autoRefresh">自动追踪日志</Label>
                 </div>
+
               </div>
 
-              <div className={"flex flex-row items-center space-x-2"}>
+              <div className={"flex flex-row items-center space-x-4"}>
 
                 <div className={"flex flex-row items-center space-x-2"}>
                   <Dot className={"rounded"} style={{...statusStyles[readyState.toLowerCase()]}}/>
@@ -127,6 +136,10 @@ export default function LogFile() {
                   </span>
                 </div>
 
+                <Button variant={"secondary"} onClick={handleDownload}>
+                  <FileDown className={"mr-2 h-4 w-4"}/>
+                  下载日志
+                </Button>
               </div>
             </div>
 

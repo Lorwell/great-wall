@@ -10,7 +10,8 @@ import {byteSizeToUnitStr} from "@/utils/Utils.ts";
  * @constructor
  */
 export default function RequestTrafficMetrics() {
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => requestTrafficSumMetrics(dateRange));
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) =>
+    requestTrafficSumMetrics({...dateRange, appRouteId}));
 
   return (
     <Card>

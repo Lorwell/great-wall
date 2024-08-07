@@ -15,9 +15,10 @@ data class TopRouteLineMetricsInput(
     @field:Min(value = 1)
     override val interval: Int,
     override val intervalType: DateRangeDurationUnit,
+    override val appRouteId: Long? = null,
 
     @field:Min(value = 5)
     @field:Max(value = 100)
-    val top: Int
+    val top: Int,
 
-) : LineMetricsInput(type, lastDataEnum, dateRange, interval, intervalType)
+    ) : RouteLineMetricsInput(type, lastDataEnum, dateRange, interval, intervalType, appRouteId)

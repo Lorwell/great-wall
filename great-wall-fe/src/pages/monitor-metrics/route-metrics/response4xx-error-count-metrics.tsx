@@ -9,7 +9,8 @@ import {Spinner} from "@/components/custom-ui/spinner.tsx";
  * @constructor
  */
 export default function Response4xxErrorCountMetrics() {
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => status4xxCountMetrics(dateRange));
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) =>
+    status4xxCountMetrics({...dateRange, appRouteId}));
 
   return (
     <Card>

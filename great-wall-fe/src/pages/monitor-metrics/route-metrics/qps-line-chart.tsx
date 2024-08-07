@@ -24,9 +24,10 @@ const chartConfig = {
  */
 function QpsLineChart({size}: { size: Size }) {
 
-  const {data, loading} = useApiRequestMetrics(({dateRange}) => qpsLineMetrics(
+  const {data, loading} = useApiRequestMetrics(({dateRange, appRouteId}) => qpsLineMetrics(
     {
       ...dateRange,
+      appRouteId,
       ...maxPoint(size.width - 70, dateRange)
     }));
 

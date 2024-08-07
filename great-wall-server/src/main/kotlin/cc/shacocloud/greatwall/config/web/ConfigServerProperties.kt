@@ -12,5 +12,6 @@ data class ConfigServerProperties(
     /**
      * 端口
      */
-    val port: Int
+    val port: Int,
+
 )

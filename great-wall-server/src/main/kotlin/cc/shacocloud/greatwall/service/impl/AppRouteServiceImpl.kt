@@ -22,7 +22,7 @@ import java.util.*
 @Transactional(rollbackFor = [Exception::class])
 class AppRouteServiceImpl(
     val appRouteRepository: AppRouteRepository,
-    val databaseClient: DatabaseClient
+    val databaseClient: DatabaseClient,
 ) : AppRouteService {
 
     /**
@@ -36,6 +36,7 @@ class AppRouteServiceImpl(
             status = input.status,
             targetConfig = input.targetConfig,
             predicates = input.predicates,
+            filters = input.filters,
             createTime = Date(),
             lastUpdateTime = Date()
         )
@@ -97,6 +98,7 @@ class AppRouteServiceImpl(
             status = input.status
             targetConfig = input.targetConfig
             predicates = input.predicates
+            filters= input.filters
             lastUpdateTime = Date()
         }
 

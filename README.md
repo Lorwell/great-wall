@@ -1,15 +1,16 @@
 # Great Wall
 
-> 基于 springboot3 + kotlin + graalvm21 构建的个人云网关
+> 基于 springboot3 + kotlin + graalvm21 构建的人云网关
 
 ## 说明
 
 ### 特性
 
 * 完善的页面路由配置
+* 丰富的路由插件
 * 监控 + 日志一应俱全
 * 支持自定义证书 和 [来此加密](https://letsencrypt.osfipin.com/) 证书自动续签
-* 使用 graalvm 本地化构建，资源占有率极低，内存稳定在 100MB 左右
+* 使用 graalvm 本地化构建，资源占有率极低，内存稳定在 200MB 以下
 
 ### 局限
 
@@ -24,7 +25,11 @@
 本项目每个版本都构建了基于 graalvm 的本地镜像放置在 `ccr.ccs.tencentyun.com/shaco_work/great-wall`上，因受到限制，正在寻找国内的公开镜像库，暂时保存在 [腾讯云](https://console.cloud.tencent.com/tcr/publicimage/tag?rid=1&reponame=shaco_work%2Fgreat-wall)，建议使用 `2.0` 之后的版本
 
 ```bash
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.0
+// 使用 serial gc(串行垃圾回收器)，适合小内存应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.14
+
+// 使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.14_g1gc
 ```
 
 ### 本地编译
@@ -35,20 +40,28 @@ docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencent
 
 当前服务支持的环境变量配置一览
 
-| 名称                               | 说明                                                 |
-| ---------------------------------- | ---------------------------------------------------- |
-| TLS_PORT                           | 证书绑定的端口，默认为 443                           |
-| PORT                               | 非证书绑定端口，默认为 80                            |
-| CONFIG_SERVER_PORT                 | 后台管理页面端口，默认为 8080                        |
-| WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH | 代理 websockt 最大帧数字节长度，默认为 6553500       |
-| HTTPCLIENT_POOL_MAX_IDLE_TIME      | http 链接最大空闲时间，默认60S                       |
-| HTTPCLIENT_POOL_MAX_LIFE_TIME      | http 链接最大存活时间，默认10H                       |
-| HTTPCLIENT_POOL_EVICTION_INTERVAL  | http 链接存货检测时间间隔，默认 10S                  |
-| ADMIN_PASSWORD                     | 管理员密码配置，**强烈建议：生产环境进行必要的修改** |
+| 名称                                      | 说明                                                         |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| TLS_PORT                                  | 证书绑定的端口，默认为 443                                   |
+| PORT                                      | 非证书绑定端口，默认为 80                                    |
+| CONFIG_SERVER_PORT                        | 后台管理页面端口，默认为 8080                                |
+| WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH        | 代理 websockt 最大帧数字节长度，默认为 6553500               |
+| HTTPCLIENT_POOL_MAX_IDLE_TIME             | http 链接最大空闲时间，默认60S                               |
+| HTTPCLIENT_POOL_MAX_LIFE_TIME             | http 链接最大存活时间，默认10H                               |
+| HTTPCLIENT_POOL_EVICTION_INTERVAL         | http 链接存货检测时间间隔，默认 10S                          |
+| ADMIN_PASSWORD                            | 管理员密码配置，**强烈建议：生产环境进行必要的修改**         |
+| GREAT_WALL_MAX_MEMORY                     | 配置java最大堆内存，默认为200m，g1gc下默认为1g               |
+| MAIN_SERVER_IO_SELECT_COUNT               | 选择器线程数，默认为1，用于接受请求                          |
+| MAIN_SERVER_IO_WORK_COUNT                 | 工作线程数，默认为当前处理器内核数量，最小值为4，用于处理请求 |
+| HTTPCLIENT_SSL_USE_INSECURE_TRUST_MANAGER | 是否信任所有客户端证书                                       |
+| HTTPCLIENT_CONNECT_TIMEOUT                | 客户端请求超时时间，单位毫秒，默认值 3000                    |
+| HTTP_2_ENABLED                            | 是否启用Http2，默认值为 true 开启                            |
 
 ## 规划
 
-- [ ] 路由支持插件配置
+- [x] 路由支持插件配置
+- [ ] 防火墙相关功能
+- [ ] 支持一些服务发现插件，进行动态刷新路由
 - [ ] 支持集群模式
 
 ## 系统截图

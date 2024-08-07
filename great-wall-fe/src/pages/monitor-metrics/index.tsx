@@ -10,6 +10,7 @@ import {
 import {monitorMetricsContext, RefreshMetricsParams} from "@/pages/monitor-metrics/context.ts";
 import RefreshSelectPicker from "@/pages/monitor-metrics/refresh-select-picker.tsx";
 import {useEventEmitter} from "ahooks";
+import AppRouteSelectPicker from "@/pages/monitor-metrics/app-route-select-picker.tsx";
 
 /**
  * 监控指标
@@ -26,17 +27,26 @@ export default function MonitorMetrics() {
     lastDataEnum: LastDateEnum.Last30Minute
   });
 
+  const [appRouteId, setAppRouteId] = useState<number | -1>(-1);
+
   useEffect(() => {
     navigate(tabState)
   }, [tabState]);
 
-  useEffect(emitEvent, [dateRange])
+  useEffect(emitEvent, [dateRange, appRouteId])
 
   /**
    * 发布事件
    */
   function emitEvent() {
-    event$.emit({dateRange});
+    event$.emit({dateRange, appRouteId: getRealAppRouteId()});
+  }
+
+  /**
+   * 获取真实的应用路由
+   */
+  function getRealAppRouteId(): number | null {
+    return appRouteId > 0 ? appRouteId : null
   }
 
   return (
@@ -52,13 +62,18 @@ export default function MonitorMetrics() {
             <TabsTrigger className={"cursor-pointer"} value="server">服务指标</TabsTrigger>
           </TabsList>
 
-          <div className={"flex flex-row space-x-2"}>
+          <div className={"flex flex-row space-x-2 pt-1"}>
+            {
+              tabState === "route" && (
+                <AppRouteSelectPicker value={appRouteId} onChange={setAppRouteId}/>
+              )
+            }
             <MetricsDateRangePicker value={dateRange} onChange={setDateRange}/>
             <RefreshSelectPicker onRefresh={emitEvent}/>
           </div>
         </div>
 
-        <monitorMetricsContext.Provider value={{event$, dateRange}}>
+        <monitorMetricsContext.Provider value={{event$, dateRange, appRouteId: getRealAppRouteId()}}>
           <AutoSizablePanel className={"flex-auto overflow-hidden"}>
             {
               (size) => (
