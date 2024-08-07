@@ -33,6 +33,7 @@ object TimerCacheTime : Time {
     private val log: Logger = LoggerFactory.getLogger(TimerCacheTime::class.java)
 
     // 当前时间的毫秒戳
+    @Volatile
     private var seconds: Long = System.currentTimeMillis() / 1000
 
     init {

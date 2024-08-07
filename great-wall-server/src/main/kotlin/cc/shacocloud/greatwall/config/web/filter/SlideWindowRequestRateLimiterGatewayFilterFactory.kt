@@ -239,8 +239,9 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
         private fun clear() {
             while (true) {
                 val current = state.get()
-                val newState = current.clear()
+                val newState = current.createNew()
                 if (state.compareAndSet(current, newState)) {
+                    current.getArray().forEach { bucket -> bucket.close() }
                     return
                 }
             }
@@ -272,9 +273,9 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
             }
 
             /**
-             * 清除，即创建一个新的对象空返回
+             * 即创建一个新的对象空返回
              */
-            fun clear(): ListState {
+            fun createNew(): ListState {
                 val data = AtomicReferenceArray<Bucket>(dataLength)
                 return ListState(
                     data = data,
