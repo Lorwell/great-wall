@@ -85,7 +85,7 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
         private val updateLock = Mutex()
         private val time: Time = Time.DEFAULT
 
-        // 用于记录当前所有桶的总并发
+        // 用于记录当前所有桶的总请求数量
         private val total: LongAdder = LongAdder()
 
         // 这是一个充当 FIFO 队列的环形数组
