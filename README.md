@@ -26,10 +26,10 @@
 
 ```bash
 // 使用 serial gc(串行垃圾回收器)，适合小内存应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.15
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.16
 
 // 使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.15_g1gc
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.16_g1gc
 ```
 
 ### 本地编译
