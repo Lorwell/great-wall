@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.AnnotationAwareOrderComparator
-import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.reactive.DispatchExceptionHandler
 import org.springframework.web.reactive.HandlerAdapter
@@ -22,7 +21,6 @@ import java.util.stream.Collectors
  *
  * @author 思追(shaco)
  */
-@Component
 class RequestMappingHandlerInterceptorAdapter(
     private val requestMappingHandlerAdapter: RequestMappingHandlerAdapter,
     private val interceptorProvider: ObjectProvider<RequestMappingHandlerInterceptor>,
