@@ -1,6 +1,8 @@
 package cc.shacocloud.greatwall.config.web
 
 import cc.shacocloud.greatwall.config.web.WebConfiguration.Companion.CONFIG_REACTOR_RESOURCE_FACTORY_BEAN_NAME
+import cc.shacocloud.greatwall.config.web.interceptor.RequestMappingHandlerInterceptor
+import cc.shacocloud.greatwall.config.web.interceptor.RequestMappingHandlerInterceptorAdapter
 import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
