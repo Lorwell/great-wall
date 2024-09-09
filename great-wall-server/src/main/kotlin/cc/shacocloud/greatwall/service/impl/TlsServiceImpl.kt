@@ -192,7 +192,7 @@ class TlsServiceImpl(
                     process.inputStream.use { input ->
                         val result = input.readAllBytes().toString(Charsets.UTF_8)
                         val timeStr = result.trim().removePrefix("notAfter=").trim()
-                        LocalDateTime.parse(timeStr, OPENSSL_DATE_FORMAT)
+                        timeStr.opensslDateFormat()
                     }
                 } else {
                     throw IllegalArgumentException(process.errorStream.bufferedReader().readText())
