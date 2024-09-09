@@ -7,7 +7,7 @@ server:
     io-select-count: ${MAIN_SERVER_IO_SELECT_COUNT:1}
     io-work-count: ${MAIN_SERVER_IO_WORK_COUNT:0}
   http2:
-    enabled: ${HTTP_2_ENABLED:true}
+    enabled: ${HTTP_2_ENABLED:false}
   ssl:
     enabled: false
 

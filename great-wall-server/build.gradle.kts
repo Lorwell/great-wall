@@ -70,9 +70,10 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+    implementation("io.netty:netty-tcnative-boringssl-static:2.0.66.Final")
     implementation("org.springframework.boot:spring-boot-starter-json")
 
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")

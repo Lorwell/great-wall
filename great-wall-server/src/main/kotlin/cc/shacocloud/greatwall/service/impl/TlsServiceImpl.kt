@@ -9,10 +9,10 @@ import cc.shacocloud.greatwall.model.po.TlsPo
 import cc.shacocloud.greatwall.repository.TlsRepository
 import cc.shacocloud.greatwall.service.TlsService
 import cc.shacocloud.greatwall.utils.*
-import kotlinx.coroutines.Dispatchers
+import io.netty.handler.ssl.SslProtocols
+import kotlinx.coroutines.*
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.coroutines.withContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.ssl.PemSslBundleProperties
@@ -161,6 +161,10 @@ class TlsServiceImpl(
 
         // 封装为证书的配置
         val sslProperties = PemSslBundleProperties().apply {
+            isReloadOnUpdate = false
+            options.enabledProtocols = setOf(
+                SslProtocols.TLS_v1_2, SslProtocols.TLS_v1_3
+            )
             keystore.apply {
                 certificate = certificatePath.absolutePathString()
                 privateKey = privateKeyPath.absolutePathString()
@@ -227,8 +231,13 @@ class TlsServiceImpl(
 
             val load = loadLocal()
 
-            // 发布更新事件
-            ApplicationContextHolder.getInstance().publishEvent(RefreshTlsEvent(load))
+            // 异步发布更新事件
+            coroutineScope {
+                launch {
+                    delay(1000)
+                    ApplicationContextHolder.getInstance().publishEvent(RefreshTlsEvent(load))
+                }
+            }
 
             return tlsPo
         } finally {
