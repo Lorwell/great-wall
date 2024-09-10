@@ -8,6 +8,6 @@ COPY "great-wall-server/build/libs/great-wall-server-lasted.jar" /workspace/app.
 EXPOSE 8080
 
 ARG greatWallMaxMemory=1G
-ENV GREAT_WALL_MAX_MEMORY ${greatWallMaxMemory}
+ENV GREAT_WALL_MAX_MEMORY=${greatWallMaxMemory}
 
-CMD [ "bash", "-c", "source /etc/profile && java -Xmx$GREAT_WALL_MAX_MEMORY -Xms$GREAT_WALL_MAX_MEMORY -jar /workspace/app.jar -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]
+CMD [ "bash", "-c", "source /etc/profile && java -Xms$GREAT_WALL_MAX_MEMORY -Xmx$GREAT_WALL_MAX_MEMORY -jar /workspace/app.jar -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]
