@@ -1,7 +1,10 @@
-version=2.18
+version=2.19
 
 # 构建前端
 cd great-wall-fe && pnpm run build && cd .. || exit
+
+# 构建 bootJar
+bash dockerBuildBootJar.sh $version
 
 # 构建
 bash dockerBuild.sh $version

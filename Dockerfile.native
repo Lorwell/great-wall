@@ -26,4 +26,4 @@ EXPOSE 8080
 ARG greatWallMaxMemory=200m
 ENV GREAT_WALL_MAX_MEMORY=${greatWallMaxMemory}
 
-CMD [ "sh", "-c", "/workspace/app -Xmx$GREAT_WALL_MAX_MEMORY -xms$GREAT_WALL_MAX_MEMORY -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]
+CMD [ "sh", "-c", "/workspace/app -Xmx$GREAT_WALL_MAX_MEMORY -Xms$GREAT_WALL_MAX_MEMORY -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"]
