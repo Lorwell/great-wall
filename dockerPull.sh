@@ -1,4 +1,4 @@
-version=2.19
+version=2.20
 
 # 构建前端
 cd great-wall-fe && pnpm run build && cd .. || exit
@@ -11,5 +11,3 @@ bash dockerBuild.sh $version
 
 # 构建g1gc版本
 bash dockerBuildG1gc.sh $version
-
-

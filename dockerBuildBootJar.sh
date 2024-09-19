@@ -1,6 +1,6 @@
 version="$1_bootJar"
 
-gradlew clean bootJar || exec
+./gradlew clean bootJar || exec
 
 # 构建
 docker build -t great-wall:"$version" -f Dockerfile . || exit
