@@ -39,8 +39,8 @@ class SystemMonitorMetricsServiceByH2Impl(
     companion object {
         private val log: Logger = LoggerFactory.getLogger(SystemMonitorMetricsServiceByH2Impl::class.java)
 
-        const val TABLE_NAME_PREFIX = "system_metrics_record_"
-        const val GC_TABLE_NAME_PREFIX = "system_gc_metrics_record_"
+        const val TABLE_NAME_PREFIX = "system_metrics_record2_"
+        const val GC_TABLE_NAME_PREFIX = "system_gc_metrics_record2_"
     }
 
     // 表名集合
@@ -207,7 +207,8 @@ class SystemMonitorMetricsServiceByH2Impl(
                 unloaded_classes           BIGINT        NOT NULL,
                 direct_memory_use          BIGINT        NULL,
                 direct_memory_committed    BIGINT        NULL,
-                direct_memory_max          BIGINT        NULL
+                direct_memory_max          BIGINT        NULL,
+                constraint uk_${tableName.replace("_", "")} unique (second_unit)
             )
         """.trimIndent()
         databaseClient.sql(createTableSql).await()
@@ -284,56 +285,91 @@ class SystemMonitorMetricsServiceByH2Impl(
         val tableName = createTable(day)
         val gcTableName = createGcTable(day)
 
+        // 每隔15秒一个区间
+        var secondUnit = record.timeUnit.toEpochSecond()
+        secondUnit -= (secondUnit % 15)
+
         databaseClient.sql(
             """
-            insert into ${tableName}(second_unit, heap_memory_use, heap_memory_committed, heap_memory_max, non_heap_memory_use, 
+            MERGE INTO $tableName t
+            USING (
+                  SELECT $secondUnit AS second_unit,  ${record.heapMemoryUse} AS heap_memory_use, ${record.heapMemoryCommitted} AS heap_memory_committed, 
+                  ${record.heapMemoryMax ?: "null"} AS heap_memory_max,  ${record.nonHeapMemoryUse} AS non_heap_memory_use, ${record.nonHeapMemoryCommitted} AS non_heap_memory_committed, 
+                  ${record.nonHeapMemoryMax ?: "null"} AS non_heap_memory_max,  ${record.cpuLoad ?: "null"} AS cpu_load, ${record.processCpuLoad ?: "null"} AS process_cpu_load, 
+                  ${record.threadTotal} AS thread_total,  ${record.threadNewCount} AS thread_new_count, ${record.threadRunnableCount} AS thread_runnable_count, 
+                  ${record.threadBlockedCount} AS thread_blocked_count,  ${record.threadWaitingCount} AS thread_waiting_count, ${record.threadTimedWaitingCount} AS thread_timed_waiting_count, 
+                  ${record.threadTerminatedCount} AS thread_terminated_count,  ${record.loadedClassTotal} AS loaded_class_total, ${record.loadedClassCount} AS loaded_class_count, 
+                  ${record.unloadedClasses} AS unloaded_classes,  ${record.directMemoryUse ?: "null"} AS direct_memory_use, ${record.directMemoryCommitted ?: "null"} AS direct_memory_committed, 
+                  ${record.directMemoryMax ?: "null"} AS direct_memory_max 
+           ) s
+           ON (
+              t.second_unit = s.second_unit
+           )
+           WHEN MATCHED THEN
+                UPDATE SET t.heap_memory_use=s.heap_memory_use,
+                   t.heap_memory_committed=s.heap_memory_committed,
+                   t.heap_memory_max=s.heap_memory_max,
+                   t.non_heap_memory_use=s.non_heap_memory_use,
+                   t.non_heap_memory_committed=s.non_heap_memory_committed,
+                   t.non_heap_memory_max=s.non_heap_memory_max,
+                   t.cpu_load=s.cpu_load,
+                   t.process_cpu_load=s.process_cpu_load,
+                   t.thread_total=s.thread_total,
+                   t.thread_new_count=s.thread_new_count,
+                   t.thread_runnable_count=s.thread_runnable_count,
+                   t.thread_blocked_count=s.thread_blocked_count,
+                   t.thread_waiting_count=s.thread_waiting_count,
+                   t.thread_timed_waiting_count=s.thread_timed_waiting_count,
+                   t.thread_terminated_count=s.thread_terminated_count,
+                   t.loaded_class_count=s.loaded_class_count,
+                   t.loaded_class_total=s.loaded_class_total,
+                   t.unloaded_classes=s.unloaded_classes,
+                   t.direct_memory_use=s.direct_memory_use,
+                   t.direct_memory_committed=s.direct_memory_committed,
+                   t.direct_memory_max=s.direct_memory_max
+           WHEN NOT MATCHED THEN
+            INSERT (
+            second_unit, heap_memory_use, heap_memory_committed, heap_memory_max, non_heap_memory_use, 
             non_heap_memory_committed, non_heap_memory_max, cpu_load, process_cpu_load, thread_total, thread_new_count, 
             thread_runnable_count, thread_blocked_count, thread_waiting_count, thread_timed_waiting_count, 
             thread_terminated_count, loaded_class_count, loaded_class_total, unloaded_classes, direct_memory_use, 
-            direct_memory_committed, direct_memory_max)
-           values (:secondUnit, :heapMemoryUse,:heapMemoryCommitted, :heapMemoryMax, :nonHeapMemoryUse, 
-                   :nonHeapMemoryCommitted,  :nonHeapMemoryMax, :cpuLoad, :processCpuLoad, :threadTotal, :threadNewCount, 
-                   :threadRunnableCount, :threadBlockedCount, :threadWaitingCount, :threadTimedWaitingCount, 
-                   :threadTerminatedCount, :loadedClassCount, :loadedClassTotal, :unloadedClasses, :directMemoryUse, 
-                   :directMemoryCommitted, :directMemoryMax)
+            direct_memory_committed, direct_memory_max
+            )
+           VALUES (
+               s.second_unit, s.heap_memory_use,s.heap_memory_committed, s.heap_memory_max, s.non_heap_memory_use, 
+                   s.non_heap_memory_committed,  s.non_heap_memory_max, s.cpu_load, s.process_cpu_load, s.thread_total, s.thread_new_count, 
+                   s.thread_runnable_count, s.thread_blocked_count, s.thread_waiting_count, s.thread_timed_waiting_count, 
+                   s.thread_terminated_count, s.loaded_class_count, s.loaded_class_total, s.unloaded_classes, s.direct_memory_use, 
+                   s.direct_memory_committed, s.direct_memory_max
+            )
         """.trimIndent()
         )
-            .bindByName("secondUnit", record.timeUnit.toEpochSecond())
-            .bindByName("heapMemoryUse", record.heapMemoryUse)
-            .bindByName("heapMemoryCommitted", record.heapMemoryCommitted)
-            .bindByName("heapMemoryMax", record.heapMemoryMax)
-            .bindByName("nonHeapMemoryUse", record.nonHeapMemoryUse)
-            .bindByName("nonHeapMemoryCommitted", record.nonHeapMemoryCommitted)
-            .bindByName("nonHeapMemoryMax", record.nonHeapMemoryMax)
-            .bindByName("cpuLoad", record.cpuLoad)
-            .bindByName("processCpuLoad", record.processCpuLoad)
-            .bindByName("threadTotal", record.threadTotal)
-            .bindByName("threadNewCount", record.threadNewCount)
-            .bindByName("threadRunnableCount", record.threadRunnableCount)
-            .bindByName("threadBlockedCount", record.threadBlockedCount)
-            .bindByName("threadWaitingCount", record.threadWaitingCount)
-            .bindByName("threadTimedWaitingCount", record.threadTimedWaitingCount)
-            .bindByName("threadTerminatedCount", record.threadTerminatedCount)
-            .bindByName("loadedClassTotal", record.loadedClassTotal)
-            .bindByName("loadedClassCount", record.loadedClassCount)
-            .bindByName("unloadedClasses", record.unloadedClasses)
-            .bindByName("directMemoryUse", record.directMemoryUse)
-            .bindByName("directMemoryCommitted", record.directMemoryCommitted)
-            .bindByName("directMemoryMax", record.directMemoryMax)
             .await()
 
         for (gcInfo in record.gcInfos) {
             val typeId = getGcTypeId(gcInfo.name)
             databaseClient.sql(
                 """
-                   insert into ${gcTableName}(second_unit, type_id, count, time)
-                   values (:secondUnit, :typeId, :count, :time)
+                    MERGE INTO $gcTableName t
+                    USING (
+                       SELECT $secondUnit AS second_unit, $typeId AS gc_type_id, 
+                        ${gcInfo.count} as gc_count, ${gcInfo.time} AS gc_time
+                    ) as s
+                    ON (
+                        t.second_unit = s.second_unit AND t.type_id = s.gc_type_id
+                    )
+                    WHEN MATCHED THEN
+                        UPDATE SET t.count = s.gc_count, t.time = s.gc_time
+                    WHEN NOT MATCHED THEN
+                        INSERT (
+                         second_unit, type_id, count, time
+                        )
+                        VALUES (
+                        s.second_unit, s.gc_type_id, s.gc_count, s.gc_time
+                        )
+                    
                 """.trimIndent()
             )
-                .bindByName("secondUnit", record.timeUnit.toEpochSecond())
-                .bindByName("typeId", typeId)
-                .bindByName("count", gcInfo.count)
-                .bindByName("time", gcInfo.time)
                 .await()
         }
     }

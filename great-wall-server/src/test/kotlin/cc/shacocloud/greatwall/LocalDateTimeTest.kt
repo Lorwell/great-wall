@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall
 
+import cc.shacocloud.greatwall.utils.days
 import cc.shacocloud.greatwall.utils.hours
 import cc.shacocloud.greatwall.utils.includedDays
 import cc.shacocloud.greatwall.utils.zoneOffset
@@ -57,5 +58,17 @@ class LocalDateTimeTest {
     @Test
     fun durationToStr() {
         println(566456.seconds.toString().replace(" ", ""))
+    }
+
+    @Test
+    fun refreshTls() {
+        val expirationTime = LocalDateTime.of(2024, 10, 26, 16, 25, 31)
+        val currentTime = LocalDateTime.of(2024, 10, 25, 17, 25, 31)
+
+        val sensitivePeriod = expirationTime - 24.hours
+        assert(sensitivePeriod <= currentTime)
+
+        val updatedPeriod = expirationTime - 3.days
+        assert(updatedPeriod <= currentTime)
     }
 }

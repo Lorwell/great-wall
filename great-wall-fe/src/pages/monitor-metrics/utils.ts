@@ -7,16 +7,6 @@ interface SecondIntervalMetrics extends IntervalMetrics {
 
 const partitionInterval: Array<SecondIntervalMetrics> = [
   {
-    maxPoint: 5,
-    interval: 5,
-    intervalType: IntervalType.SECONDS,
-  },
-  {
-    maxPoint: 10,
-    interval: 10,
-    intervalType: IntervalType.SECONDS,
-  },
-  {
     maxPoint: 15,
     interval: 15,
     intervalType: IntervalType.SECONDS,

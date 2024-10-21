@@ -42,7 +42,7 @@ class SystemMetricsScheduled(
     /**
      * 统计指标
      */
-    @Scheduled(cron = "0/5 * * * * *")
+    @Scheduled(cron = "0/15 * * * * *")
     fun metrics() = mono {
         val timeUnit = LocalDateTime.now()
 

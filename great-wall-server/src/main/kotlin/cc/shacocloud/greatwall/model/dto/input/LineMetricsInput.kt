@@ -16,7 +16,7 @@ open class LineMetricsInput(
     /**
      * 间隔
      */
-    @field:Min(value = 1)
+    @field:Min(value = 15)
     open val interval: Int,
 
     /**

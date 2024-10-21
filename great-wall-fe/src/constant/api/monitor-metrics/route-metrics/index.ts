@@ -4,15 +4,14 @@ import {
   QpsLineMetricsRecordOutput,
   RouteCountMetricsInput,
   RouteLineMetricsInput,
-  TopQpsLineMetricsRecordOutput,
-  TopRouteLineMetricsInput
+  TrafficLineMetricsRecordOutput
 } from "@/constant/api/monitor-metrics/route-metrics/types.ts";
 import {PostJson} from "@/constant/api";
 import {
   CountMetricsSchema,
   DurationLineMetricsRecordSchema,
   QpsLineMetricsRecordSchema,
-  TopQpsLineMetricsRecordSchema
+  TrafficLineMetricsRecordSchema
 } from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
 
 /**
@@ -104,12 +103,12 @@ export function durationLineMetrics(input: RouteLineMetricsInput): Promise<Durat
 }
 
 /**
- * top qps 折线图指标
+ * 流量折线图指标
  * @param input
  */
-export function topQpsLineMetrics(input: TopRouteLineMetricsInput): Promise<TopQpsLineMetricsRecordOutput> {
-  return PostJson(`/api/route-monitor-metrics/line/top-qps`, {
+export function trafficMetrics(input: RouteLineMetricsInput): Promise<TrafficLineMetricsRecordOutput> {
+  return PostJson(`/api/route-monitor-metrics/line/traffic`, {
     body: input,
-    resultSchema: TopQpsLineMetricsRecordSchema
+    resultSchema: TrafficLineMetricsRecordSchema
   })
 }

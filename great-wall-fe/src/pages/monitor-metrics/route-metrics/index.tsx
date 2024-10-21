@@ -4,9 +4,9 @@ import Response5xxErrorCountMetrics from "./response5xx-error-count-metrics.tsx"
 import RequestTrafficMetrics from "./request-traffic-metrics.tsx";
 import QpsLineChart from "./qps-line-chart.tsx";
 import ResponseDurationTimeLineChart from "./response-duration-time-line-chart.tsx";
-import TopApiQpsLineChart from "./top-api-qps-line-chart.tsx";
 import Response4xxErrorCountMetrics from "./response4xx-error-count-metrics.tsx";
 import ResponseTrafficMetrics from "@/pages/monitor-metrics/route-metrics/response-traffic-metrics.tsx";
+import TrafficTimeLineChart from "./traffic-time-line-chart.tsx";
 
 /**
  * 路由指标
@@ -30,7 +30,7 @@ export default function RouteMetrics() {
       </div>
 
       <div className={"grid grid-cols-1"}>
-        <TopApiQpsLineChart/>
+        <TrafficTimeLineChart/>
       </div>
     </div>
   )

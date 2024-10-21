@@ -3,10 +3,9 @@ package cc.shacocloud.greatwall.controller
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.input.RouteCountMetricsInput
 import cc.shacocloud.greatwall.model.dto.input.RouteLineMetricsInput
-import cc.shacocloud.greatwall.model.dto.input.TopRouteLineMetricsInput
 import cc.shacocloud.greatwall.model.dto.output.DurationLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
-import cc.shacocloud.greatwall.model.dto.output.TopQpsLineMetricsOutput
+import cc.shacocloud.greatwall.model.dto.output.TrafficMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
 import org.springframework.validation.annotation.Validated
@@ -108,16 +107,14 @@ class RouteMonitorMetricsController(
         return routeMonitorMetricsService.durationLineMetrics(input)
     }
 
-
     /**
-     * top qps 折线图指标
+     * 流量折线图指标
      */
-    @PostMapping("/line/top-qps")
-    suspend fun topQpsLineMetrics(
-        @RequestBody @Validated input: TopRouteLineMetricsInput,
-    ): TopQpsLineMetricsOutput {
-        return routeMonitorMetricsService.topQpsLineMetrics(input)
+    @PostMapping("/line/traffic")
+    suspend fun trafficMetrics(
+        @RequestBody @Validated input: RouteLineMetricsInput,
+    ): List<TrafficMetricsOutput> {
+        return routeMonitorMetricsService.trafficMetrics(input)
     }
-
 
 }
