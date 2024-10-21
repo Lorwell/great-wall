@@ -16,7 +16,7 @@ open class LineMetricsInput(
     /**
      * 间隔
      */
-    @field:Min(value = 15)
+    @field:Min(value = 1)
     open val interval: Int,
 
     /**
@@ -47,7 +47,9 @@ open class LineMetricsInput(
      * 获取间隔的秒数
      */
     fun getIntervalSecond(): Long {
-        return interval.toDuration(intervalType.unit).toSeconds()
+        val seconds = interval.toDuration(intervalType.unit).toSeconds()
+        // 最小间隔15秒
+        return seconds.coerceAtLeast(15)
     }
 
     /**

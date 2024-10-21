@@ -25,11 +25,14 @@
 本项目每个版本都构建了基于 graalvm 的本地镜像放置在 `ccr.ccs.tencentyun.com/shaco_work/great-wall`上，因受到限制，正在寻找国内的公开镜像库，暂时保存在 [腾讯云](https://console.cloud.tencent.com/tcr/publicimage/tag?rid=1&reponame=shaco_work%2Fgreat-wall)，建议使用 `2.0` 之后的版本
 
 ```bash
-// 使用 serial gc(串行垃圾回收器)，适合小内存应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.16
+// 非本地化运行
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.22_bootJar
 
-// 使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.16_g1gc
+// 本地化运行，使用 serial gc(串行垃圾回收器)，适合小内存应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.22
+
+// 本地化运行，使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.22_g1gc
 ```
 
 ### 本地编译

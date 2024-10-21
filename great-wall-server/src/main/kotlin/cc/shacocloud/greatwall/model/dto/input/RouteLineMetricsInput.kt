@@ -11,7 +11,7 @@ open class RouteLineMetricsInput(
     override val type: Type,
     override val lastDataEnum: LastDateEnum?,
     override val dateRange: DateRange?,
-    @field:Min(value = 15)
+    @field:Min(value = 1)
     override val interval: Int,
     override val intervalType: DateRangeDurationUnit,
     open val appRouteId: Long? = null,
