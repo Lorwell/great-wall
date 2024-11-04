@@ -3,6 +3,7 @@ package cc.shacocloud.greatwall.utils
 import java.net.NetworkInterface
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 /**
@@ -17,11 +18,13 @@ import kotlin.random.Random
  */
 object ObjectId {
 
-    /** 线程安全的下一个随机数,每次生成自增+1  */
-    private val NEXT_INC: AtomicInteger = AtomicInteger(Random.nextInt())
-
     /** 机器信息  */
     private val MACHINE = machinePiece or processPiece
+
+    /** 线程安全的下一个随机数,每次生成自增+1  */
+    private val NEXT_INC_REF = AtomicReference(
+        currentTimeSeconds() to AtomicInteger(0)
+    )
 
     /**
      * 给定的字符串是否为有效的 ObjectId
@@ -82,12 +85,32 @@ object ObjectId {
      *
      * @return objectId
      */
-    fun nextBytes(): ByteArray {
+    private fun nextBytes(): ByteArray {
         val bb = ByteBuffer.wrap(ByteArray(12))
         bb.putInt((System.currentTimeMillis() / 1000).toInt()) // 4位
         bb.putInt(MACHINE) // 4位
-        bb.putInt(NEXT_INC.getAndIncrement()) // 4位
+        bb.putInt(getNextInc().getAndIncrement()) // 4位
         return bb.array()
+    }
+
+    /**
+     * 获取当前时间的计数器
+     */
+    private fun getNextInc(): AtomicInteger {
+        val (_, nextInc) = NEXT_INC_REF.updateAndGet { prev ->
+            val (time, _) = prev
+            val currentTime = currentTimeSeconds()
+            if (currentTime > time) {
+                currentTime to AtomicInteger(0)
+            } else {
+                prev
+            }
+        }
+        return nextInc
+    }
+
+    private fun currentTimeSeconds(): Long {
+        return System.currentTimeMillis() / 1000
     }
 
     // ----------------------------------------------------------------------------------------- 私有方法启动
