@@ -82,7 +82,7 @@ class OsfipinClientImpl(
         val requestEntity = RequestEntity<Void>(
             getHttpHeaders(config),
             HttpMethod.GET,
-            URI("${osfipinProperties.baseUrl.removeSuffix("/")}/order/down?id=${autoId}&type=auto")
+            URI("${osfipinProperties.baseUrl.removeSuffix("/")}/api/user/OrderDetail/downByAuto?id=${autoId}&type=normal")
         )
 
         val responseEntity = restTemplate.exchange(requestEntity, InputStream::class.java)
