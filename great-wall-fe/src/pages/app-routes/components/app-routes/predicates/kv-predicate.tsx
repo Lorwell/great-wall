@@ -1,7 +1,7 @@
 import {Control, FieldPath, FieldValues} from "react-hook-form";
 import {FormControl, FormDescription, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {Input} from "@/components/ui/input.tsx";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 
 

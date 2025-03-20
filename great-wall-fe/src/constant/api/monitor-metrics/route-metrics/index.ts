@@ -6,7 +6,7 @@ import {
   RouteLineMetricsInput,
   TrafficLineMetricsRecordOutput
 } from "@/constant/api/monitor-metrics/route-metrics/types.ts";
-import {PostJson} from "@/constant/api";
+import {postJsonRequest} from "@/constant/api";
 import {
   CountMetricsSchema,
   DurationLineMetricsRecordSchema,
@@ -19,7 +19,7 @@ import {
  * @param input
  */
 export function requestCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return PostJson(`/api/route-monitor-metrics/count/request`, {
+  return postJsonRequest(`/api/route-monitor-metrics/count/request`, {
     body: input,
     resultSchema: CountMetricsSchema
   })
@@ -30,7 +30,7 @@ export function requestCountMetrics(input: RouteCountMetricsInput): Promise<Coun
  * @param input
  */
 export function ipCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return PostJson(`/api/route-monitor-metrics/count/ip`, {
+  return postJsonRequest(`/api/route-monitor-metrics/count/ip`, {
     body: input,
     resultSchema: CountMetricsSchema
   })
@@ -41,7 +41,7 @@ export function ipCountMetrics(input: RouteCountMetricsInput): Promise<CountMetr
  * @param input
  */
 export function requestTrafficSumMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return PostJson(`/api/route-monitor-metrics/sum/request-traffic`, {
+  return postJsonRequest(`/api/route-monitor-metrics/sum/request-traffic`, {
     body: input,
     resultSchema: CountMetricsSchema
   })
@@ -52,7 +52,7 @@ export function requestTrafficSumMetrics(input: RouteCountMetricsInput): Promise
  * @param input
  */
 export function responseTrafficSumMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return PostJson(`/api/route-monitor-metrics/sum/response-traffic`, {
+  return postJsonRequest(`/api/route-monitor-metrics/sum/response-traffic`, {
     body: input,
     resultSchema: CountMetricsSchema
   })
@@ -63,7 +63,7 @@ export function responseTrafficSumMetrics(input: RouteCountMetricsInput): Promis
  * @param input
  */
 export function status4xxCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return PostJson(`/api/route-monitor-metrics/count/status-4xx`, {
+  return postJsonRequest(`/api/route-monitor-metrics/count/status-4xx`, {
     body: input,
     resultSchema: CountMetricsSchema
   })
@@ -74,7 +74,7 @@ export function status4xxCountMetrics(input: RouteCountMetricsInput): Promise<Co
  * @param input
  */
 export function status5xxCountMetrics(input: RouteCountMetricsInput): Promise<CountMetricsOutput> {
-  return PostJson(`/api/route-monitor-metrics/count/status-5xx`, {
+  return postJsonRequest(`/api/route-monitor-metrics/count/status-5xx`, {
     body: input,
     resultSchema: CountMetricsSchema
   })
@@ -85,7 +85,7 @@ export function status5xxCountMetrics(input: RouteCountMetricsInput): Promise<Co
  * @param input
  */
 export function qpsLineMetrics(input: RouteLineMetricsInput): Promise<QpsLineMetricsRecordOutput> {
-  return PostJson(`/api/route-monitor-metrics/line/qps`, {
+  return postJsonRequest(`/api/route-monitor-metrics/line/qps`, {
     body: input,
     resultSchema: QpsLineMetricsRecordSchema
   })
@@ -96,7 +96,7 @@ export function qpsLineMetrics(input: RouteLineMetricsInput): Promise<QpsLineMet
  * @param input
  */
 export function durationLineMetrics(input: RouteLineMetricsInput): Promise<DurationLineMetricsRecordOutput> {
-  return PostJson(`/api/route-monitor-metrics/line/duration`, {
+  return postJsonRequest(`/api/route-monitor-metrics/line/duration`, {
     body: input,
     resultSchema: DurationLineMetricsRecordSchema
   })
@@ -107,7 +107,7 @@ export function durationLineMetrics(input: RouteLineMetricsInput): Promise<Durat
  * @param input
  */
 export function trafficMetrics(input: RouteLineMetricsInput): Promise<TrafficLineMetricsRecordOutput> {
-  return PostJson(`/api/route-monitor-metrics/line/traffic`, {
+  return postJsonRequest(`/api/route-monitor-metrics/line/traffic`, {
     body: input,
     resultSchema: TrafficLineMetricsRecordSchema
   })

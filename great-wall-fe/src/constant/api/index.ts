@@ -1,58 +1,110 @@
-import _ from "lodash";
-import {isBlank} from "@/utils/Utils";
-import {errorMsgSchema, ErrorMsgValues, fieldsErrorSchema} from "@/constant/api/schema.ts";
-import {ZodTypeAny} from "zod";
-import queryString from "query-string";
+import {isBlank, removePrefix} from "@/lib/utils";
+import {
+  AiEvent,
+  AiEventTypeEnum,
+  errorMsgSchema,
+  ErrorMsgValues,
+  fieldsErrorSchema,
+  ServerSentEvent
+} from "./schema.ts";
+import {ZodAnyDef, ZodType, ZodTypeAny} from "zod";
+// @ts-ignore
+import qs from "qs";
+import Cookies from "js-cookie";
+import {SITE_COOKIE_NAME} from "@/constant";
 
 /**
  * 发送 fetch 请求
  */
-const fetchRequest = (uri: string, init?: RequestInit) => {
+const fetchRequest = (
+  {
+    uri,
+    init,
+    onAbortController
+  }: {
+    uri: string,
+    init?: RequestInit,
+    onAbortController?: OnAbortController
+  }
+) => {
+
+  // url 路径
+  // @ts-ignore
+  let baseUrl: string = window.__baseUrl || `${window.location.protocol}//${window.location.host}`;
+  if (baseUrl.endsWith("/")) {
+    baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+  }
+  uri = `${baseUrl}/${uri.startsWith("/") ? uri.substring(1, uri.length) : uri}`;
+
+  // 中断控制器
+  if (!!onAbortController) {
+
+    const abortController = new AbortController()
+    onAbortController?.(abortController)
+
+    if (!init) {
+      init = {}
+    }
+
+    init.signal = abortController.signal
+  }
+
   return fetch(uri, init);
 };
 
 /**
  * Get 请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const Get = <T>(uri: string, {queryParam, headers, resultSchema}: RequestParam = {}): Promise<T> => {
+export const getRequest = <T>(uri: string,
+                              {
+                                queryParam,
+                                headers,
+                                resultSchema,
+                                onAbortController
+                              }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
-      {
+    return fetchRequest({
+      uri: uriQueryParamJoint(uri, queryParam),
+      init: {
         method: "GET",
         headers: {
           ...headers,
           "Accept": "application/json;charset=utf-8"
         }
-      });
+      },
+      onAbortController: onAbortController
+    });
   }, resultSchema);
 };
 
 
 /**
  * Post 表单请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const Post = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
+export const postRequest = <T>(uri: string,
+                               {
+                                 queryParam,
+                                 body,
+                                 headers,
+                                 resultSchema,
+                                 onAbortController
+                               }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "POST",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
-          "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
+          },
+          body: body && Object.keys(body).length > 0 ? queryParamJoint(body) : null
         },
-        body: body && Object.keys(body).length > 0 ? queryParamJoint(body) : null
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
@@ -60,19 +112,16 @@ export const Post = <T>(uri: string, {queryParam, body, headers, resultSchema}: 
 
 /**
  * Post 多部份表单请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const PostFormData = <T>(uri: string, {
-  queryParam,
-  body,
-  headers,
-  resultSchema
-}: RequestParam = {}): Promise<T> => {
+export const postFormDataRequest = <T>(uri: string,
+                                       {
+                                         queryParam,
+                                         body,
+                                         headers,
+                                         resultSchema,
+                                         onAbortController
+                                       }: RequestParam<T> = {}): Promise<T> => {
   const formData = new FormData();
 
   if (body && Object.keys(body).length > 0) {
@@ -83,14 +132,18 @@ export const PostFormData = <T>(uri: string, {
   }
 
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "POST",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+          },
+          body: formData,
         },
-        body: formData,
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
@@ -98,72 +151,90 @@ export const PostFormData = <T>(uri: string, {
 
 /**
  * Post json请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const PostJson = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
+export const postJsonRequest = <T>(uri: string,
+                                   {
+                                     queryParam,
+                                     body,
+                                     headers,
+                                     resultSchema,
+                                     onAbortController
+                                   }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "POST",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
-          "Content-Type": "application/json;charset=utf-8"
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+            "Content-Type": "application/json;charset=utf-8"
+          },
+          body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
         },
-        body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
 
 /**
  * Put json请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const PutJson = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
+export const putJsonRequest = <T>(uri: string,
+                                  {
+                                    queryParam,
+                                    body,
+                                    headers,
+                                    resultSchema,
+                                    onAbortController
+                                  }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "PUT",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
-          "Content-Type": "application/json;charset=utf-8"
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "PUT",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+            "Content-Type": "application/json;charset=utf-8"
+          },
+          body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
         },
-        body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
 
 /**
  * Patch 表单请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const Patch = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
+export const patchRequest = <T>(uri: string,
+                                {
+                                  queryParam,
+                                  body,
+                                  headers,
+                                  resultSchema,
+                                  onAbortController
+                                }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "PATCH",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
-          "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "PATCH",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
+          },
+          body: body && Object.keys(body).length > 0 ? queryParamJoint(body) : null
         },
-        body: body && Object.keys(body).length > 0 ? queryParamJoint(body) : null
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
@@ -171,24 +242,30 @@ export const Patch = <T>(uri: string, {queryParam, body, headers, resultSchema}:
 
 /**
  * patch json请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 参数
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const PatchJson = <T>(uri: string, {queryParam, body, headers, resultSchema}: RequestParam = {}): Promise<T> => {
+export const patchJsonRequest = <T>(uri: string,
+                                    {
+                                      queryParam,
+                                      body,
+                                      headers,
+                                      resultSchema,
+                                      onAbortController
+                                    }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "PATCH",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
-          "Content-Type": "application/json;charset=utf-8"
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "PATCH",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+            "Content-Type": "application/json;charset=utf-8"
+          },
+          body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
         },
-        body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
@@ -196,34 +273,212 @@ export const PatchJson = <T>(uri: string, {queryParam, body, headers, resultSche
 
 /**
  * DeleteJson 请求
- * @param uri 请求地址
- * @param queryParam 查询参数
- * @param body 请求头
- * @param headers 请求头
- * @param resultSchema 结构值结构
  * @constructor
  */
-export const DeleteJson = <T>(uri: string, {
-  queryParam,
-  body,
-  headers,
-  resultSchema
-}: RequestParam = {}): Promise<T> => {
+export const deleteJsonRequest = <T>(uri: string,
+                                     {
+                                       queryParam,
+                                       body,
+                                       headers,
+                                       resultSchema,
+                                       onAbortController
+                                     }: RequestParam<T> = {}): Promise<T> => {
   return fetchResultHandle(() => {
-    return fetchRequest(uriQueryParamJoint(uri, queryParam),
+    return fetchRequest(
       {
-        method: "DELETE",
-        headers: {
-          ...headers,
-          "Accept": "application/json;charset=utf-8",
-          "Content-Type": "application/json;charset=utf-8"
+        uri: uriQueryParamJoint(uri, queryParam),
+        init: {
+          method: "DELETE",
+          headers: {
+            ...headers,
+            "Accept": "application/json;charset=utf-8",
+            "Content-Type": "application/json;charset=utf-8"
+          },
+          body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null,
         },
-        body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null
+        onAbortController: onAbortController
       });
   }, resultSchema);
 };
 
-export interface RequestParam {
+/**
+ * sse 请求
+ */
+export const sseRequest = <T extends AiEvent>(
+  uri: string,
+  {
+    method = "POST",
+    queryParam,
+    body,
+    headers,
+    resultSchema,
+    onAbortController,
+    onCompleted,
+    onEvent,
+    onError,
+  }: RequestParam<T> & OtherOptions<T> & { method?: string; } = {},
+) => {
+  (async () => {
+    try {
+      const response = await fetchRequest(
+        {
+          uri: uriQueryParamJoint(uri, queryParam),
+          init: {
+            method: method,
+            headers: {
+              ...headers,
+              "Accept": "text/event-stream;charset=utf-8",
+              "Content-Type": "application/json;charset=utf-8"
+            },
+            body: body && Object.keys(body).length > 0 ? JSON.stringify(body) : null,
+          },
+          onAbortController: onAbortController
+        }
+      )
+
+      // 错误的响应
+      if (!response.ok) {
+        const headers = response.headers;
+        const contentType = headers.get("content-Type");
+        const length = Number(headers.get("content-length"));
+
+        let message: string | undefined;
+        if (length === 0) {
+          message = '内部服务错误！'
+          await onError?.(message)
+        } else if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          message = data?.message?.toString() || '内部服务错误！'
+          // @ts-ignore
+          await onError?.(message, data?.code)
+        } else {
+          const data = await response.text()
+          message = data || '内部服务错误！'
+          await onError?.(message)
+        }
+
+        await onCompleted?.(true, message)
+        return
+      }
+
+      await handleStream(response, resultSchema, onCompleted, onEvent)
+    } catch (e) {
+      let message: string | undefined
+      let code: string | undefined
+
+      if (e instanceof SSEException) {
+        message = e.message
+        code = e.code
+      } else if (e instanceof Error) {
+        console.error(e)
+        message = e.message
+      } else {
+        console.error(e)
+        message = e?.toString() || "未知的错误"
+      }
+
+      if (!!onError) {
+        await onError(message!, code)
+      } else {
+        console.error(e)
+      }
+
+      await onCompleted?.(true, message)
+    }
+  })()
+}
+
+/**
+ * 处理流结果
+ */
+async function handleStream<T>(
+  response: Response,
+  resultSchema?: ZodType<T, ZodAnyDef, any>,
+  onCompleted?: OnCompleted,
+  onEvent?: OnEvent<T>,
+) {
+  if (!response.ok)
+    throw new SSEException('内部服务错误')
+
+  const reader = response.body?.getReader()
+  const decoder = new TextDecoder('utf-8')
+  let buffer = ''
+  let isFirstMessage = true
+
+  // 读取消息
+  async function read() {
+    const result = await reader?.read();
+    if (!result) {
+      await onCompleted?.(false)
+      return
+    }
+
+    buffer += decoder.decode(result.value, {stream: true})
+
+    const lines = buffer.split('\n')
+
+    let arr = new Array<string>()
+    for (let line of lines) {
+      if (isBlank(line)) {
+
+        if (arr.length !== 0) {
+          const event: Partial<ServerSentEvent<T>> = {}
+          for (let message of arr) {
+            if (message.startsWith("id:")) {
+              event.id = removePrefix(message, "id:")
+            } else if (message.startsWith("event:")) {
+              event.event = removePrefix(message, "event:") as AiEventTypeEnum
+            } else if (message.startsWith("retry:")) {
+              event.retry = Number(removePrefix(message, "retry:"))
+            } else if (message.startsWith(":")) {
+              event.comment = removePrefix(message, ":")
+            } else if (message.startsWith("data:")) {
+              const dataJson = JSON.parse(removePrefix(message, "data:"))
+
+              try {
+                event.data = resultSchema?.parse(dataJson)
+              } catch (e) {
+                throw new SSEException(`解析消息发送例外，消息无法使用 ${resultSchema} 解析器解析：${dataJson}`)
+              }
+              event.data = event.data || dataJson
+            }
+          }
+          await onEvent?.(event as ServerSentEvent<T>, isFirstMessage)
+          isFirstMessage = false
+        }
+
+        arr = new Array<string>()
+      } else {
+        arr.push(line)
+      }
+    }
+
+    buffer = arr.join("\n")
+
+    if (result.done) {
+      await onCompleted?.(false)
+      return
+    }
+
+    await read()
+  }
+
+  await read()
+}
+
+export type OnCompleted = (hasError: boolean, errorMessage?: string) => Promise<void> | void
+export type OnEvent<T> = (event: ServerSentEvent<T>, isFirstMessage: boolean) => Promise<void> | void
+export type OnError = (message: string, code?: string) => Promise<void> | void
+
+export type OtherOptions<T> = {
+  onCompleted?: OnCompleted,
+  onEvent?: OnEvent<T>,
+  onError?: OnError,
+}
+
+export type OnAbortController = (abortController: AbortController) => void
+
+export interface RequestParam<T = any> {
 
   /**
    * 查询参数
@@ -243,7 +498,26 @@ export interface RequestParam {
   /**
    * 响应值结构
    */
-  resultSchema?: ZodTypeAny
+  resultSchema?: ZodType<T, any, any>,
+
+  /**
+   * 中断控制器
+   */
+  onAbortController?: OnAbortController
+}
+
+/**
+ * sse 请求异常
+ */
+export class SSEException extends Error {
+  message: string
+  code?: string;
+
+  constructor(message: string, code?: string) {
+    super(message)
+    this.message = message;
+    this.code = code;
+  }
 }
 
 /**
@@ -279,34 +553,21 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
   const {headers, status, statusText, url} = response
   const success = status >= 200 && status <= 300;
 
-  let body;
+  let body: any = await response.text();
 
   // JSON 结果解析
   const contentType = headers.get("content-Type");
-  const length = Number(headers.get("content-length"));
 
-  if (length === 0) {
-    body = null;
-  } else if (contentType && contentType.includes("application/json")) {
-    body = await response.json();
+  if (contentType && contentType.includes("application/json")) {
+    body = isBlank(body) ? null : JSON.parse(body);
   } else {
-    body = await response.text()
-
-    if (isBlank(body)) {
-      body = undefined
-    } else {
-      try {
-        body = JSON.parse(body)
-      } catch (e) {
-        if (success) {
-          throw new HttpException(url, status, statusText,
-            {
-              code: "response.contentType-type.invalid",
-              message: `不支持响应类型解析：${contentType}, 响应值：${body}`
-            },
-            `不支持响应类型解析：${contentType}, 响应值：${body}`);
-        }
-      }
+    if (!isBlank(body) && success) {
+      throw new HttpException(url, status, statusText,
+        {
+          code: "response.contentType-type.invalid",
+          message: `不支持响应类型解析：${contentType}, 响应值：${body}`
+        },
+        `不支持响应类型解析：${contentType}, 响应值：${body}`);
     }
   }
 
@@ -315,13 +576,18 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
     try {
       return (!!body && resultSchema?.parse(body)) || body
     } catch (e) {
-      console.log(`结果值结构解析失败!`, e)
+      console.error(`结果值结构解析失败!`, e)
       body = {
         code: "response.invalid",
         message: `结果值结构解析失败：${e}`
       }
       throw new HttpException(url, status, statusText, body, `结果值结构解析失败：${e}`);
     }
+  }
+
+  // 收到未登录响应删除 cookie
+  if (status === 401) {
+    Cookies.remove(SITE_COOKIE_NAME)
   }
 
   try {
@@ -331,6 +597,7 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
       body = errorMsgSchema.parse(body)
     }
   } catch (e) {
+    console.error(e)
     body = {
       code: "response.invalid",
       message: `未知的响应值：${body}`
@@ -352,7 +619,8 @@ export const uriQueryParamJoint = (uri: string, queryParam?: Record<string, any 
   const i = uri.indexOf("?");
   if (i > 0) {
     const param = uri.substring(i + 1, uri.length);
-    for (let str of _.split(param, "&")) {
+
+    for (let str of param.split("&")) {
       params.push(str);
     }
     uri = uri.substring(0, i);
@@ -368,32 +636,11 @@ export const uriQueryParamJoint = (uri: string, queryParam?: Record<string, any 
 
   return uri;
 };
+
 /**
  * 查询参数拼接，使用 = 组合查询参数的key和value，使用 & 连接不同组的查询参数
  * @param queryParam 查询参数对象
  */
 export const queryParamJoint = (queryParam?: Record<string, any | Array<any>>): string => {
-  return !!queryParam ? queryString.stringify(queryParam) : ""
-  // const params = new Array<string>();
-  //
-  // // 拼接参数
-  // if (queryParam && Object.keys(queryParam).length > 0) {
-  //   for (let queryParamKey in queryParam) {
-  //     if (queryParam.hasOwnProperty(queryParamKey)) {
-  //       const valObj = queryParam[queryParamKey];
-  //       if (valObj == null) continue; // 过滤空值
-  //
-  //       if (valObj instanceof Array) {
-  //         for (let val of valObj) {
-  //           if (val == null) continue; // 过滤空值
-  //           params.push(`${queryParamKey}=${encodeURIComponent(String(val))}`);
-  //         }
-  //       } else {
-  //         params.push(`${queryParamKey}=${encodeURIComponent(String(valObj))}`);
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // return params.join("&");
+  return !!queryParam ? qs.stringify(queryParam) : ""
 };

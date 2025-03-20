@@ -1,5 +1,4 @@
 import {DropdownMenuTrigger} from "@radix-ui/react-dropdown-menu"
-import {MixerHorizontalIcon} from "@radix-ui/react-icons"
 import {Table} from "@tanstack/react-table"
 import {
   DropdownMenu,
@@ -7,8 +6,9 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import {isNull} from "@/utils/Utils.ts";
+} from "@/components/ui/dropdown-menu.tsx"
+import {isNull} from "@/lib/utils.ts";
+import {ListChecks} from "lucide-react";
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>
@@ -29,7 +29,7 @@ export function DataTableViewOptions<TData>({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <MixerHorizontalIcon className="cursor-pointer h-5 w-5"/>
+        <ListChecks className="cursor-pointer size-5"/>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[150px]">
         <DropdownMenuLabel>显示/隐藏</DropdownMenuLabel>

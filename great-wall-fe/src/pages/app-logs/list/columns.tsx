@@ -1,9 +1,9 @@
 import {ColumnDef} from "@tanstack/react-table";
-import {columnCell, dataTableCheckboxColumn} from "@/components/data-table/data-table-column.tsx";
+import {columnCell} from "@/components/custom-ui/data-table/data-table-column.tsx";
 import dayjs from "dayjs";
 import {LogListOutput, logTypeChinese, LogTypeEnum} from "@/constant/api/app-logs/types.ts";
 import RowActions, {RowActionsEvent} from "@/pages/app-logs/list/row-actions.tsx";
-import {byteSizeToUnitStr} from "@/utils/Utils.ts";
+import {byteSizeToUnitStr} from "@/lib/utils.ts";
 
 export interface ColumnsProps {
 
@@ -16,14 +16,12 @@ export interface ColumnsProps {
  * @param event
  */
 export const columns = ({event}: ColumnsProps): ColumnDef<LogListOutput>[] => {
-
   return [
-    dataTableCheckboxColumn(),
     columnCell(
       {
         columnId: "type",
         label: "类型",
-        size: 80,
+        size: 120,
         enableSorting: false,
         cell: ({getValue}) => {
           const type = getValue() as LogTypeEnum
@@ -34,7 +32,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<LogListOutput>[] => {
     columnCell({
         columnId: "name",
         label: "名称",
-        size: 150,
+        size: 250,
         enableSorting: false,
         cell: ({getValue}) => getValue()
       }
@@ -43,7 +41,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<LogListOutput>[] => {
       {
         columnId: "size",
         label: "大小",
-        size: 100,
+        size: 120,
         cell: ({getValue}) => {
           const size = getValue() as number;
           return byteSizeToUnitStr(size, "0B")
@@ -54,13 +52,13 @@ export const columns = ({event}: ColumnsProps): ColumnDef<LogListOutput>[] => {
       {
         columnId: "lastUpdateTime",
         label: "最后修改时间",
-        size: 150,
+        size: 180,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),
     {
       id: "_actions",
-      size: 50,
+      size: 80,
       cell: ({cell, column, row, table}) => (
         <RowActions {...event}
                     row={row}

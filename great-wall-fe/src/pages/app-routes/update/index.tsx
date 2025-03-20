@@ -1,6 +1,6 @@
 import {AppRoutesContext} from "@/pages/app-routes/components/app-routes/schema.ts";
 import {useNavigate, useParams} from "react-router-dom";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {appRouteDetails, updateAppRoute} from "@/constant/api/app-routes";
 import {AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
 import {toast} from "sonner";

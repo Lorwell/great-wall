@@ -9,7 +9,7 @@ import {PredicateTypeEnum, RoutePredicateOperatorEnum} from "@/constant/api/app-
 import HostPredicate from "@/pages/app-routes/components/app-routes/predicates/host-predicate.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Input} from "@/components/ui/input.tsx";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import {CirclePlus, MoveDown, MoveUp, Trash2} from "lucide-react";
 import {Card, CardContent, CardDescription, CardTitle} from "@/components/ui/card";
 import {CardHeader} from "@/components/ui/card.tsx";

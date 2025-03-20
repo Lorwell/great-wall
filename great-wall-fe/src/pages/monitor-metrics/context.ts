@@ -1,7 +1,7 @@
 import {LastDateEnum, MetricsDateRange} from "@/pages/monitor-metrics/metrics-date-range-picker.tsx";
 import {createContext, useContext, useEffect} from "react";
 import {EventEmitter} from "ahooks/lib/useEventEmitter";
-import useApiRequest, {ApiRequestOptions} from "@/components/hooks/useApiRequest.ts";
+import useApiRequest, {ApiRequestOptions} from "@/components/hooks/use-api-request.ts";
 import {Plugin, Service} from "ahooks/lib/useRequest/src/types";
 
 

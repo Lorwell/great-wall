@@ -5,9 +5,9 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 import {Button} from "@/components/ui/button.tsx";
 import {TlsTypeEnum} from "@/constant/api/app-tls/types.ts";
 import {Textarea} from "@/components/ui/textarea.tsx";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {tlsUpdate} from "@/constant/api/app-tls";
-import useFromFieldErrorSpecification from "@/components/hooks/useFromFieldErrorSpecification.ts";
+import useFromFieldErrorSpecification from "@/components/hooks/use-from-field-error-specification.ts";
 import {useLocation, useNavigate} from "react-router-dom";
 
 /**

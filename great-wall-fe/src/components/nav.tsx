@@ -1,8 +1,8 @@
-import {cn} from "@/utils/shadcnUtils"
+import {cn} from "@/lib/shadcnUtils"
 import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip"
 import {Link, useLocation} from "react-router-dom";
 import {buttonVariants} from "@/components/ui/button.tsx";
-import {isNull} from "@/utils/Utils.ts";
+import {isNull} from "@/lib/utils.ts";
 import {IconType} from "@/components/types.tsx";
 
 export interface Path {

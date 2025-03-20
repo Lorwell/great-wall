@@ -3,7 +3,7 @@ import './App.less'
 import {Navigate, Outlet, Route, Routes, useLocation, useNavigate} from "react-router-dom"
 import {lazy, Suspense, useEffect} from "react";
 import {useAsyncEffect} from "ahooks";
-import {isBlank, removePrefix, removeSuffix} from "@/utils/Utils.ts";
+import {isBlank, removePrefix, removeSuffix} from "@/lib/utils.ts";
 import Error404 from "@/pages/Error404.tsx";
 import SuspenseFallback from "@/pages/SuspenseFallback.tsx";
 import {Toaster} from "@/components/ui/sonner.tsx";
@@ -70,7 +70,7 @@ const App = () => {
           </Route>
         </Routes>
       </Suspense>
-      <Toaster/>
+      <Toaster position={"top-center"} duration={3000}/>
     </ThemeProvider>
   )
 }

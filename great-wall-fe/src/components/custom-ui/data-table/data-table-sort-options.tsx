@@ -14,7 +14,7 @@ import {
 import {ArrowUpDown} from "lucide-react";
 import {Table} from "@tanstack/react-table";
 import {ArrowDownIcon, ArrowUpIcon} from "@radix-ui/react-icons";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/utils.ts";
 
 interface DataTableSortOptionsProps<TData> {
   table: Table<TData>

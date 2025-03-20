@@ -138,8 +138,4 @@ export type AppRouteListOutput = AppRouteOutput
 
 export interface AppRouteListInput extends BaseListInputSchemaValues {
 
-  /**
-   * 状态匹配
-   */
-  status?: AppRouteStatusEnum
 }

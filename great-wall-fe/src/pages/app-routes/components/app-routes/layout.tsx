@@ -1,8 +1,8 @@
 import {ReactElement, ReactNode, useEffect} from "react";
 import {Outlet, useLocation, useNavigate, useOutletContext} from "react-router-dom";
-import {isNull} from "@/utils/Utils.ts";
+import {isNull} from "@/lib/utils.ts";
 import {toast} from "sonner";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
 import {useRecoilValue} from "recoil";

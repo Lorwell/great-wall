@@ -1,9 +1,10 @@
 import {HttpException} from "@/constant/api";
-import {getErrorMessage} from "@/components/hooks/useApiRequest.ts";
-import {isBlank, isNull} from "@/utils/Utils.ts";
+import {getErrorMessage} from "@/components/hooks/use-api-request";
+import {isBlank, isNull} from "@/lib/utils";
 import {FieldValues, UseFormReturn} from "react-hook-form";
 import {toast} from "sonner";
-import {FieldsErrorValues} from "@/constant/api/schema.ts";
+import {FieldsErrorValues} from "@/constant/api/schema";
+import {useCallback} from "react";
 
 export type Service<T> = () => Promise<T>
 
@@ -12,15 +13,14 @@ export type FieldErrorSpecificationCallback = <T>(service: Service<T>) => Promis
 /**
  * 表单提交字段错误规范 Hooks
  */
-function useFromFieldErrorSpecification<TFieldValues extends FieldValues = FieldValues>(
+function useFormFieldErrorSpecification<TFieldValues extends FieldValues = FieldValues>(
   form: UseFormReturn<TFieldValues>,
   noticeError?: boolean
 ): FieldErrorSpecificationCallback {
-  const notice = isNull(noticeError) ? true : noticeError
+  return useCallback(async (service) => {
+    const notice = isNull(noticeError) ? true : noticeError
+    const {setError} = form
 
-  const {setError} = form
-
-  return async (service) => {
     try {
       return await service();
     } catch (e) {
@@ -40,9 +40,7 @@ function useFromFieldErrorSpecification<TFieldValues extends FieldValues = Field
         // 其他状态码
         else if (notice) {
           let detail = getErrorMessage(e)
-          toast.warning(detail, {
-            position: "top-right",
-          })
+          toast.warning(detail)
         }
       }
       // 其他异常！
@@ -56,14 +54,12 @@ function useFromFieldErrorSpecification<TFieldValues extends FieldValues = Field
           detail = `未知的异常!`
         }
 
-        toast.warning(detail, {
-          position: "top-right",
-        })
+        toast.warning(detail)
       }
 
       throw e;
     }
-  }
+  }, [form, noticeError]);
 }
 
-export default useFromFieldErrorSpecification;
+export default useFormFieldErrorSpecification;

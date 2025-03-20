@@ -1,11 +1,14 @@
-import {DataTable} from "@/components/data-table/data-table.tsx";
+import {DataTable} from "@/components/custom-ui/data-table/data-table.tsx";
 import {columns} from "@/pages/app-routes/list/columns.tsx";
 import {RowContext} from "@/pages/app-routes/list/row-actions.tsx";
 import {useNavigate} from "react-router-dom";
 import {LayoutPanelLeft} from "lucide-react";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
-import {appRouteList, setAppRouteStatus} from "@/constant/api/app-routes";
-import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
+import {appRouteList, batchDeleteAppRoute, updateAppRouteStatus} from "@/constant/api/app-routes";
+import {AppRouteListOutput, AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
+import {useDataTableApiRequest} from "@/components/custom-ui/data-table/use-data-table-api-request.ts";
+import {filterOptions} from "@/pages/app-routes/list/filter-options.ts";
+import {Row} from "@tanstack/react-table";
 
 
 /**
@@ -15,23 +18,33 @@ import {AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 function AppRoutesList() {
 
   const navigate = useNavigate();
-  const {
-    data: appRouteListData,
-    loading: appRouteListLoading,
-    run: appRouteListRun
-  } = useApiRequest(appRouteList);
 
   const {
-    loading: setAppRouteStatusLoading,
-    runAsync: setAppRouteStatusRun
-  } = useApiRequest(setAppRouteStatus, {manual: true});
+    records,
+    page,
+    loading,
+    pageState,
+    setPageState,
+    onTableChange,
+    refresh
+  } = useDataTableApiRequest((input) => appRouteList(input), {
+    filterOptions: filterOptions
+  });
+
+  const {
+    runAsync: updateAppRouteStatusRun
+  } = useApiRequest(updateAppRouteStatus, {manual: true});
+
+  const {
+    runAsync: batchDeleteAppRouteRun
+  } = useApiRequest(batchDeleteAppRoute, {manual: true});
 
   /**
    * 查看事件
    * @param ctx
    */
   function handleView(ctx: RowContext) {
-    const id = ctx.row.original.id!!
+    const id = ctx.row.original.id!
     navigate(`/manage/app-routes/${id}/preview`)
   }
 
@@ -40,7 +53,7 @@ function AppRoutesList() {
    * @param ctx
    */
   function handleEdit(ctx: RowContext) {
-    const id = ctx.row.original.id!!
+    const id = ctx.row.original.id!
     navigate(`/manage/app-routes/${id}`)
   }
 
@@ -49,9 +62,9 @@ function AppRoutesList() {
    * @param ctx
    */
   async function handleOffline(ctx: RowContext) {
-    const id = ctx.row.original.id!!
-    await setAppRouteStatusRun(id, AppRouteStatusEnum.OFFLINE)
-    appRouteListRun()
+    const id = ctx.row.original.id!
+    await updateAppRouteStatusRun(id, AppRouteStatusEnum.OFFLINE)
+    refresh()
   }
 
   /**
@@ -59,33 +72,47 @@ function AppRoutesList() {
    * @param ctx
    */
   async function handleOnline(ctx: RowContext) {
-    const id = ctx.row.original.id!!
-    await setAppRouteStatusRun(id, AppRouteStatusEnum.ONLINE)
-    appRouteListRun()
+    const id = ctx.row.original.id!
+    await updateAppRouteStatusRun(id, AppRouteStatusEnum.ONLINE)
+    refresh()
+  }
+
+  /**
+   * 删除事件
+   */
+  async function handleDelete(rows: Row<AppRouteListOutput>[]) {
+    await batchDeleteAppRouteRun({
+      ids: rows.map(it => it.original.id!)
+    })
+    refresh()
   }
 
   return (
     <div className={"w-full h-full"}>
-      <DataTable data={appRouteListData?.records || []}
-                 rowCount={appRouteListData?.page.total}
-                 searchColumnId={"name"}
-                 manual={false}
-                 loading={appRouteListLoading || setAppRouteStatusLoading}
-                 columns={columns({
-                   event: {
-                     onView: handleView,
-                     onEdit: handleEdit,
-                     onOffline: handleOffline,
-                     onOnline: handleOnline,
-                   }
-                 })}
-                 plusOptions={[
-                   {
-                     label: "新建应用路由",
-                     icon: LayoutPanelLeft,
-                     onClick: () => navigate("/manage/app-routes/add/base-info"),
-                   }
-                 ]}
+      <DataTable
+        data={records || []}
+        pagination={pageState}
+        rowCount={page?.total}
+        onPaginationChange={setPageState}
+        onChange={onTableChange}
+        loading={loading}
+        columns={columns({
+          event: {
+            onView: handleView,
+            onEdit: handleEdit,
+            onOffline: handleOffline,
+            onOnline: handleOnline,
+          }
+        })}
+        filterOptions={filterOptions}
+        plusOptions={[
+          {
+            label: "新建应用路由",
+            icon: LayoutPanelLeft,
+            onClick: () => navigate("/manage/app-routes/add/base-info"),
+          }
+        ]}
+        onDelete={handleDelete}
       />
     </div>
   )

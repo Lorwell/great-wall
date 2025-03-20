@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {IconType} from "@/components/types.tsx";
 import {ReactElement, ReactNode} from "react";
-import {isNull} from "@/utils/Utils.ts";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {isNull} from "@/lib/utils.ts";
+import {cn} from "@/lib/utils.ts";
 
 export interface DataTablePlusItemOptions<TData> {
   label: string | ReactNode | ReactElement;
@@ -36,7 +36,7 @@ function DataTablePlusOptions<TData>(props: DataTablePlusOptionsProps<TData>) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild disabled={disabled}>
-        <Plus className={cn("cursor-pointer h-6 w-6",
+        <Plus className={cn("cursor-pointer size-6",
           {
             "opacity-50": disabled
           }

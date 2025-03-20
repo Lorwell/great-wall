@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
  */
 @Repository
 @Transactional
-interface CacheRepository : R2dbcRepository<CachePo, Long> {
+interface CacheRepository : R2dbcRepository<CachePo> {
 
     fun findByNameAndCacheKey(name: String, cacheKey: String): Mono<CachePo>
 

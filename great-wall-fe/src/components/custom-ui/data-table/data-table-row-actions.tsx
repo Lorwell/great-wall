@@ -1,7 +1,7 @@
 import {DotsHorizontalIcon} from "@radix-ui/react-icons"
 import {Row} from "@tanstack/react-table"
 
-import {Button} from "@/components/ui/button"
+import {Button} from "@/components/ui/button.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +14,12 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {isEmpty, isNull} from "@/utils/Utils.ts";
+} from "@/components/ui/dropdown-menu.tsx"
+import {isEmpty, isNull} from "@/lib/utils.ts";
 import * as React from "react";
 import {SyntheticEvent, useState} from "react";
 import {IconType} from "@/components/types.tsx";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/utils.ts";
 import {Loader2} from "lucide-react";
 
 export interface DataTableRowActionsOptions<TData> {

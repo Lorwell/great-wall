@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu.tsx";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {PredicateTypeEnum} from "@/constant/api/app-routes/types.ts";
 import {PredicatesSchemaValues} from "@/constant/api/app-routes/schema.ts";

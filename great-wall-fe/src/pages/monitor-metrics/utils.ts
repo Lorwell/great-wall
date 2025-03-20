@@ -100,7 +100,7 @@ export function maxPoint(width: number,
 export function maxSecond(dateRange: MetricsDateRange): number {
   switch (dateRange.type) {
     case "LastDateEnum":
-      switch (dateRange.lastDataEnum!!) {
+      switch (dateRange.lastDataEnum!) {
         case "Last15Minute":
           return 15 * 60;
         case "Last30Minute":
@@ -124,8 +124,8 @@ export function maxSecond(dateRange: MetricsDateRange): number {
       }
       break
     case "DateRange":
-      let {from, to} = dateRange.dateRange!!;
-      return ((to || new Date()).getTime() - from!!.getTime()) / 1000
+      let {from, to} = dateRange.dateRange!;
+      return ((to || new Date()).getTime() - from!.getTime()) / 1000
   }
   throw new Error()
 }

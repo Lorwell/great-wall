@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
  */
 @Repository
 @Transactional
-interface AppRouteRepository : R2dbcRepository<AppRoutePo, Long> {
+interface AppRouteRepository : R2dbcRepository<AppRoutePo> {
 
     /**
      * 根据状态查询列表

@@ -1,4 +1,7 @@
 import _ from "lodash";
+import {cn as shadcn} from "./shadcnUtils.ts"
+
+export const cn = shadcn
 
 /**
  * 是否为空白字符串
@@ -32,6 +35,7 @@ export const getDomain = (): string => {
   return `${protocol}//${host}`
 }
 
+
 /**
  * 删除前缀
  * @param str
@@ -56,6 +60,17 @@ export const addPrefix = (str: string, prefix: string) => {
   }
 
   return prefix + str
+}
+
+
+/**
+ * 如果不为空则添加前缀
+ * @param str
+ * @param prefix
+ */
+export const addPrefixNotBlank = (str: string | null, prefix: string) => {
+  if (!str || isBlank(str)) return ""
+  return addPrefix(str, prefix)
 }
 
 /**
@@ -135,4 +150,81 @@ export const percentageFormat = (size?: number,
     return defaultValue || "";
 
   return Math.round(size * 10000) / 100 + '%'
+}
+
+
+/**
+ * 计算最大值
+ * @param precision 总位数
+ * @param scale 小数部分
+ */
+export function calculateMaxNumber(precision: number, scale: number): number {
+  if (precision < scale) {
+    throw new Error("精度必须大于或等于小数位数");
+  }
+
+  // 计算整数部分的最大值
+  const integerPart = Math.pow(10, precision - scale) - 1;
+
+  // 计算小数部分的最大值
+  const fractionalPart = (Math.pow(10, scale) - 1) / Math.pow(10, scale);
+
+  // 整体最大值
+  return integerPart + fractionalPart;
+}
+
+/**
+ * 计算最小值
+ * @param precision 总位数
+ * @param scale 小数部分
+ */
+export function calculateMinNumber(precision: number, scale: number): number {
+  if (precision < scale) {
+    throw new Error("精度必须大于或等于小数位数");
+  }
+
+  // 最小值为负数时，整数部分的最小值
+  const integerPart = -(Math.pow(10, precision - scale) - 1);
+
+  // 小数部分的最小值（如果有小数部分）
+  const fractionalPart = scale > 0 ? -((Math.pow(10, scale) - 1) / Math.pow(10, scale)) : 0;
+
+  // 整体最小值
+  return integerPart + fractionalPart;
+}
+
+/**
+ * 计算最小步进
+ * @param precision 总位数
+ * @param scale 小数部分
+ */
+export function calculateMinStep(precision: number, scale: number): number {
+  if (precision < scale) {
+    throw new Error("精度必须大于或等于小数位数");
+  }
+
+  // 最小步进是 10^(-scale)
+  return Math.pow(10, -scale);
+}
+
+/**
+ * 为指定位数的数值补充 0
+ */
+export function fillZero(precision: number, num: number | string): string {
+  let numStr = `${num}`;
+  const len = precision - numStr.length;
+  if (len <= 0) return numStr
+
+  for (let i = 0; i < len; i++) {
+    numStr = `0${numStr}`
+  }
+  return numStr
+}
+
+/**
+ * 判断是否可以转为整数
+ * @param char
+ */
+export function isToInt(char: string) {
+  return !isNaN(parseInt(char))
 }

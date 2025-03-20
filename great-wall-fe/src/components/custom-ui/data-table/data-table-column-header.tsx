@@ -1,15 +1,15 @@
 import {ArrowDownIcon, ArrowUpIcon, CaretSortIcon, EyeNoneIcon,} from "@radix-ui/react-icons"
 import {Column} from "@tanstack/react-table"
 
-import {cn} from "@/utils/shadcnUtils"
-import {Button} from "@/components/ui/button"
+import {cn} from "@/lib/utils.ts"
+import {Button} from "@/components/ui/button.tsx"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu.tsx"
 import * as React from "react";
 
 interface DataTableColumnHeaderProps<TData, TValue>
@@ -41,10 +41,13 @@ export function DataTableColumnHeader<TData, TValue>({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 data-[state=open]:bg-accent"
+            className="h-8 data-[state=open]:bg-accent ring-0 ring-offset-0"
           >
-                        <span className={"truncate"}
-                              style={{width: `calc(${column.getSize() - 20}px - 2rem)`}}>{label}</span>
+            <span
+              className={"truncate text-left"}
+              style={{width: `calc(${column.getSize() - 20}px - 3rem)`}}>
+              {label}
+            </span>
             {column.getIsSorted() === "desc" ? (
               <ArrowDownIcon className="ml-2 h-4 w-4"/>
             ) : column.getIsSorted() === "asc" ? (

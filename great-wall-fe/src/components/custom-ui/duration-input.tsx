@@ -2,7 +2,7 @@ import {ControllerRenderProps, FieldPath, FieldValues} from "react-hook-form";
 import {Input} from "@/components/ui/input.tsx";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "../ui/select";
 import {useEffect, useState} from "react";
-import {isNull} from "@/utils/Utils.ts";
+import {isNull} from "@/lib/utils.ts";
 
 export interface DurationInputProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>
   extends ControllerRenderProps<TFieldValues, TName> {

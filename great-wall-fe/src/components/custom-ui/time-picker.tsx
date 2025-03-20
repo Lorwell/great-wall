@@ -1,6 +1,6 @@
 import {forwardRef, useRef} from "react";
 import {DateFieldState, DateSegment as IDateSegment, TimeFieldStateOptions, useTimeFieldState} from "react-stately";
-import {cn} from "@/utils/shadcnUtils";
+import {cn} from "@/lib/shadcnUtils";
 import {AriaTimeFieldProps, TimeValue, useDateSegment, useLocale, useTimeField} from "react-aria";
 
 interface DateSegmentProps {

@@ -1,6 +1,6 @@
 import {Cell, Column, Row, Table} from "@tanstack/react-table";
 import {FileDown, Rows4} from "lucide-react";
-import {DataTableRowActions, DataTableRowActionsOptions} from "@/components/data-table/data-table-row-actions.tsx";
+import {DataTableRowActions, DataTableRowActionsOptions} from "@/components/custom-ui/data-table/data-table-row-actions.tsx";
 import {LogListOutput} from "@/constant/api/app-logs/types.ts";
 
 export interface RowContext {

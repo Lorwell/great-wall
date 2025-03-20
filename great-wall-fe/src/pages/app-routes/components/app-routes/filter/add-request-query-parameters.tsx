@@ -10,7 +10,7 @@ import {useEffect} from "react";
 import FilterCard from "@/pages/app-routes/components/app-routes/filter/filter-card.tsx";
 import {CirclePlus, Fingerprint, Trash2} from "lucide-react";
 import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 

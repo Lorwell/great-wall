@@ -1,15 +1,15 @@
 import * as React from "react"
 
-import {cn} from "@/utils/shadcnUtils"
+import {cn} from "@/lib/utils"
 
 const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
->(({className, ...props}, ref) => (
-  <div className="relative w-full overflow-auto">
+>(({className, style, ...props}, ref) => (
+  <div className={cn("relative w-full overflow-auto", className)} style={style}>
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm table-fixed", className)}
+      className={cn("w-full caption-bottom text-sm")}
       {...props}
     />
   </div>

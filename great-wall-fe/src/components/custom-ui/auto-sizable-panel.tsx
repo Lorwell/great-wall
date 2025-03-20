@@ -1,7 +1,7 @@
 import {CSSProperties, ReactNode, useEffect, useRef, useState} from "react";
 import {useDebounceFn, useMemoizedFn} from "ahooks";
-import {isNull} from "@/utils/Utils.ts";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {isNull} from "@/lib/utils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 
 export interface Size {
   width: number

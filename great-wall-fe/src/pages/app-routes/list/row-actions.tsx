@@ -1,6 +1,6 @@
 import {Cell, Column, Row, Table} from "@tanstack/react-table";
 import {Pencil, Rows4, ShieldBan} from "lucide-react";
-import {DataTableRowActions, DataTableRowActionsOptions} from "@/components/data-table/data-table-row-actions.tsx";
+import {DataTableRowActions, DataTableRowActionsOptions} from "@/components/custom-ui/data-table/data-table-row-actions.tsx";
 import {AppRouteListOutput, AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 
 export interface RowContext {

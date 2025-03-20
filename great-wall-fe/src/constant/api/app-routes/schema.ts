@@ -242,3 +242,9 @@ export type AppRouteOutputValues = z.infer<typeof appRouteOutputSchema>
 
 export const appRoutePageRecordsSchema = getPageRecordSchema(appRouteOutputSchema)
 export type AppRoutePageRecordsValues = z.infer<typeof appRoutePageRecordsSchema>
+
+export const batchDeleteAppRouteSchema = z.object({
+  ids: z.array(z.number())
+})
+
+export type BatchDeleteAppRouteValues = z.infer<typeof batchDeleteAppRouteSchema>

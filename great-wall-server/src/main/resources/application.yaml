@@ -44,7 +44,6 @@ spring:
           max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:PT1S}
           max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
           eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
-
       predicate:
         host:
           # host 匹配不导入端口
@@ -84,4 +83,5 @@ logging:
   level:
     # 忽略只读告警
     "io.r2dbc.h2.H2Connection": error
+    "cc.shacocloud.greatwall.controller.advice.RestfulResponseSpecification": info
 #    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug

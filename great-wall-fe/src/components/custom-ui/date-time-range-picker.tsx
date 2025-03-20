@@ -98,12 +98,14 @@ function DateTimePicker({displayMonth}: FooterProps) {
     second: parseInt(format(date, "ss")),
   } as TimeValue : undefined
 
-  function handleChange(value: TimeValue) {
+  function handleChange(value: TimeValue | null) {
     if (!date) return
 
     const onSelectHandler = onSelect as SelectRangeEventHandler | undefined;
 
-    const newDate = parse(`${value.hour}:${value.minute}:${value.second}`, "HH:mm:ss", date || new Date());
+    const newDate = value
+      ? parse(`${value.hour}:${value.minute}:${value.second}`, "HH:mm:ss", date || new Date())
+      : new Date();
 
     onSelectHandler?.(
       // @ts-ignore

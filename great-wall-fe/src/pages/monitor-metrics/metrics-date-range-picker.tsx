@@ -2,7 +2,7 @@ import {ReactElement, ReactNode, useState} from "react"
 import {CalendarIcon} from "@radix-ui/react-icons"
 import {format} from "date-fns"
 import {DateRange} from "react-day-picker"
-import {cn} from "@/utils/shadcnUtils.ts"
+import {cn} from "@/lib/shadcnUtils.ts"
 import {Button, ButtonProps} from "@/components/ui/button.tsx";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
 import {Check} from "lucide-react";

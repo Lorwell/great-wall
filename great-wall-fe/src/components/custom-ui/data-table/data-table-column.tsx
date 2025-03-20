@@ -1,6 +1,7 @@
 import {ColumnDef, RowData} from "@tanstack/react-table";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
-import {DataTableColumnHeader} from "@/components/data-table/data-table-column-header.tsx";
+import {DataTableColumnHeader} from "@/components/custom-ui/data-table/data-table-column-header.tsx";
+import {cn} from "@/lib/utils.ts";
 
 /**
  * 内置的选择列的id
@@ -33,7 +34,8 @@ export const dataTableCheckboxColumn = <TData extends RowData>(): ColumnDef<TDat
         className="translate-y-[2px]"
       />
     ),
-    size: 35,
+    size: 55,
+    maxSize: 55,
     enableSorting: false,
     enableHiding: false,
     enableResizing: false
@@ -60,7 +62,7 @@ export interface ColumnCellDef<TData extends RowData, TValue = any> extends Omit
 export const columnCell = <TData extends RowData>(
   cellDef: ColumnCellDef<TData>
 ): ColumnDef<TData> => {
-  const {columnId, label, meta, ...rest} = cellDef;
+  const {columnId, label, meta, cell, ...rest} = cellDef;
 
   return {
     ...rest,
@@ -71,6 +73,11 @@ export const columnCell = <TData extends RowData>(
     },
     header: ({column}) => (
       <DataTableColumnHeader column={column} label={label}/>
+    ),
+    cell: (ctx) => (
+      <div className={cn({"pl-3": ctx.column.getCanSort()})}>
+        {typeof cell === "string" ? cell : cell?.(ctx)}
+      </div>
     )
   }
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import {cn} from '@/utils/shadcnUtils';
+import {cn} from '@/lib/shadcnUtils';
 import {cva, VariantProps} from 'class-variance-authority';
 import {Loader2} from 'lucide-react';
 

@@ -7,8 +7,8 @@ import {maxPoint} from "@/pages/monitor-metrics/utils.ts";
 import {AudioWaveform} from "lucide-react";
 import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
-import {cn} from "@/utils/shadcnUtils.ts";
-import {byteSizeToUnitStr} from "@/utils/Utils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
+import {byteSizeToUnitStr} from "@/lib/utils.ts";
 
 const chartConfig = {
   request: {

@@ -1,4 +1,4 @@
-import {Get, PostJson} from "@/constant/api";
+import {getRequest, postJsonRequest} from "@/constant/api";
 import {
   CpuLineRecordOutputSchema,
   GcLineMetricsRecordSchema,
@@ -27,7 +27,7 @@ import {
  * 系统运行时间指标
  */
 export function upTimeMetrics(): Promise<UptimeOutputMetrics> {
-  return Get(`/api/system-monitor-metrics/up-time`, {
+  return getRequest(`/api/system-monitor-metrics/up-time`, {
     resultSchema: UptimeOutputSchema
   })
 }
@@ -36,7 +36,7 @@ export function upTimeMetrics(): Promise<UptimeOutputMetrics> {
  * 进程cpu指标
  */
 export function processCpuMetrics(): Promise<ProcessCpuOutput> {
-  return Get(`/api/system-monitor-metrics/process-cpu`, {
+  return getRequest(`/api/system-monitor-metrics/process-cpu`, {
     resultSchema: ProcessCpuOutputSchema
   })
 }
@@ -45,7 +45,7 @@ export function processCpuMetrics(): Promise<ProcessCpuOutput> {
  * 堆内存指标
  */
 export function headMemoryMetrics(): Promise<MemoryOutput> {
-  return Get(`/api/system-monitor-metrics/head-memory`, {
+  return getRequest(`/api/system-monitor-metrics/head-memory`, {
     resultSchema: MemoryOutputSchema
   })
 }
@@ -54,7 +54,7 @@ export function headMemoryMetrics(): Promise<MemoryOutput> {
  * 非堆内存指标
  */
 export function nonHeadMemoryMetrics(): Promise<MemoryOutput> {
-  return Get(`/api/system-monitor-metrics/non-head-memory`, {
+  return getRequest(`/api/system-monitor-metrics/non-head-memory`, {
     resultSchema: MemoryOutputSchema
   })
 }
@@ -63,7 +63,7 @@ export function nonHeadMemoryMetrics(): Promise<MemoryOutput> {
  * 直接内存指标
  */
 export function directMemoryMetrics(): Promise<MemoryOutput> {
-  return Get(`/api/system-monitor-metrics/direct-head-memory`, {
+  return getRequest(`/api/system-monitor-metrics/direct-head-memory`, {
     resultSchema: MemoryOutputSchema
   })
 }
@@ -72,7 +72,7 @@ export function directMemoryMetrics(): Promise<MemoryOutput> {
  * 线程总计指标
  */
 export function threadTotalMetrics(): Promise<ThreadTotalOutput> {
-  return Get(`/api/system-monitor-metrics/thread-total`, {
+  return getRequest(`/api/system-monitor-metrics/thread-total`, {
     resultSchema: ThreadTotalOutputSchema
   })
 }
@@ -84,7 +84,7 @@ export function threadTotalMetrics(): Promise<ThreadTotalOutput> {
  * @param input
  */
 export function headMemoryLineMetrics(input: SystemLineMetricsInput): Promise<MemoryLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/head-memory`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/head-memory`, {
     body: input,
     resultSchema: MemoryLineRecordOutputSchema
   })
@@ -96,7 +96,7 @@ export function headMemoryLineMetrics(input: SystemLineMetricsInput): Promise<Me
  * @param input
  */
 export function nonHeadMemoryLineMetrics(input: SystemLineMetricsInput): Promise<MemoryLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/non-head-memory`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/non-head-memory`, {
     body: input,
     resultSchema: MemoryLineRecordOutputSchema
   })
@@ -108,7 +108,7 @@ export function nonHeadMemoryLineMetrics(input: SystemLineMetricsInput): Promise
  * @param input
  */
 export function directMemoryLineMetrics(input: SystemLineMetricsInput): Promise<MemoryLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/direct-memory`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/direct-memory`, {
     body: input,
     resultSchema: MemoryLineRecordOutputSchema
   })
@@ -120,7 +120,7 @@ export function directMemoryLineMetrics(input: SystemLineMetricsInput): Promise<
  * @param input
  */
 export function cpuLineMetrics(input: SystemLineMetricsInput): Promise<CpuLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/cpu`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/cpu`, {
     body: input,
     resultSchema: CpuLineRecordOutputSchema
   })
@@ -132,7 +132,7 @@ export function cpuLineMetrics(input: SystemLineMetricsInput): Promise<CpuLineRe
  * @param input
  */
 export function threadLineMetrics(input: SystemLineMetricsInput): Promise<ThreadLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/thread`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/thread`, {
     body: input,
     resultSchema: ThreadLineRecordOutputSchema
   })
@@ -144,7 +144,7 @@ export function threadLineMetrics(input: SystemLineMetricsInput): Promise<Thread
  * @param input
  */
 export function loadedClassLineMetrics(input: SystemLineMetricsInput): Promise<LoadedClassLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/loaded-class`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/loaded-class`, {
     body: input,
     resultSchema: LoadedClassLineRecordOutputSchema
   })
@@ -156,7 +156,7 @@ export function loadedClassLineMetrics(input: SystemLineMetricsInput): Promise<L
  * @param input
  */
 export function gcCountLineMetrics(input: SystemLineMetricsInput): Promise<GcLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/gc-count`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/gc-count`, {
     body: input,
     resultSchema: GcLineMetricsRecordSchema
   })
@@ -168,7 +168,7 @@ export function gcCountLineMetrics(input: SystemLineMetricsInput): Promise<GcLin
  * @param input
  */
 export function gcTimeLineMetrics(input: SystemLineMetricsInput): Promise<GcLineRecordOutput> {
-  return PostJson(`/api/system-monitor-metrics/line/gc-time`, {
+  return postJsonRequest(`/api/system-monitor-metrics/line/gc-time`, {
     body: input,
     resultSchema: GcLineMetricsRecordSchema
   })

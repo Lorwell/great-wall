@@ -9,8 +9,6 @@ import {
   QueryPredicatesSchemaValues,
   RemoteAddrPredicatesSchemaValues
 } from "@/constant/api/app-routes/schema.ts";
-import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
-import {Badge} from "@/components/ui/badge.tsx";
 import {RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
 import {routePredicateOperatorEnumToChinese} from "@/pages/app-routes/utils.ts";
 
@@ -26,21 +24,12 @@ export default function PredicatesColumn(props: PredicatesColumnProps) {
   const {predicates} = props
 
   return (
-    <div className={"w-full"}>
-      <HoverCard>
-        <HoverCardTrigger>
-          <Badge variant={"secondary"} className={"cursor-pointer"}>{predicates.length}</Badge>
-        </HoverCardTrigger>
-        <HoverCardContent>
-          <div className={"table table-auto border-separate border-spacing-1"}>
-            {
-              predicates.map((it, index) => (
-                <Predicates key={index} value={it} first={index === 0} viewOperator/>
-              ))
-            }
-          </div>
-        </HoverCardContent>
-      </HoverCard>
+    <div className={"table table-auto border-separate border-spacing-1"}>
+      {
+        predicates.map((it, index) => (
+          <Predicates key={index} value={it} first={index === 0} viewOperator/>
+        ))
+      }
     </div>
   )
 }

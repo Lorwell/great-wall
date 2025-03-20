@@ -31,12 +31,10 @@ class CompositionMonitorMetricsService(
     companion object {
         private val log: Logger = LoggerFactory.getLogger(CompositionMonitorMetricsService::class.java)
 
-        const val N_THREADS = 2
-
         /**
          *  监控指标数据写入调度器
          */
-        val monitorMetricsWriteDispatcher = Executors.newFixedThreadPool(N_THREADS + 1)
+        val monitorMetricsWriteDispatcher = Executors.newFixedThreadPool(2)
             .asCoroutineDispatcher()
     }
 
@@ -47,15 +45,13 @@ class CompositionMonitorMetricsService(
     init {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch {
-            repeat(N_THREADS) {
-                launch(monitorMetricsWriteDispatcher) {
-                    try {
-                        while (!channel.isClosedForReceive) {
-                            val record = channel.receive()
-                            consumerData(record)
-                        }
-                    } catch (_: ClosedReceiveChannelException) {
+            launch(monitorMetricsWriteDispatcher) {
+                try {
+                    while (!channel.isClosedForReceive) {
+                        val record = channel.receive()
+                        consumerData(record)
                     }
+                } catch (_: ClosedReceiveChannelException) {
                 }
             }
         }

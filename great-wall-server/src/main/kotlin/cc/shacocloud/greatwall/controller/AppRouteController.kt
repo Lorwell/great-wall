@@ -6,6 +6,7 @@ import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.dto.convert.toOutput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
+import cc.shacocloud.greatwall.model.dto.input.BatchDeleteInput
 import cc.shacocloud.greatwall.model.dto.output.AppRouteOutput
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import cc.shacocloud.greatwall.service.AppRouteService
@@ -40,8 +41,8 @@ class AppRouteController(
     /**
      * 应用路由列表
      */
-    @GetMapping
-    suspend fun list(@Validated input: AppRouteListInput): Page<AppRouteOutput> {
+    @PostMapping("/list")
+    suspend fun list(@RequestBody @Validated input: AppRouteListInput): Page<AppRouteOutput> {
         return appRouteService.list(input)
             .map { it.toOutput() }
     }
@@ -85,6 +86,16 @@ class AppRouteController(
         // 刷新路由
         AppRouteLocator.refreshRoutes()
         return appRoutePo.toOutput()
+    }
+
+    /**
+     * 批量删除路由
+     */
+    @DeleteMapping
+    suspend fun batchDelete(
+        @RequestBody @Validated input: BatchDeleteInput
+    ) {
+        appRouteService.batchDelete(input)
     }
 
 }

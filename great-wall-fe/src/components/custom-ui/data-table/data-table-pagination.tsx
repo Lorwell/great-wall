@@ -1,7 +1,7 @@
 import {ChevronLeftIcon, ChevronRightIcon, DoubleArrowLeftIcon, DoubleArrowRightIcon,} from "@radix-ui/react-icons"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select.tsx"
 import {Table} from "@tanstack/react-table"
-import {Button} from "@/components/ui/button"
+import {Button} from "@/components/ui/button.tsx"
 import React from "react";
 import {
   Pagination,

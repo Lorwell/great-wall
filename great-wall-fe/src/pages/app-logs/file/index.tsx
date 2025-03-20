@@ -2,14 +2,14 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {useNavigate, useParams} from "react-router-dom";
 import {CSSProperties, useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
-import {downloadFile, isBlank, isEmpty} from "@/utils/Utils.ts";
+import {downloadFile, isBlank, isEmpty} from "@/lib/utils.ts";
 import {Label} from "@/components/ui/label.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
 
 import {Dot, FileDown} from "lucide-react";
 import {LazyLog, ScrollFollow} from "@melloware/react-logviewer";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {logsList} from "@/constant/api/app-logs";
 import {logTypeChinese} from "@/constant/api/app-logs/types.ts";
 import {Button} from "@/components/ui/button.tsx";
