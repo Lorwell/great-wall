@@ -147,32 +147,13 @@ task("buildFe") {
             return@doFirst
         }
 
-        // 执行构建命令
-        val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()
-        logFile.deleteOnExit()
-        val process = ProcessBuilder()
-            .directory(feDir)
-            .command("pnpm", "run", "build")
-            .redirectErrorStream(true)
-            .redirectOutput(ProcessBuilder.Redirect.to(logFile))
-            .start()
-
         println()
         println("开始构建前端项目...")
         println()
 
-        // 打印日志
-        printProcessLogFile(logFile, process)
-
-        val exitCode = process.waitFor()
-
-        println()
-        println("构建前端项目结束，退出状态码：${exitCode}")
-        println()
-
-        if (exitCode != 0) {
-            throw RuntimeException("构建前端项目失败，退出状态码为：${exitCode}！")
-        }
+        // 执行构建命令
+        execCommand(feDir, "pnpm i".split(" "))
+        execCommand(feDir, "pnpm run build".split(" "))
     }
 }
 
@@ -198,6 +179,31 @@ task("copyFeBuildResultToBe") {
 
 
 // ---------------  函数 ------------
+
+fun execCommand(
+    directory: File,
+    command: List<String>
+) {
+    println()
+    println("执行命令 ${command.joinToString(" ")}")
+
+    val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()
+    logFile.deleteOnExit()
+    val process = ProcessBuilder()
+        .directory(directory)
+        .command(command)
+        .redirectErrorStream(true)
+        .redirectOutput(ProcessBuilder.Redirect.to(logFile))
+        .start()
+
+    // 打印日志
+    printProcessLogFile(logFile, process)
+
+    val exitCode = process.waitFor()
+    if (exitCode != 0) {
+        throw RuntimeException("执行命令 ${command.joinToString(" ")} 失败，退出状态码为：${exitCode}！")
+    }
+}
 
 // 打印进程日志文件
 fun printProcessLogFile(

@@ -17,7 +17,7 @@ WORKDIR /workspace
 COPY --from=0 "/build/great-wall-server/build/native/nativeCompile/great-wall-server" /workspace/app
 
 # 安装 openssl
-RUN apt-get update & apt-get install openssl
+RUN apt-get update && apt-get install -y openssl
 
 EXPOSE 443
 EXPOSE 80
