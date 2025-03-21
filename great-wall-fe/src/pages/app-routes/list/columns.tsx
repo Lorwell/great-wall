@@ -5,7 +5,8 @@ import {Badge} from "@/components/ui/badge";
 import RowActions, {RowActionsEvent} from "@/pages/app-routes/list/row-actions.tsx";
 import {AppRouteListOutput, AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 import {TargetConfigSchemaValues} from "@/constant/api/app-routes/schema.ts";
-import PredicatesColumn from "@/pages/app-routes/list/PredicatesColumn.tsx";
+import {PredicatesColumn} from "@/pages/app-routes/list/predicates-column.tsx";
+import {TargetConfigColumn} from "@/pages/app-routes/list/target-config-column.tsx";
 
 export interface ColumnsProps {
 
@@ -49,19 +50,9 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
         size: 250,
         enableSorting: false,
         cell: ({getValue}) => {
-          const {urls} = getValue<TargetConfigSchemaValues>();
-
+          const value = getValue<TargetConfigSchemaValues>();
           return (
-            <div className={"flex flex-col gap-1"}>
-              {urls.map((it, index) => (
-                <div key={index}>
-                  <span>{it.url}</span>
-                  <span className={"mx-3"}>-</span>
-                  <span>权重：</span>
-                  <span>{it.weight}</span>
-                </div>
-              ))}
-            </div>
+            <TargetConfigColumn targetConfig={value}/>
           )
         }
       }

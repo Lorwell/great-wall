@@ -11,8 +11,9 @@ import {
 } from "@/constant/api/app-routes/schema.ts";
 import {RoutePredicateOperatorEnum} from "@/constant/api/app-routes/types.ts";
 import {routePredicateOperatorEnumToChinese} from "@/pages/app-routes/utils.ts";
+import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card"
 
-export interface PredicatesColumnProps {
+export type PredicatesColumnProps = {
   predicates: PredicatesValues
 }
 
@@ -20,24 +21,37 @@ export interface PredicatesColumnProps {
  * 路由条件列
  * @constructor
  */
-export default function PredicatesColumn(props: PredicatesColumnProps) {
+export function PredicatesColumn(props: PredicatesColumnProps) {
   const {predicates} = props
 
   return (
-    <div className={"table table-auto border-separate border-spacing-1"}>
-      {
-        predicates.map((it, index) => (
-          <Predicates key={index} value={it} first={index === 0} viewOperator/>
-        ))
-      }
-    </div>
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <div className={"w-full"}>
+          {
+            predicates.map((it, index) => (
+              <Predicates key={index} value={it} first={index === 0}/>
+            ))
+          }
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent>
+        <div className={"text-base font-bold mb-2"}>路由条件：</div>
+        <div className={"table table-auto border-separate border-spacing-1"}>
+          {
+            predicates.map((it, index) => (
+              <Predicates key={index} value={it} first={index === 0}/>
+            ))
+          }
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
-function Predicates({value, first = false, viewOperator = false}: {
+function Predicates({value, first = false}: {
   value: PredicatesOperatorSchemaValues,
   first?: boolean,
-  viewOperator?: boolean
 }) {
   const {predicate, operator} = value
   const {type} = predicate
@@ -47,7 +61,6 @@ function Predicates({value, first = false, viewOperator = false}: {
         <HostPredicates value={predicate}
                         first={first}
                         operator={operator}
-                        viewOperator={viewOperator}
         />
       )
     case "Cookie":
@@ -56,7 +69,6 @@ function Predicates({value, first = false, viewOperator = false}: {
                       value={predicate}
                       first={first}
                       operator={operator}
-                      viewOperator={viewOperator}
         />
       )
     case "Header":
@@ -65,7 +77,6 @@ function Predicates({value, first = false, viewOperator = false}: {
                       value={predicate}
                       first={first}
                       operator={operator}
-                      viewOperator={viewOperator}
         />
       )
     case "Query":
@@ -74,7 +85,6 @@ function Predicates({value, first = false, viewOperator = false}: {
                       value={predicate}
                       first={first}
                       operator={operator}
-                      viewOperator={viewOperator}
         />
       )
     case "Method":
@@ -82,7 +92,6 @@ function Predicates({value, first = false, viewOperator = false}: {
         <MethodPredicates value={predicate}
                           first={first}
                           operator={operator}
-                          viewOperator={viewOperator}
         />
       )
     case "Path":
@@ -90,7 +99,6 @@ function Predicates({value, first = false, viewOperator = false}: {
         <PathPredicates value={predicate}
                         first={first}
                         operator={operator}
-                        viewOperator={viewOperator}
         />
       )
     case "RemoteAddr":
@@ -98,7 +106,6 @@ function Predicates({value, first = false, viewOperator = false}: {
         <RemoteAddrPredicates value={predicate}
                               first={first}
                               operator={operator}
-                              viewOperator={viewOperator}
         />
       )
   }
@@ -106,57 +113,49 @@ function Predicates({value, first = false, viewOperator = false}: {
   throw new Error(`未知的类型 ${type}`)
 }
 
-function KVPredicates({kvType, value, first, operator, viewOperator = false}: {
+function KVPredicates({kvType, value, first, operator}: {
   kvType: "Cookie" | "Query" | "Header",
   value: CookiePredicatesSchemaValues | HeaderPredicatesSchemaValues | QueryPredicatesSchemaValues,
   first: boolean,
-
   operator?: RoutePredicateOperatorEnum,
-  viewOperator?: boolean
 }) {
   const {name, regexp} = value
 
   return (
-    <div className={"table-row"}>
-      {
-        (viewOperator && !!operator) && (
-          <div className={"table-cell text-left pr-1"}>
-            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
-          </div>
-        )
-      }
+    <div className={"w-full flex gap-1"}>
+      <div className={"w-4 min-w-4 text-left"}>
+        {!first && !!operator ? routePredicateOperatorEnumToChinese(operator) : ""}
+      </div>
 
-      <div className={"table-cell text-right"}>{kvType} 匹配规则：</div>
+      <div className={"w-32 max-w-32 min-w-32 text-right"}>{kvType} 匹配规则：</div>
 
-      <div className={"table-cell text-left truncate"}>
+      <div
+        className={"flex-auto text-left truncate"}
+      >
         {name}={regexp}
       </div>
     </div>
   )
 }
 
-function HostPredicates({value, first, operator, viewOperator = false}: {
+function HostPredicates({value, first, operator,}: {
   value: HostPredicatesSchemaValues,
   first: boolean,
-
   operator?: RoutePredicateOperatorEnum,
-  viewOperator?: boolean
 }) {
   const {patterns} = value
 
   return (
-    <div className={"table-row"}>
-      {
-        (viewOperator && !!operator) && (
-          <div className={"table-cell text-left pr-1"}>
-            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
-          </div>
-        )
-      }
+    <div className={"w-full flex gap-1"}>
+      <div className={"w-4 min-w-4 text-left"}>
+        {!first && !!operator ? routePredicateOperatorEnumToChinese(operator) : ""}
+      </div>
 
-      <div className={"table-cell text-right"}>Host 匹配规则：</div>
+      <div className={"w-32 max-w-32 min-w-32 text-right"}>Host 匹配规则：</div>
 
-      <div className={"table-cell text-left truncate"}>
+      <div
+        className={"flex-auto text-left truncate"}
+      >
         {
           patterns.map((it, i) => (
             <span key={i}>
@@ -169,28 +168,24 @@ function HostPredicates({value, first, operator, viewOperator = false}: {
   )
 }
 
-function MethodPredicates({value, first, operator, viewOperator = false}: {
+function MethodPredicates({value, first, operator}: {
   value: MethodPredicatesSchemaValues,
   first: boolean,
-
   operator?: RoutePredicateOperatorEnum,
-  viewOperator?: boolean
 }) {
   const {methods} = value
 
   return (
-    <div className={"table-row"}>
-      {
-        (viewOperator && !!operator) && (
-          <div className={"table-cell text-left pr-1"}>
-            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
-          </div>
-        )
-      }
+    <div className={"w-full flex gap-1"}>
+      <div className={"w-4 min-w-4 text-left"}>
+        {!first && !!operator ? routePredicateOperatorEnumToChinese(operator) : ""}
+      </div>
 
-      <div className={"table-cell text-right"}>Method 匹配规则：</div>
+      <div className={"w-32 max-w-32 min-w-32 text-right"}>Method 匹配规则：</div>
 
-      <div className={"table-cell text-left truncate"}>
+      <div
+        className={"flex-auto text-left truncate"}
+      >
         {
           methods.map((it, i) => (
             <span key={i}>
@@ -203,28 +198,24 @@ function MethodPredicates({value, first, operator, viewOperator = false}: {
   )
 }
 
-function PathPredicates({value, first, operator, viewOperator = false}: {
+function PathPredicates({value, first, operator}: {
   value: PathPredicatesSchemaValues,
   first: boolean,
-
   operator?: RoutePredicateOperatorEnum,
-  viewOperator?: boolean
 }) {
   const {patterns} = value
 
   return (
-    <div className={"table-row"}>
-      {
-        (viewOperator && !!operator) && (
-          <div className={"table-cell text-left pr-1"}>
-            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
-          </div>
-        )
-      }
+    <div className={"w-full flex gap-1"}>
+      <div className={"w-4 min-w-4 text-left"}>
+        {!first && !!operator ? routePredicateOperatorEnumToChinese(operator) : ""}
+      </div>
 
-      <div className={"table-cell text-right"}>Path 匹配规则：</div>
+      <div className={"w-32 max-w-32 min-w-32 text-right"}>Path 匹配规则：</div>
 
-      <div className={"table-cell text-left truncate"}>
+      <div
+        className={"flex-auto text-left truncate"}
+      >
         {
           patterns.map((it, i) => (
             <span key={i}>
@@ -237,28 +228,24 @@ function PathPredicates({value, first, operator, viewOperator = false}: {
   )
 }
 
-function RemoteAddrPredicates({value, first, operator, viewOperator = false}: {
+function RemoteAddrPredicates({value, first, operator}: {
   value: RemoteAddrPredicatesSchemaValues,
   first: boolean,
-
   operator?: RoutePredicateOperatorEnum,
-  viewOperator?: boolean
 }) {
   const {sources} = value
 
   return (
-    <div className={"table-row"}>
-      {
-        (viewOperator && !!operator) && (
-          <div className={"table-cell text-left pr-1"}>
-            {!first ? routePredicateOperatorEnumToChinese(operator) : ""}
-          </div>
-        )
-      }
+    <div className={"w-full flex gap-1"}>
+      <div className={"w-4 min-w-4 text-left"}>
+        {!first && !!operator ? routePredicateOperatorEnumToChinese(operator) : ""}
+      </div>
 
-      <div className={"table-cell text-right"}>Path 匹配规则：</div>
+      <div className={"w-32 max-w-32 min-w-32 text-right"}>Path 匹配规则：</div>
 
-      <div className={"table-cell text-left truncate"}>
+      <div
+        className={"flex-auto text-left truncate"}
+      >
         {
           sources.map((it, i) => (
             <span key={i}>
