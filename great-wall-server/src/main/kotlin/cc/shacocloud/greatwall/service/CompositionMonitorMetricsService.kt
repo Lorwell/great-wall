@@ -34,7 +34,7 @@ class CompositionMonitorMetricsService(
         /**
          *  监控指标数据写入调度器
          */
-        val monitorMetricsWriteDispatcher = Executors.newFixedThreadPool(2)
+        val monitorMetricsWriteDispatcher = Executors.newFixedThreadPool(3)
             .asCoroutineDispatcher()
     }
 
@@ -64,7 +64,9 @@ class CompositionMonitorMetricsService(
     suspend fun addMetricsRecord(record: BaseMonitorMetricsPo) {
         try {
             if (channel.isClosedForSend) {
-                consumerData(record)
+                if (log.isWarnEnabled) {
+                    log.warn("监控指标记录队列已经关闭，当前记录被忽略：{}", record)
+                }
             } else {
                 channel.send(record)
             }

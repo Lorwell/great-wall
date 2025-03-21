@@ -107,6 +107,7 @@ class MonitorRouteMetricsWebHandler(
 
             val request = exchange.request
             val response = exchange.response
+            val route = exchange.attributes.remove(RouteMetricsGlobalFilter.ROUTE_ATTR) as Route?
 
             val path = request.path.value()
             val realIp = request.getRealIp()
@@ -115,7 +116,6 @@ class MonitorRouteMetricsWebHandler(
             val handleTime = (responseTime - requestTime).toMillis()
 
             // 路由信息
-            val route = exchange.attributes.remove(RouteMetricsGlobalFilter.ROUTE_ATTR) as Route?
             val appRouteId = route?.metadata?.get(AppRouteLocator.APP_ROUTE_ID_META_KEY) as Long?
             val targetUrl = route?.uri?.toASCIIString()
 
@@ -130,15 +130,15 @@ class MonitorRouteMetricsWebHandler(
             // 打印日志
             if (isAccessLogEnabled) {
                 accessLog.info(
-                    arrayOf(
-                        requestTime.toLocalDateTime(),
+                    arrayOf<String>(
+                        requestTime.toLocalDateTime().format(DATE_TIME_FORMAT),
                         realIp,
                         request.getHost(),
                         method,
                         "${path}${if (queryParamsMetrics.isEmpty()) "" else "?${queryParamsMetrics}"}",
                         requestBodySize.byteToUnitStr(),
                         "${handleTime}ms",
-                        statusCode,
+                        statusCode.toString(),
                         responseBodySize.byteToUnitStr(),
                         targetUrl ?: ""
                     ).joinToString(separator = " - ")
@@ -158,11 +158,12 @@ class MonitorRouteMetricsWebHandler(
                 responseBodySize = responseBodySize
             )
 
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch(monitorMetricsWriteDispatcher) {
-                monitorMetricsService.addMetricsRecord(metricsRecord)
+            Thread.startVirtualThread {
+                @OptIn(DelicateCoroutinesApi::class)
+                GlobalScope.launch(monitorMetricsWriteDispatcher) {
+                    monitorMetricsService.addMetricsRecord(metricsRecord)
+                }
             }
-
         } catch (e: Throwable) {
             if (log.isWarnEnabled) {
                 log.warn("获取监控指标发生例外：${e.message}", e)
