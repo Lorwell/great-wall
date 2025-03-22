@@ -7,6 +7,7 @@ import {AppRouteListOutput, AppRouteStatusEnum} from "@/constant/api/app-routes/
 import {TargetConfigSchemaValues} from "@/constant/api/app-routes/schema.ts";
 import {PredicatesColumn} from "@/pages/app-routes/list/predicates-column.tsx";
 import {TargetConfigColumn} from "@/pages/app-routes/list/target-config-column.tsx";
+import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card"
 
 export interface ColumnsProps {
 
@@ -26,7 +27,24 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
         label: "名称",
         size: 120,
         enableSorting: false,
-        cell: ({getValue}) => getValue()
+        cell: ({getValue, row}) => {
+          const value = getValue<string>()
+          const describe = row.original.describe;
+
+          return (
+            <HoverCard>
+              <HoverCardTrigger>
+                {value}
+              </HoverCardTrigger>
+              <HoverCardContent>
+                <div className={"text-base font-bold mb-2"}>应用描述：</div>
+                <div className={"text-sm"}>
+                  {describe || "暂无"}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          )
+        }
       }
     ),
     columnCell(

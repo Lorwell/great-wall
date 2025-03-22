@@ -54,7 +54,7 @@ function AppRoutesList() {
    */
   function handleEdit(ctx: RowContext) {
     const id = ctx.row.original.id!
-    navigate(`/manage/app-routes/${id}`)
+    navigate(`/manage/app-routes/${id}/base-info`)
   }
 
   /**

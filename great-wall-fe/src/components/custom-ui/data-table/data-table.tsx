@@ -24,10 +24,11 @@ import {cn, isBlank, isEmpty, isNull} from "@/lib/utils.ts";
 import {checkboxSelectId} from "@/components/custom-ui/data-table/data-table-column.tsx";
 import {DataTablePlusItemOptions} from "@/components/custom-ui/data-table/data-table-plus-options.tsx";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
-
-import styles from "./styles.module.less"
 import {useDebounceFn, useDeepCompareEffect, useThrottleEffect} from "ahooks";
 import {DataTableFilter} from "@/components/custom-ui/data-table/types.ts";
+import {useControllableState} from "@/components/hooks/use-controllable-state.ts";
+
+import styles from "./styles.module.less"
 
 export type DataTableProps<TData, TValue> = Omit<HTMLProps<HTMLDivElement>, "data" | "onChange"> & {
 
@@ -154,6 +155,12 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(() => defaultSorting || [])
   const [keyword, setKeyword] = useState<string>();
 
+  const [paginationState, onPaginationStateChange] = useControllableState<PaginationState>({
+    prop: pagination,
+    defaultProp: {pageIndex: 0, pageSize: 10},
+    onChange: onPaginationChange
+  });
+
   // 防抖
   const {run: onChangeDebounce} = useDebounceFn(() => {
     if (!isNull(onChange)) {
@@ -174,7 +181,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
       columnVisibility,
       rowSelection,
       columnFilters,
-      pagination: pagination || {pageIndex: 0, pageSize: 10},
+      pagination: paginationState,
       columnPinning
     },
     enableColumnResizing: true,
@@ -185,7 +192,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: onPaginationChange,
+    onPaginationChange: onPaginationStateChange,
     onColumnPinningChange: setColumnPinning,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

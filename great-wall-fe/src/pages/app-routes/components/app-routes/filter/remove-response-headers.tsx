@@ -8,7 +8,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {RouteFilterEnum} from "@/constant/api/app-routes/types.ts";
 import {useEffect} from "react";
 import FilterCard from "@/pages/app-routes/components/app-routes/filter/filter-card.tsx";
-import {CirclePlus, Fingerprint, Trash2} from "lucide-react";
+import {CirclePlus, Trash2, Wrench} from "lucide-react";
 import {Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form.tsx";
 import {cn} from "@/lib/shadcnUtils.ts";
 import {Input} from "@/components/ui/input.tsx";
@@ -58,7 +58,7 @@ export default function RemoveResponseHeaders(props: RoutesProps<RemoveResponseH
   return (
     <FilterCard {...rest}
                 title={"删除响应头"}
-                icon={<Fingerprint className={"w-6 h-6"}/>}
+                icon={<Wrench className={"w-6 h-6"}/>}
                 category={"请求修改"}
                 description={<Description/>}
                 onSubmit={async () => {

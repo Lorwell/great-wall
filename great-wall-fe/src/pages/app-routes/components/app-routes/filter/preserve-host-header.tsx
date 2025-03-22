@@ -8,7 +8,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {RouteFilterEnum} from "@/constant/api/app-routes/types.ts";
 import {useEffect} from "react";
 import FilterCard from "@/pages/app-routes/components/app-routes/filter/filter-card.tsx";
-import {Fingerprint} from "lucide-react";
+import {Wrench} from "lucide-react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 
@@ -47,7 +47,7 @@ export default function PreserveHostHeader(props: RoutesProps<PreserveHostHeader
   return (
     <FilterCard {...rest}
                 title={"Host 请求头"}
-                icon={<Fingerprint className={"w-6 h-6"}/>}
+                icon={<Wrench className={"w-6 h-6"}/>}
                 category={"请求修改"}
                 description={<Description/>}
                 onSubmit={async () => {

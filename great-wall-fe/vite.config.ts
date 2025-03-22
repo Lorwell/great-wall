@@ -41,7 +41,8 @@ export default defineConfig({
         secure: false, // 启用 https 服务时需要配置
       },
       '/api/logs': {
-        target: 'ws://127.0.0.1:8080/',
+        // target: 'ws://127.0.0.1:8080/',
+        target: 'wss://true-great-wall.shacocloud.cc:9443/',
         changeOrigin: true,
         ws: true,
       },

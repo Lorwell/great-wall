@@ -20,22 +20,23 @@ export default function UpdateAppRoutes() {
   const setAppRoutesDataOptions = useSetRecoilState(appRoutesDataOptionsState);
 
   // 加载数据
-  const {loading} = useApiRequest(
-    async () => {
-      const data = await appRouteDetails(Number(id));
-      setAppRoutesDataOptions({
-        baseInfo: {
-          name: data.name,
-          describe: data.describe,
-          priority: data.priority,
-          status: data.status,
-        },
-        predicates: {
-          targetConfig: data.targetConfig,
-          predicates: data.predicates
-        },
-        filters: data.filters
-      })
+  const {loading} = useApiRequest(() => appRouteDetails(Number(id)),
+    {
+      onSuccess: (data) => {
+        setAppRoutesDataOptions({
+          baseInfo: {
+            name: data.name,
+            describe: data.describe,
+            priority: data.priority,
+            status: data.status,
+          },
+          predicates: {
+            targetConfig: data.targetConfig,
+            predicates: data.predicates
+          },
+          filters: data.filters
+        })
+      }
     });
 
   const {runAsync: updateAppRouteRun} = useApiRequest(updateAppRoute, {manual: true});

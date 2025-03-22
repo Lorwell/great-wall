@@ -6,13 +6,13 @@ import {downloadFile, isBlank, isEmpty} from "@/lib/utils.ts";
 import {Label} from "@/components/ui/label.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import AutoSizablePanel from "@/components/custom-ui/auto-sizable-panel.tsx";
-
 import {Dot, FileDown} from "lucide-react";
 import {LazyLog, ScrollFollow} from "@melloware/react-logviewer";
 import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {logsList} from "@/constant/api/app-logs";
 import {logTypeChinese} from "@/constant/api/app-logs/types.ts";
 import {Button} from "@/components/ui/button.tsx";
+import {useCreation} from "ahooks";
 
 export enum ReadyState {
   Connecting = "CONNECTING",
@@ -85,6 +85,33 @@ export default function LogFile() {
   const openTLS = 'https:' === window.location.protocol;
   const url = `${openTLS ? 'wss' : 'ws'}://${host}/api/logs/type/${type}/name/${file}`
 
+  const websocketOptions = useCreation(() => {
+    return {
+      onOpen: (_e: Event, socket: WebSocket) => {
+        setReadyState(ReadyState.Open)
+        wsRef.current = socket
+        socket.send(JSON.stringify({autoRefresh}))
+      },
+      onClose: (e: CloseEvent) => {
+        console.error(`日志链接 ${url} 断开`, e)
+        setReadyState(ReadyState.Closed)
+      },
+      formatMessage: (message: string) => {
+        if (message === "PING") {
+          wsRef.current?.send("PONG")
+          return null
+        } else {
+          return JSON.parse(message).join("\n")
+        }
+      },
+      onError: (e: Event) => {
+        console.error(`日志链接 ${url} 发生错误`, e)
+      },
+      reconnect: true,
+      reconnectWait: 3
+    }
+  }, [setReadyState]);
+
   return (
     <AutoSizablePanel className={"w-full h-full overflow-hidden"}>
       {
@@ -92,7 +119,7 @@ export default function LogFile() {
           <div className={"flex flex-col space-y-4"} style={{...size}}>
 
             <div className={"flex flex-row justify-between"}>
-              <div className={"flex flex-row items-center space-x-3"}>
+              <div className={"flex flex-row items-center space-x-3 pl-1 pt-1"}>
 
                 <Select disabled={loading || isEmpty(data?.records)}
                         value={`${type!!.toUpperCase()}-${file}`}
@@ -144,42 +171,24 @@ export default function LogFile() {
             </div>
 
             <div className={"flex-auto"}>
-              <ScrollFollow startFollowing={true}
-                            render={({follow, onScroll}) => (
-                              <LazyLog follow={follow}
-                                       onScroll={onScroll}
-                                       caseInsensitive
-                                       enableHotKeys
-                                       enableLinks
-                                       enableMultilineHighlight
-                                       enableSearch
-                                       enableSearchNavigation
-                                       selectableLines
-                                       enableLineNumbers
-                                       url={url}
-                                       websocket
-                                       websocketOptions={{
-                                         onOpen: (__, sock) => {
-                                           setReadyState(ReadyState.Open)
-                                           wsRef.current = sock
-                                           sock.send(JSON.stringify({autoRefresh}))
-                                         },
-                                         onClose: (e) => {
-                                           console.error(`日志链接 ${url} 断开`, e)
-                                           setReadyState(ReadyState.Closed)
-                                         },
-                                         // @ts-ignore
-                                         formatMessage: (message: string) => {
-                                           if (message === "PING") {
-                                             wsRef.current?.send("PONG")
-                                             return null
-                                           } else {
-                                             return JSON.parse(message).join("\n")
-                                           }
-                                         }
-                                       }}
-                              />
-                            )}
+              <ScrollFollow
+                startFollowing={true}
+                render={({follow, onScroll}) => (
+                  <LazyLog follow={follow}
+                           onScroll={onScroll}
+                           caseInsensitive
+                           enableHotKeys
+                           enableLinks={false}
+                           enableMultilineHighlight
+                           enableSearch
+                           enableSearchNavigation
+                           selectableLines
+                           enableLineNumbers
+                           url={url}
+                           websocket
+                           websocketOptions={websocketOptions}
+                  />
+                )}
               />
             </div>
 

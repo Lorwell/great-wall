@@ -56,7 +56,7 @@ export const useDataTableApiRequest = <Row, Input extends BaseListInputSchemaVal
 ): PageTableResult<Row, Input> => {
   const inputRef = useRef<Input>();
   const conditionsRef = useRef<Conditions>([[], [], undefined]);
-  const pageStateRef = useRef({pageIndex: 0, pageSize: 30});
+  const pageStateRef = useRef({pageIndex: 0, pageSize: 10});
 
   // 拼接表格参数
   const runService = useCallback(([input, pageState, conditions]: TParams<Input>) => {
