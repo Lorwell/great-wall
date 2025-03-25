@@ -4,12 +4,12 @@ version=$1
 docker build -t great-wall:"$version" -f Dockerfile.native . || exit
 
 # 上传
-docker tag great-wall:"$version" ccr.ccs.tencentyun.com/shaco_work/great-wall:"$version"
-docker push ccr.ccs.tencentyun.com/shaco_work/great-wall:"$version"
+docker tag great-wall:"$version" moailaozi/great-wall:"$version"
+docker push moailaozi/great-wall:"$version"
 
-docker tag great-wall:"$version" ccr.ccs.tencentyun.com/shaco_work/great-wall:latest
-docker push ccr.ccs.tencentyun.com/shaco_work/great-wall:latest
+docker tag great-wall:"$version" moailaozi/great-wall:latest
+docker push moailaozi/great-wall:latest
 
 # 删除上传成功
-docker rmi ccr.ccs.tencentyun.com/shaco_work/great-wall:latest
-docker rmi ccr.ccs.tencentyun.com/shaco_work/great-wall:"$version"
+docker rmi moailaozi/great-wall:latest
+docker rmi moailaozi/great-wall:"$version"

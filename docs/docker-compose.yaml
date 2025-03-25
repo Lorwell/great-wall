@@ -1,0 +1,13 @@
+services:
+  great-wall:
+    image: moailaozi/great-wall:2.28
+    container_name: great-wall
+    ports:
+      - '80:80'
+      - '443:443'
+      - '8080:8080'
+    environment:
+      ADMIN_PASSWORD: moYgwfjHQD8RbQqG
+    volumes:
+      - /data/great-wall/data:/workspace/data
+
