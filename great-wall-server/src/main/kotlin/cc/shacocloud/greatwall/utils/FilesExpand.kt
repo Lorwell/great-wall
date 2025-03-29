@@ -45,6 +45,22 @@ fun Path.createOfNotExist(): Path {
 }
 
 /**
+ * 如果文件夹不存在则创建
+ */
+fun Path.createDirOfNotExist(): Path {
+    if (!Files.exists(this)) {
+        this.parent?.let {
+            if (!it.exists()) {
+                Files.createDirectories(it)
+            }
+        }
+        Files.createDirectory(this)
+    }
+
+    return this
+}
+
+/**
  * 获取相对路径
  */
 fun Path.relativePath(mainPath: Path): String {

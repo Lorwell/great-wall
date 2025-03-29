@@ -3,7 +3,7 @@ package cc.shacocloud.greatwall.service
 import cc.shacocloud.greatwall.model.dto.input.StaticResourcesInput
 import cc.shacocloud.greatwall.model.dto.output.FileOutput
 import cc.shacocloud.greatwall.model.po.StaticResourcesPo
-import cc.shacocloud.greatwall.utils.createOfNotExist
+import cc.shacocloud.greatwall.utils.createDirOfNotExist
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Paths
@@ -18,7 +18,7 @@ interface StaticResourcesService {
 
         // 静态资源存储文件夹
         val STATIC_RESOURCES_DIR_PATH = Paths.get("${System.getProperty("user.dir")}/data/staticResources/")
-            .createOfNotExist()
+            .createDirOfNotExist()
 
         val STATIC_RESOURCES_DIR = STATIC_RESOURCES_DIR_PATH.invariantSeparatorsPathString
 

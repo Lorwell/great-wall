@@ -23,6 +23,7 @@ const Tls = lazy(() => import("@/pages/tls"));
 const CustomTls = lazy(() => import("@/pages/tls/custom/config.tsx"));
 const OsfipinTls = lazy(() => import("@/pages/tls/osfipin/config.tsx"));
 const Settings = lazy(() => import("@/pages/settings"));
+const StaticResources = lazy(() => import("@/pages/static-resources"));
 
 const App = () => {
 
@@ -46,6 +47,10 @@ const App = () => {
                 <Route path=":id" element={<UpdateAppRoutes/>}>
                   {configAppRoutesRoutes()}
                 </Route>
+              </Route>
+              {/* 静态资源 */}
+              <Route path="static-resources">
+                <Route path="" element={<StaticResources/>}/>
               </Route>
               {/* 监控指标 */}
               <Route path="monitor-metrics" element={<MonitorMetrics/>}>
