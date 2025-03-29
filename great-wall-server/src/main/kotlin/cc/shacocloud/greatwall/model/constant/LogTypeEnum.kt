@@ -1,4 +1,4 @@
-package cc.shacocloud.greatwall.model.dto.convert
+package cc.shacocloud.greatwall.model.constant
 
 /**
  *

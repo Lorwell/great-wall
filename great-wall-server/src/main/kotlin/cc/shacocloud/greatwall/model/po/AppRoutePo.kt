@@ -7,6 +7,7 @@ import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
+import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -72,6 +73,5 @@ data class AppRoutePo(
      * 最后更新时间
      */
     @Column("last_update_time")
-    var lastUpdateTime: Date,
-
-    )
+    var lastUpdateTime: Date
+)

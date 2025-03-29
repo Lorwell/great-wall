@@ -53,7 +53,7 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
           }
         }],
         targetConfig: {
-          connectTimeout: "PT30S",
+          connectTimeout: "PT3S",
           urls: [{
             url: "",
             weight: 1

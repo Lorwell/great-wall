@@ -7,4 +7,5 @@ services:
     volumes:
       - /data/great-wall/data:/workspace/data
     network_mode: host
+    restart: unless-stopped
 

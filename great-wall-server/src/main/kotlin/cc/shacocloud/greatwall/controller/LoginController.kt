@@ -7,6 +7,7 @@ import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.dto.input.LoginInput
 import cc.shacocloud.greatwall.model.mo.AdminSessionMo
 import cc.shacocloud.greatwall.service.SessionService
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.BindException
 import org.springframework.validation.annotation.Validated
@@ -23,6 +24,7 @@ import java.util.*
  */
 @Validated
 @RestController
+@Transactional(rollbackFor = [Exception::class])
 class LoginController(
     val adminAuthProperties: AdminAuthProperties,
     val sessionService: SessionService

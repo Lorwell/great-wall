@@ -554,14 +554,15 @@ const fetchResultHandle = async <T>(service: () => Promise<Response>, resultSche
   const success = status >= 200 && status <= 300;
 
   let body: any = await response.text();
+  body = isBlank(body) ? null : body
 
   // JSON 结果解析
   const contentType = headers.get("content-Type");
 
   if (contentType && contentType.includes("application/json")) {
-    body = isBlank(body) ? null : JSON.parse(body);
+    body = body ? JSON.parse(body) : null;
   } else {
-    if (!isBlank(body) && success) {
+    if (body && success) {
       throw new HttpException(url, status, statusText,
         {
           code: "response.contentType-type.invalid",

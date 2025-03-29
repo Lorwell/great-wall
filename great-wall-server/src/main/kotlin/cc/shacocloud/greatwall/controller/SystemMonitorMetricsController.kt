@@ -7,6 +7,7 @@ import cc.shacocloud.greatwall.service.SystemMonitorMetricsService
 import cc.shacocloud.greatwall.utils.DATE_TIME_FORMAT
 import cc.shacocloud.greatwall.utils.zoneOffset
 import com.sun.management.OperatingSystemMXBean
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.lang.management.ManagementFactory
@@ -24,6 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 @Validated
 @RestController
 @RequestMapping("/api/system-monitor-metrics")
+@Transactional(rollbackFor = [Exception::class])
 class SystemMonitorMetricsController(
     val systemMonitorMetricsService: SystemMonitorMetricsService,
 ) {

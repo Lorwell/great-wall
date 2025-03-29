@@ -6,7 +6,7 @@ import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
 import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
 import cc.shacocloud.greatwall.controller.interceptor.UserAuthRoleEnum
-import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
+import cc.shacocloud.greatwall.model.constant.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.input.LogFileMsgInput
 import cc.shacocloud.greatwall.model.dto.output.LogFileMsgutput
 import cc.shacocloud.greatwall.service.SessionService

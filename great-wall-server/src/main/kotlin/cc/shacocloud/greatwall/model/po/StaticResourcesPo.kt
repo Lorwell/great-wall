@@ -4,30 +4,36 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Date
 
 /**
- * 系统设置
+ * 静态资源配置
  * @author 思追(shaco)
  */
-@Table("settings")
-data class SettingsPo(
+@Table("static_resources")
+data class StaticResourcesPo(
 
     @Id
     @Column("id")
     val id: Long? = null,
 
     /**
-     * 设置的键
+     * 名称
      */
-    @Column("settings_name")
-    val name: String,
+    @Column("name")
+    var name: String,
 
     /**
-     * 设置的值
+     * 描述
      */
-    @Column("settings_value")
-    var value: String?,
+    @Column("describe")
+    var describe: String? = null,
+
+    /**
+     * 唯一id，用于区分不同的资源文件
+     */
+    @Column("unique_id")
+    val uniqueId: String,
 
     /**
      * 创建时间
@@ -40,5 +46,4 @@ data class SettingsPo(
      */
     @Column("last_update_time")
     var lastUpdateTime: Date
-
 )

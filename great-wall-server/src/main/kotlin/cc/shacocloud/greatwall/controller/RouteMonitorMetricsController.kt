@@ -8,6 +8,7 @@ import cc.shacocloud.greatwall.model.dto.output.QpsLineMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.TrafficMetricsOutput
 import cc.shacocloud.greatwall.model.dto.output.ValueMetricsOutput
 import cc.shacocloud.greatwall.service.RouteMonitorMetricsService
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 @RestController
 @RequestMapping("/api/route-monitor-metrics")
+@Transactional(rollbackFor = [Exception::class])
 class RouteMonitorMetricsController(
     val routeMonitorMetricsService: RouteMonitorMetricsService,
 ) {

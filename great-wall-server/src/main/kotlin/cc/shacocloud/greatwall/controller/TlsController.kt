@@ -1,9 +1,9 @@
 package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
-import cc.shacocloud.greatwall.model.dto.convert.toOutput
 import cc.shacocloud.greatwall.model.dto.input.TlsInput
 import cc.shacocloud.greatwall.model.dto.output.TlsOutput
+import cc.shacocloud.greatwall.model.dto.output.TlsOutput.Companion.toOutput
 import cc.shacocloud.greatwall.service.TlsService
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.core.io.buffer.DataBufferUtils
@@ -11,6 +11,7 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.MediaType
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Controller
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import kotlin.io.path.createTempFile
@@ -26,6 +27,7 @@ import kotlin.io.path.deleteExisting
 @Validated
 @Controller
 @RequestMapping("/api/tls")
+@Transactional(rollbackFor = [Exception::class])
 class TlsController(
     val tlsService: TlsService,
 ) {

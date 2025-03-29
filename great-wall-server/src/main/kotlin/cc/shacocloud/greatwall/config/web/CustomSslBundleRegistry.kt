@@ -6,10 +6,10 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.ssl.SslBundleRegistrar
 import org.springframework.boot.ssl.*
 import org.springframework.stereotype.Component
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
-import kotlin.concurrent.Volatile
 
 /**
  * 自定义 ssl Bundle 注册表，支持删除用于[AutoTLSReactiveWebServerApplicationContext]，参考：[DefaultSslBundleRegistry]
@@ -63,6 +63,12 @@ class CustomSslBundleRegistry(
     @Throws(NoSuchSslBundleException::class)
     override fun addBundleUpdateHandler(name: String, updateHandler: Consumer<SslBundle>) {
         getRegistered(name).addUpdateHandler(updateHandler)
+    }
+
+    override fun getBundleNames(): List<String?>? {
+        val names = ArrayList(this.registeredBundles.keys)
+        names.sort()
+        return Collections.unmodifiableList(names)
     }
 
     @Throws(NoSuchSslBundleException::class)

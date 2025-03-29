@@ -4,9 +4,9 @@ import java.nio.file.Files
 
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.2.5"
-    id("io.spring.dependency-management") version "1.1.5"
-    id("org.graalvm.buildtools.native") version "0.10.2"
+    id("org.springframework.boot") version "3.4.4"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("org.graalvm.buildtools.native") version "0.10.6"
     kotlin("jvm") version "2.0.0"
     kotlin("kapt") version "2.0.0"
     kotlin("plugin.spring") version "2.0.0"
@@ -52,7 +52,7 @@ repositories {
     google()
 }
 
-extra["springCloudVersion"] = "2023.0.1"
+extra["springCloudVersion"] = "2024.0.1"
 
 dependencyManagement {
     imports {
@@ -70,10 +70,10 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
-    implementation("io.netty:netty-tcnative-boringssl-static:2.0.66.Final")
+    implementation("io.netty:netty-tcnative-boringssl-static:2.0.70.Final")
     implementation("org.springframework.boot:spring-boot-starter-json")
 
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")

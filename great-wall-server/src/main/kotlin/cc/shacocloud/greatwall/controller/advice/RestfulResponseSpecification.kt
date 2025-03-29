@@ -69,7 +69,7 @@ class RestfulResponseSpecification(
 
             // RFC 7807 问题详细信息的表示形式
             is ProblemDetail -> {
-                exchange.response.setStatusCode(HttpStatusCode.valueOf(resultValue.status))
+                exchange.response.statusCode = HttpStatusCode.valueOf(resultValue.status)
                 if (resultValue.instance == null) {
                     val path = URI.create(exchange.request.path.value())
                     resultValue.instance = path

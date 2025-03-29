@@ -4,6 +4,8 @@ import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.mo.RouteFilters
 import cc.shacocloud.greatwall.model.mo.RoutePredicates
 import cc.shacocloud.greatwall.model.mo.RouteTargetConfig
+import cc.shacocloud.greatwall.model.po.AppRoutePo
+import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -60,6 +62,25 @@ data class AppRouteOutput(
     /**
      * 最后更新时间
      */
-    val lastUpdateTime: Date,
+    val lastUpdateTime: Date
 
-    )
+) {
+
+    companion object {
+
+        fun AppRoutePo.toOutput(): AppRouteOutput {
+            return AppRouteOutput(
+                id = id!!,
+                name = name,
+                describe = describe,
+                priority = priority,
+                status = status,
+                targetConfig = targetConfig,
+                predicates = predicates,
+                filters = filters,
+                createTime = createTime,
+                lastUpdateTime = lastUpdateTime
+            )
+        }
+    }
+}

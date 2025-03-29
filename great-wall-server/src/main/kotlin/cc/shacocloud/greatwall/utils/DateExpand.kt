@@ -63,6 +63,15 @@ fun Long.toLocalDateTimeByEpochSecond(
 }
 
 /**
+ * 将 1970-01-01T00:00:00Z 纪元开始的毫秒数转为 [LocalDateTime]
+ */
+fun Long.toLocalDateTimeByEpochMilli(
+    offset: ZoneOffset = zoneOffset,
+): LocalDateTime {
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), offset)
+}
+
+/**
  * 转为 [LocalDateTime]
  */
 fun Instant.toLocalDateTime(): LocalDateTime {

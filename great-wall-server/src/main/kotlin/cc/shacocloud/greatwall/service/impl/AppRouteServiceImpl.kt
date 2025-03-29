@@ -16,6 +16,7 @@ import org.springframework.data.relational.core.query.Criteria
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 /**
@@ -42,7 +43,7 @@ class AppRouteServiceImpl(
             predicates = input.predicates,
             filters = input.filters,
             createTime = Date(),
-            lastUpdateTime = Date()
+            lastUpdateTime = Date(),
         )
 
         return appRouteRepository.save(appRoutePo).awaitSingle()
