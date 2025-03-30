@@ -52,7 +52,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<LogListOutput>[] => {
       {
         columnId: "lastUpdateTime",
         label: "最后修改时间",
-        size: 180,
+        size: 200,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),

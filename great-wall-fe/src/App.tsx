@@ -23,7 +23,9 @@ const Tls = lazy(() => import("@/pages/tls"));
 const CustomTls = lazy(() => import("@/pages/tls/custom/config.tsx"));
 const OsfipinTls = lazy(() => import("@/pages/tls/osfipin/config.tsx"));
 const Settings = lazy(() => import("@/pages/settings"));
-const StaticResources = lazy(() => import("@/pages/static-resources"));
+const StaticResourcesList = lazy(() => import("@/pages/static-resources/list"));
+const StaticResourcesFiles = lazy(() => import("@/pages/static-resources/files"));
+const StaticResourcesConfig = lazy(() => import("@/pages/static-resources/config"));
 
 const App = () => {
 
@@ -37,7 +39,7 @@ const App = () => {
           {/* 应用登录守卫 */}
           <Route path="" element={<LoginStatusGuard/>}>
             <Route path="manage" element={<AppFrame/>}>
-              <Route path="" element={<Navigate to={"app-routes"}/>}/>
+              <Route index element={<Navigate to={"app-routes"}/>}/>
               {/* 路由配置 */}
               <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
                 <Route path="list" element={<AppRouteList/>}/>
@@ -50,7 +52,10 @@ const App = () => {
               </Route>
               {/* 静态资源 */}
               <Route path="static-resources">
-                <Route path="" element={<StaticResources/>}/>
+                <Route index element={<StaticResourcesList/>}/>
+                <Route path=":id/files" element={<StaticResourcesFiles/>}/>
+                <Route path="add" element={<StaticResourcesConfig/>}/>
+                <Route path=":id/update" element={<StaticResourcesConfig/>}/>
               </Route>
               {/* 监控指标 */}
               <Route path="monitor-metrics" element={<MonitorMetrics/>}>
@@ -64,7 +69,7 @@ const App = () => {
               </Route>
               {/* 证书管理 */}
               <Route path="tls">
-                <Route path="" element={<Tls/>}/>
+                <Route index element={<Tls/>}/>
                 <Route path="custom" element={<CustomTls/>}/>
                 <Route path="osfipin" element={<OsfipinTls/>}/>
               </Route>

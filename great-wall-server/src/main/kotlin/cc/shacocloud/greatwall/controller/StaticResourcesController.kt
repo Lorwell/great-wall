@@ -5,16 +5,19 @@ import cc.shacocloud.greatwall.controller.exception.NotAcceptableException
 import cc.shacocloud.greatwall.controller.exception.NotFoundException
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
+import cc.shacocloud.greatwall.model.dto.input.CreateFileDirInput
+import cc.shacocloud.greatwall.model.dto.input.StaticResourcesDeleteFileInput
 import cc.shacocloud.greatwall.model.dto.input.StaticResourcesInput
+import cc.shacocloud.greatwall.model.dto.input.StaticResourcesListInput
 import cc.shacocloud.greatwall.model.dto.output.StaticResourcesOutput.Companion.toOutput
 import cc.shacocloud.greatwall.model.mo.RouteStaticResourcesTargetConfig
 import cc.shacocloud.greatwall.service.AppRouteService
 import cc.shacocloud.greatwall.service.StaticResourcesService
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 
 /**
  * 静态资源控制器
@@ -29,6 +32,27 @@ class StaticResourcesController(
     val staticResourcesService: StaticResourcesService,
     val appResourceService: AppRouteService
 ) {
+
+    /**
+     * 静态资源列表
+     */
+    @PostMapping("/list")
+    suspend fun list(
+        @RequestBody @Validated input: StaticResourcesListInput
+    ): Any {
+        return staticResourcesService.list(input).map { it.toOutput() }
+    }
+
+    /**
+     * 静态资源详情
+     */
+    @GetMapping("/{id}")
+    suspend fun list(
+        @PathVariable id: Long
+    ): Any {
+        val staticResourcesPo = staticResourcesService.findById(id) ?: throw NotFoundException()
+        return staticResourcesPo.toOutput()
+    }
 
     /**
      * 创建静态资源
@@ -95,15 +119,27 @@ class StaticResourcesController(
     @PostMapping("/{id}/files")
     suspend fun uploadFile(
         @PathVariable id: Long,
-        @RequestParam("file") file: MultipartFile,
-        @RequestParam(name = "parentDir", required = false) parentDir: String?,
+        @RequestPart("file") file: FilePart,
+        @RequestPart(name = "parentDir", required = false) parentDir: String?,
     ): Any {
-        if (file.originalFilename.isNullOrBlank()) {
+        if (file.filename().isBlank()) {
             throw BadRequestException("原始文件名不得为空！")
         }
 
         val staticResourcesPo = staticResourcesService.findById(id) ?: throw NotFoundException()
         return staticResourcesService.uploadFile(staticResourcesPo, file, parentDir)
+    }
+
+    /**
+     * 创建文件夹
+     */
+    @PostMapping("/{id}/file-dir")
+    suspend fun createFileDir(
+        @PathVariable id: Long,
+        @RequestBody @Validated input: CreateFileDirInput
+    ) {
+        val staticResourcesPo = staticResourcesService.findById(id) ?: throw NotFoundException()
+        staticResourcesService.createFileDir(staticResourcesPo, input)
     }
 
     /**
@@ -125,9 +161,9 @@ class StaticResourcesController(
     @DeleteMapping("/{id}/files")
     suspend fun deleteFile(
         @PathVariable id: Long,
-        @RequestParam(name = "relativePath") relativePath: String,
+        @RequestBody @Validated input: StaticResourcesDeleteFileInput,
     ) {
         val staticResourcesPo = staticResourcesService.findById(id) ?: throw NotFoundException()
-        staticResourcesService.deleteFile(staticResourcesPo, relativePath)
+        staticResourcesService.deleteFile(staticResourcesPo, input)
     }
 }

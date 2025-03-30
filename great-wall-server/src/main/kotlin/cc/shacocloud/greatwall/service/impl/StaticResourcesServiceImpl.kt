@@ -2,27 +2,31 @@ package cc.shacocloud.greatwall.service.impl
 
 import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.NotFoundException
+import cc.shacocloud.greatwall.model.dto.input.CreateFileDirInput
+import cc.shacocloud.greatwall.model.dto.input.StaticResourcesDeleteFileInput
 import cc.shacocloud.greatwall.model.dto.input.StaticResourcesInput
+import cc.shacocloud.greatwall.model.dto.input.StaticResourcesListInput
 import cc.shacocloud.greatwall.model.dto.output.FileOutput
 import cc.shacocloud.greatwall.model.po.StaticResourcesPo
 import cc.shacocloud.greatwall.repository.StaticResourcesRepository
+import cc.shacocloud.greatwall.repository.pageQuery
 import cc.shacocloud.greatwall.service.StaticResourcesService
-import cc.shacocloud.greatwall.service.StaticResourcesService.Companion.STATIC_RESOURCES_DIR
 import cc.shacocloud.greatwall.service.StaticResourcesService.Companion.STATIC_RESOURCES_DIR_PATH
 import cc.shacocloud.greatwall.utils.ObjectId
-import cc.shacocloud.greatwall.utils.createOfNotExist
+import cc.shacocloud.greatwall.utils.createDirOfNotExist
 import cc.shacocloud.greatwall.utils.deleteAll
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
+import org.springframework.data.domain.Page
 import org.springframework.http.MediaType
 import org.springframework.http.MediaTypeFactory
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -46,6 +50,13 @@ class StaticResourcesServiceImpl(
     }
 
     /**
+     * 列表
+     */
+    override suspend fun list(input: StaticResourcesListInput): Page<StaticResourcesPo> {
+        return staticResourcesRepository.pageQuery(input.toCriteria(), input.toPageable())
+    }
+
+    /**
      * 创建静态资源
      */
     override suspend fun create(input: StaticResourcesInput): StaticResourcesPo {
@@ -58,7 +69,7 @@ class StaticResourcesServiceImpl(
         )
 
         // 创建文件夹
-        Paths.get(STATIC_RESOURCES_DIR, staticResourcesPo.uniqueId).createOfNotExist()
+        staticResourcesPo.getFilePath().createDirOfNotExist()
 
         return staticResourcesRepository.save(staticResourcesPo).awaitSingle()
     }
@@ -75,6 +86,10 @@ class StaticResourcesServiceImpl(
             describe = input.describe
             lastUpdateTime = Date()
         }
+
+        // 创建文件夹
+        staticResourcesPo.getFilePath().createDirOfNotExist()
+
         return staticResourcesRepository.save(staticResourcesPo).awaitSingle()
     }
 
@@ -82,7 +97,7 @@ class StaticResourcesServiceImpl(
      * 删除静态资源
      */
     override suspend fun delete(staticResourcesPo: StaticResourcesPo) {
-        Paths.get(STATIC_RESOURCES_DIR, staticResourcesPo.uniqueId).deleteAll()
+        staticResourcesPo.getFilePath().deleteAll()
         staticResourcesRepository.delete(staticResourcesPo).awaitSingleOrNull()
     }
 
@@ -93,9 +108,10 @@ class StaticResourcesServiceImpl(
         staticResourcesPo: StaticResourcesPo,
         parentDir: String?
     ): List<FileOutput> {
-        val parentDirPath = getFilePath(parentDir)
+        val parentDirPath = getFilePath(staticResourcesPo.getFilePath(), parentDir)
         return Files.list(parentDirPath)
             .map { FileOutput(STATIC_RESOURCES_DIR_PATH, it) }
+            .sorted { o1, o2 -> o1.type.compareTo(o2.type) }
             .toList()
     }
 
@@ -104,18 +120,18 @@ class StaticResourcesServiceImpl(
      */
     override suspend fun uploadFile(
         staticResourcesPo: StaticResourcesPo,
-        multipartFile: MultipartFile,
+        filePart: FilePart,
         parentDir: String?
     ): FileOutput {
-        val parentDirPath = getFilePath(parentDir)
-        val path = parentDirPath.resolve(multipartFile.originalFilename!!)
+        val parentDirPath = getFilePath(staticResourcesPo.getFilePath(), parentDir)
+        val path = parentDirPath.resolve(filePart.filename())
 
         // 安全检查
         if (!path.startsWith(STATIC_RESOURCES_DIR_PATH)) {
             throw ForbiddenException()
         }
 
-        multipartFile.transferTo(path)
+        filePart.transferTo(path).awaitSingleOrNull()
 
         return FileOutput(STATIC_RESOURCES_DIR_PATH, path)
     }
@@ -128,7 +144,7 @@ class StaticResourcesServiceImpl(
         staticResourcesPo: StaticResourcesPo,
         relativePath: String
     ) {
-        val filePath = getFilePath(relativePath)
+        val filePath = getFilePath(staticResourcesPo.getFilePath(), relativePath)
 
         if (!Files.exists(filePath)) {
             throw NotFoundException()
@@ -151,24 +167,38 @@ class StaticResourcesServiceImpl(
      */
     override suspend fun deleteFile(
         staticResourcesPo: StaticResourcesPo,
-        relativePath: String
+        input: StaticResourcesDeleteFileInput
     ) {
-        val filePath = getFilePath(relativePath)
+        val filePath = getFilePath(staticResourcesPo.getFilePath(), input.relativePath)
         filePath.deleteAll()
+    }
+
+    /**
+     * 创建文件夹
+     */
+    override suspend fun createFileDir(
+        staticResourcesPo: StaticResourcesPo,
+        input: CreateFileDirInput
+    ): Path {
+        val parentDirPath = getFilePath(staticResourcesPo.getFilePath(), input.parentDir)
+        return getFilePath(parentDirPath, input.name).createDirOfNotExist()
     }
 
     /**
      * 获取文件路径
      */
-    fun getFilePath(relativePath: String?): Path {
-        val path = if (!relativePath.isNullOrBlank()) {
-            STATIC_RESOURCES_DIR_PATH.resolve(Paths.get(relativePath))
-        } else {
-            STATIC_RESOURCES_DIR_PATH
+    fun getFilePath(
+        rootPath: Path = STATIC_RESOURCES_DIR_PATH,
+        relativePath: String?
+    ): Path {
+        if (relativePath.isNullOrBlank()) {
+            return rootPath
         }
 
+        val path = rootPath.resolve(Paths.get(relativePath))
+
         // 安全检查
-        if (!path.startsWith(STATIC_RESOURCES_DIR_PATH)) {
+        if (!path.startsWith(rootPath)) {
             throw ForbiddenException()
         }
         return path

@@ -1,11 +1,16 @@
 package cc.shacocloud.greatwall.service
 
+import cc.shacocloud.greatwall.model.dto.input.CreateFileDirInput
+import cc.shacocloud.greatwall.model.dto.input.StaticResourcesDeleteFileInput
 import cc.shacocloud.greatwall.model.dto.input.StaticResourcesInput
+import cc.shacocloud.greatwall.model.dto.input.StaticResourcesListInput
 import cc.shacocloud.greatwall.model.dto.output.FileOutput
 import cc.shacocloud.greatwall.model.po.StaticResourcesPo
 import cc.shacocloud.greatwall.utils.createDirOfNotExist
+import org.springframework.data.domain.Page
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.server.reactive.ServerHttpResponse
-import org.springframework.web.multipart.MultipartFile
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -28,6 +33,11 @@ interface StaticResourcesService {
      * 根据id查询
      */
     suspend fun findById(id: Long): StaticResourcesPo?
+
+    /**
+     * 列表
+     */
+    suspend fun list(input: StaticResourcesListInput): Page<StaticResourcesPo>
 
     /**
      * 创建静态资源
@@ -54,7 +64,7 @@ interface StaticResourcesService {
      */
     suspend fun uploadFile(
         staticResourcesPo: StaticResourcesPo,
-        multipartFile: MultipartFile,
+        filePart: FilePart,
         parentDir: String?
     ): FileOutput
 
@@ -70,7 +80,11 @@ interface StaticResourcesService {
     /**
      * 删除文件
      */
-    suspend fun deleteFile(staticResourcesPo: StaticResourcesPo, relativePath: String)
+    suspend fun deleteFile(staticResourcesPo: StaticResourcesPo, input: StaticResourcesDeleteFileInput)
 
+    /**
+     * 创建文件夹
+     */
+    suspend fun createFileDir(staticResourcesPo: StaticResourcesPo, input: CreateFileDirInput): Path
 
 }

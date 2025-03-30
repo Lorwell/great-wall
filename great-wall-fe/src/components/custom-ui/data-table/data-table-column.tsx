@@ -74,10 +74,23 @@ export const columnCell = <TData extends RowData>(
     header: ({column}) => (
       <DataTableColumnHeader column={column} label={label}/>
     ),
-    cell: (ctx) => (
-      <div className={cn({"pl-3": ctx.column.getCanSort()})}>
-        {typeof cell === "string" ? cell : cell?.(ctx)}
-      </div>
-    )
+    cell: (ctx) => {
+
+      const cellValue = typeof cell === "string" ? cell : cell?.(ctx);
+
+      // if (typeof cellValue === "string") {
+      //   return (
+      //     <div className={cn("w-full truncate", {"pl-3": ctx.column.getCanSort()})}>
+      //       {cellValue}
+      //     </div>
+      //   )
+      // }
+
+      return (
+        <div className={cn("w-full truncate", {"pl-3": ctx.column.getCanSort()})}>
+          {cellValue}
+        </div>
+      )
+    }
   }
 }

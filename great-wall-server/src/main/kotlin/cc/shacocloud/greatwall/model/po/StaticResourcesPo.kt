@@ -1,10 +1,11 @@
 package cc.shacocloud.greatwall.model.po
 
+import cc.shacocloud.greatwall.service.StaticResourcesService.Companion.STATIC_RESOURCES_DIR_PATH
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import java.time.LocalDateTime
-import java.util.Date
+import java.nio.file.Path
+import java.util.*
 
 /**
  * 静态资源配置
@@ -46,4 +47,14 @@ data class StaticResourcesPo(
      */
     @Column("last_update_time")
     var lastUpdateTime: Date
-)
+) {
+
+    /**
+     * 获取静态资源文件地址
+     */
+    fun getFilePath(): Path {
+        return STATIC_RESOURCES_DIR_PATH.resolve(uniqueId)
+    }
+
+
+}

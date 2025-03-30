@@ -25,13 +25,13 @@ export interface RowActionsEvent {
     onEdit?: (ctx: RowContext) => void
 
     /**
-     * 查看事件
+     * 上线事件
      * @param ctx
      */
     onOffline?: (ctx: RowContext) => void
 
     /**
-     * 查看事件
+     * 下线事件
      * @param ctx
      */
     onOnline?: (ctx: RowContext) => void

@@ -148,6 +148,88 @@ export const postFormDataRequest = <T>(uri: string,
   }, resultSchema);
 };
 
+/**
+ * 使用 formData 的方式上传文件
+ */
+export const uploadFile = <T>(uri: string,
+                              {
+                                queryParam,
+                                body,
+                                headers = {},
+                                resultSchema,
+                                uploadProgress,
+                              }: FileRequestParam<T>): Promise<T> => {
+  return new Promise<T>((resolve, reject) => {
+
+    const formData = new FormData();
+
+    if (body && Object.keys(body).length > 0) {
+      for (let key of Object.keys(body)) {
+        const value = body[key];
+        if (value) {
+          formData.set(key, value)
+        }
+      }
+    }
+
+    // 文件上传并获取进度
+    const xhr = new XMLHttpRequest();
+    xhr.open("post", uriQueryParamJoint(uri, queryParam), true);
+
+    for (let key in headers) {
+      const value = headers[key];
+      xhr.setRequestHeader(key, value)
+    }
+
+    // 上传进度
+    xhr.upload.onprogress = (e: ProgressEvent) => {
+      if (e.lengthComputable) {
+        const percent = Math.round(e.loaded / e.total * 100);
+        uploadProgress?.(percent > 99 ? 99 : percent);
+      }
+    };
+
+    // 上传结束
+    xhr.onload = function () {
+      uploadProgress?.(100);
+      if (this.status < 200 || this.status >= 300) {
+        let errorMsg
+        try {
+          errorMsg = JSON.parse(this.responseText)
+        } catch (e) {
+          errorMsg = "文件上传失败！"
+        }
+
+        reject(errorMsg);
+      } else {
+        const contentType = this.getResponseHeader("content-type")
+
+        let body: any = this.responseText
+        if (contentType && contentType.includes("application/json")) {
+          body = JSON.parse(this.responseText)
+        }
+
+        try {
+          resolve((!!body && resultSchema?.parse(body)) || body)
+        } catch (e) {
+          reject(`结果值结构解析失败：${e}`)
+          return
+        }
+      }
+    };
+
+    // 上传失败
+    xhr.onerror = () => {
+      reject("文件上传失败！")
+    };
+
+    try {
+      xhr.send(formData);
+    } catch (e) {
+      reject("文件上传失败！")
+    }
+  })
+}
 
 /**
  * Post json请求
@@ -478,7 +560,7 @@ export type OtherOptions<T> = {
 
 export type OnAbortController = (abortController: AbortController) => void
 
-export interface RequestParam<T = any> {
+export type RequestParam<T = any> = {
 
   /**
    * 查询参数
@@ -504,6 +586,16 @@ export interface RequestParam<T = any> {
    * 中断控制器
    */
   onAbortController?: OnAbortController
+}
+
+export type FileRequestParam<T = any> = Omit<RequestParam<T>, "body" | "headers" | "onAbortController"> & {
+
+  body: Record<string, string | Blob | undefined | null>
+
+  headers?: Record<string, string>
+
+  uploadProgress?: (percent: number) => void
+
 }
 
 /**

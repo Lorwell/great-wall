@@ -333,7 +333,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
                                      })
                                    }
                         >
-                          <div className={cn("truncate p-4", {"pl-4": column.getCanSort()})}
+                          <div className={cn("p-4", {"pl-4": column.getCanSort()})}
                                style={{width: column.getSize()}}
                           >
                             {flexRender(

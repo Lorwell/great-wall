@@ -20,7 +20,7 @@ export function TargetConfigColumn({targetConfig}: TargetConfigColumnProps) {
             <div key={index} className={"flex"}>
               <div className={"truncate flex-auto"}>{it.url}</div>
               <div className={"mx-3"}>-</div>
-              <div>权重：</div>
+              <div className={"w-12"}>权重：</div>
               <div>{it.weight}</div>
             </div>
           ))}

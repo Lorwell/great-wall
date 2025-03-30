@@ -113,7 +113,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "createTime",
         label: "创建时间",
-        size: 180,
+        size: 200,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),
@@ -121,7 +121,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "lastUpdateTime",
         label: "最后修改时间",
-        size: 180,
+        size: 200,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),
