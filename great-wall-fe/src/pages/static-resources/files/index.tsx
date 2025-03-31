@@ -78,6 +78,7 @@ export default function StaticResourcesFiles() {
         data={data?.records || []}
         loading={loading}
         searchColumnId={"name"}
+        manual={false}
         columns={columns({
           event: {
             onDelete: async ({row}) => {

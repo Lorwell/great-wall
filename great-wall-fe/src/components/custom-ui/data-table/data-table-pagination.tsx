@@ -76,7 +76,7 @@ export function DataTablePagination<TData>(props: DataTablePaginationProps<TData
     for (let pageNumber = startPage; pageNumber <= endPage; pageNumber += 1) {
       pageButtons.push(
         <PaginationItem key={`page-${pageNumber}`} onClick={() => table.setPageIndex(pageNumber - 1)}>
-          <PaginationLink href="#" isActive={pageNumber === activePage}>{pageNumber}</PaginationLink>
+          <PaginationLink isActive={pageNumber === activePage}>{pageNumber}</PaginationLink>
         </PaginationItem>
       )
     }
@@ -90,7 +90,7 @@ export function DataTablePagination<TData>(props: DataTablePaginationProps<TData
 
       pageButtons.unshift(
         <PaginationItem key={`page-1`} onClick={() => table.setPageIndex(0)}>
-          <PaginationLink href="#">1</PaginationLink>
+          <PaginationLink>1</PaginationLink>
         </PaginationItem>
       );
     }
@@ -105,7 +105,7 @@ export function DataTablePagination<TData>(props: DataTablePaginationProps<TData
       if (boundaryLinks && endPage !== pages) {
         pageButtons.push(
           <PaginationItem key={`page-${pages}`} onClick={() => table.setPageIndex(pages - 1)}>
-            <PaginationLink href="#">{pages}</PaginationLink>
+            <PaginationLink>{pages}</PaginationLink>
           </PaginationItem>
         );
       }

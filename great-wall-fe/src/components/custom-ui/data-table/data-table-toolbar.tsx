@@ -1,5 +1,5 @@
 import {Cross2Icon} from "@radix-ui/react-icons"
-import {Table, Row} from "@tanstack/react-table"
+import {Row, Table} from "@tanstack/react-table"
 import {Button} from "@/components/ui/button.tsx"
 import {Input} from "@/components/ui/input.tsx"
 import {DataTableViewOptions} from "./data-table-view-options.tsx"
@@ -114,7 +114,9 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
                       <AlertDialogCancel>取消</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
-                          onDelete?.(selectRows)
+                          onDelete?.(selectRows);
+                          // 清空选中状态
+                          table.resetRowSelection(true);
                         }}
                       >
                         确认
