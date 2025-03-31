@@ -1,6 +1,6 @@
 services:
   great-wall:
-    image: moailaozi/great-wall:2.28
+    image: moailaozi/great-wall:2.29
     container_name: great-wall
     environment:
       ADMIN_PASSWORD: moYgwfjHQD8RbQqG

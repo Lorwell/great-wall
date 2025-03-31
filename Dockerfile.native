@@ -1,7 +1,7 @@
 FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.build
 
 # 复制项目所有代码
-ADD . /build
+COPY . /build
 WORKDIR /build
 
 ARG g1gc=""
