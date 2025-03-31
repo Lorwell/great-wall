@@ -2,7 +2,6 @@
 /great-wall-fe/node_modules
 # 后端
 /great-wall-server/data
-/great-wall-server/build
 
 # 其他
 /.idea

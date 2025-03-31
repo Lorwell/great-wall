@@ -1,10 +1,10 @@
 version=2.29
 
 # 构建前端
-#cd great-wall-fe && pnpm i && pnpm run build && cd .. || exit
+cd great-wall-fe && pnpm i && pnpm run build && cd .. || exit
 
 # 构建 bootJar
-#bash dockerBuildBootJar.sh $version  || exit
+bash dockerBuildBootJar.sh $version  || exit
 
 # 构建
 bash dockerBuild.sh $version  || exit
