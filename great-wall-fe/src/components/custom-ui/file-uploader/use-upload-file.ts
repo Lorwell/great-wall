@@ -4,8 +4,9 @@ import ConcurrencyTask from "@/lib/concurrency-task.ts";
 import {useMap} from "ahooks";
 import {isEmpty} from "radash";
 import {toast} from "sonner";
+import {FileWithPath} from "react-dropzone";
 
-export type FileUploadStatus<T> = File & {
+export type FileUploadStatus<T> = (File | FileWithPath) & {
 
   /**
    * 上传进度

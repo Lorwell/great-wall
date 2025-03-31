@@ -54,19 +54,9 @@ data class RouteStaticResourcesTargetConfig(
      *
      * 如果为 null 则表示不开启
      */
-    val redirect404: String? = null
+    val tryfile404: String? = null
 
-) : RouteTargetConfig(type = RouteTargetEnum.StaticResources) {
-
-
-    fun toConfigMo(): StaticResourceConfigMo {
-        return StaticResourceConfigMo(
-            index = index,
-            redirect404 = redirect404
-        )
-    }
-
-}
+) : RouteTargetConfig(type = RouteTargetEnum.StaticResources)
 
 
 data class RouteUrlsTargetConfig(

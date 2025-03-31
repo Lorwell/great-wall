@@ -1,7 +1,7 @@
 import {ControllerRenderProps, FieldPath, FieldValues} from "react-hook-form";
 import {Input} from "@/components/ui/input.tsx";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "../ui/select";
-import {useEffect, useState} from "react";
+import {forwardRef, useEffect, useState} from "react";
 import {isNull} from "@/lib/utils.ts";
 
 export interface DurationInputProps<TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>
@@ -31,9 +31,15 @@ export enum DurationUnit {
  *
  * @constructor
  */
-export default function DurationInput<TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>(props: DurationInputProps<TFieldValues, TName>) {
-  const {disabled, onChange, defaultUnit = DurationUnit.seconds, value: fieldValue, ...rest} = props
+const DurationInput = forwardRef<HTMLDivElement, DurationInputProps<any, any>>((
+  {
+    disabled,
+    onChange,
+    defaultUnit = DurationUnit.seconds,
+    value: fieldValue,
+    ...rest
+  },
+  ref) => {
   const [unit, setUnit] = useState<DurationUnit>(defaultUnit)
   const [value, setValue] = useState<string>("")
 
@@ -95,7 +101,7 @@ export default function DurationInput<TFieldValues extends FieldValues = FieldVa
   }
 
   return (
-    <div className={"flex flex-row gap-[1px] items-center"}>
+    <div ref={ref} className={"flex flex-row gap-[1px] items-center"}>
       <Input {...rest}
              type={"number"}
              className={"w-[100px]"}
@@ -119,4 +125,6 @@ export default function DurationInput<TFieldValues extends FieldValues = FieldVa
       </Select>
     </div>
   )
-}
+});
+
+export default DurationInput

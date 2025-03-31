@@ -1,5 +1,6 @@
 package cc.shacocloud.greatwall.config.web.filter
 
+import cc.shacocloud.greatwall.model.mo.StaticResourceConfigMo
 import cc.shacocloud.greatwall.service.AppRouteLocator
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.cloud.gateway.filter.GlobalFilter
@@ -39,15 +40,16 @@ class FileHandlingGlobalFilter : GlobalFilter, Ordered {
         val route = exchange.getAttribute<Route>(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR)!!
         var url = requestUrl.path
 
+        val (index, tryfile404) =
+            route.metadata[AppRouteLocator.Companion.STATIC_RESOURCE_CONFIG_META_KEY] as StaticResourceConfigMo?
+                ?: StaticResourceConfigMo.DEFAULT
 
         if (url == "/") {
-            val staticDefaultResourcePath =
-                route.metadata[AppRouteLocator.Companion.STATIC_DEFAULT_RESOURCE_PATH_META_KEY] as String?
-            url = staticDefaultResourcePath ?: "/index.html"
+            url = index
         }
 
         val path = route.uri.toPath()
-        val fullPath = path.resolve(Paths.get(url.removePrefix("/"))).normalize()
+        var fullPath = path.resolve(Paths.get(url.removePrefix("/"))).normalize()
 
         // 安全检查
         if (!fullPath.startsWith(path)) {
@@ -55,7 +57,15 @@ class FileHandlingGlobalFilter : GlobalFilter, Ordered {
         }
 
         if (!Files.exists(fullPath)) {
-            return Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND));
+            if (tryfile404.isNullOrBlank()) {
+                return Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND))
+            }
+
+            url = tryfile404
+            fullPath = path.resolve(Paths.get(url.removePrefix("/"))).normalize()
+            if (!Files.exists(fullPath)) {
+                return Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND))
+            }
         }
 
         val response = exchange.response

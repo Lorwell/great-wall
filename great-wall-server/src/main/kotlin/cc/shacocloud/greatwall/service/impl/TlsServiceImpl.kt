@@ -115,10 +115,7 @@ class TlsServiceImpl(
     /**
      * 获取证书过期时间
      */
-    override suspend fun getTlsExpiredTime(): LocalDateTime? {
-        // 没有证书配置
-        val tlsPo = findTlsPo() ?: return null
-
+    override suspend fun getTlsExpiredTime(tlsPo: TlsPo): LocalDateTime? {
         val tlsExpiredTime = getTlsExpiredTime(certificatePath)
 
         //  更新过期时间

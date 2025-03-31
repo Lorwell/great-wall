@@ -7,6 +7,7 @@ import cc.shacocloud.greatwall.model.constant.RoutePredicateOperatorEnum.OR
 import cc.shacocloud.greatwall.model.mo.BaseRouteInfo
 import cc.shacocloud.greatwall.model.mo.RouteStaticResourcesTargetConfig
 import cc.shacocloud.greatwall.model.mo.RouteUrlsTargetConfig
+import cc.shacocloud.greatwall.model.mo.StaticResourceConfigMo.Companion.toConfigMo
 import cc.shacocloud.greatwall.model.po.AppRoutePo
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import kotlinx.coroutines.channels.ProducerScope
@@ -26,7 +27,6 @@ import org.springframework.core.Ordered
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URI
-import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -49,7 +49,7 @@ class AppRouteLocator(
 
         val APP_ROUTE_ID_META_KEY = "${AppRouteLocator::class.java}.appRouteId"
 
-        val STATIC_DEFAULT_RESOURCE_PATH_META_KEY = "${AppRouteLocator::class.java}.staticDefaultResourcePath"
+        val STATIC_RESOURCE_CONFIG_META_KEY = "${AppRouteLocator::class.java}.staticResourceConfigMo"
 
         private val log: Logger = LoggerFactory.getLogger(AppRouteLocator::class.java)
 
@@ -119,7 +119,7 @@ class AppRouteLocator(
         val staticResourcesPo = (staticResourcesService.findById(targetConfig.id)
             ?: throw NotFoundException("未知的静态资源库id ${targetConfig.id}"))
 
-        val path = Paths.get(StaticResourcesService.STATIC_RESOURCES_DIR, staticResourcesPo.uniqueId)
+        val path = staticResourcesPo.getFilePath()
             .normalize()
             .invariantSeparatorsPathString
             .removePrefix("/")
@@ -132,6 +132,7 @@ class AppRouteLocator(
             .order(appRoute.priority)
             // 路由id
             .metadata(APP_ROUTE_ID_META_KEY, id)
+            .metadata(STATIC_RESOURCE_CONFIG_META_KEY, targetConfig.toConfigMo())
 
         val baseInfo = BaseRouteInfo(routeId, uri, appRoute.priority)
 

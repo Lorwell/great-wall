@@ -14,6 +14,7 @@ import cc.shacocloud.greatwall.service.StaticResourcesService
 import cc.shacocloud.greatwall.service.StaticResourcesService.Companion.STATIC_RESOURCES_DIR_PATH
 import cc.shacocloud.greatwall.utils.ObjectId
 import cc.shacocloud.greatwall.utils.createDirOfNotExist
+import cc.shacocloud.greatwall.utils.createOfNotExist
 import cc.shacocloud.greatwall.utils.deleteAll
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -27,10 +28,12 @@ import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.net.URLDecoder
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 /**
@@ -108,9 +111,13 @@ class StaticResourcesServiceImpl(
         staticResourcesPo: StaticResourcesPo,
         parentDir: String?
     ): List<FileOutput> {
-        val parentDirPath = getFilePath(staticResourcesPo.getFilePath(), parentDir)
+        val rootPath = staticResourcesPo.getFilePath()
+        val parentDirPath = getFilePath(rootPath, parentDir)
+        if (!parentDirPath.exists()) {
+            throw NotFoundException("文件地址不存在！")
+        }
         return Files.list(parentDirPath)
-            .map { FileOutput(STATIC_RESOURCES_DIR_PATH, it) }
+            .map { FileOutput(rootPath, it) }
             .sorted { o1, o2 -> o1.type.compareTo(o2.type) }
             .toList()
     }
@@ -124,16 +131,11 @@ class StaticResourcesServiceImpl(
         parentDir: String?
     ): FileOutput {
         val parentDirPath = getFilePath(staticResourcesPo.getFilePath(), parentDir)
-        val path = parentDirPath.resolve(filePart.filename())
-
-        // 安全检查
-        if (!path.startsWith(STATIC_RESOURCES_DIR_PATH)) {
-            throw ForbiddenException()
-        }
+        val path = getFilePath(parentDirPath, filePart.filename()).createOfNotExist()
 
         filePart.transferTo(path).awaitSingleOrNull()
 
-        return FileOutput(STATIC_RESOURCES_DIR_PATH, path)
+        return FileOutput(parentDirPath, path)
     }
 
     /**
@@ -147,7 +149,7 @@ class StaticResourcesServiceImpl(
         val filePath = getFilePath(staticResourcesPo.getFilePath(), relativePath)
 
         if (!Files.exists(filePath)) {
-            throw NotFoundException()
+            throw NotFoundException("文件地址不存在！")
         }
 
         // 设置响应类型
@@ -195,7 +197,7 @@ class StaticResourcesServiceImpl(
             return rootPath
         }
 
-        val path = rootPath.resolve(Paths.get(relativePath))
+        val path = rootPath.resolve(Paths.get(URLDecoder.decode(relativePath, "UTF-8")))
 
         // 安全检查
         if (!path.startsWith(rootPath)) {

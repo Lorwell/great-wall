@@ -11,9 +11,21 @@ data class StaticResourceConfigMo(
     val index: String,
 
     /**
-     * 404 重定向
+     * 404 时使用指定文件返回
      *
      * 如果为 null 则表示不开启
      */
-    val redirect404: String? = null
-)
+    val tryfile404: String? = null
+) {
+
+    companion object {
+        val DEFAULT = StaticResourceConfigMo(index = "index.html")
+
+        fun RouteStaticResourcesTargetConfig.toConfigMo(): StaticResourceConfigMo {
+            return StaticResourceConfigMo(
+                index = index,
+                tryfile404 = tryfile404
+            )
+        }
+    }
+}

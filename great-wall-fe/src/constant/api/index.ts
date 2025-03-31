@@ -12,6 +12,7 @@ import {ZodAnyDef, ZodType, ZodTypeAny} from "zod";
 import qs from "qs";
 import Cookies from "js-cookie";
 import {SITE_COOKIE_NAME} from "@/constant";
+import {isArray} from "radash";
 
 /**
  * 发送 fetch 请求
@@ -163,12 +164,37 @@ export const uploadFile = <T>(uri: string,
 
     const formData = new FormData();
 
+
+    // 追加表单数据
+    function appendFormData(key: string, value: typeof body["value"]) {
+      if (!value) return;
+
+      const setValue = (el: string | Blob) => {
+        if (typeof el === "string") {
+          formData.append(key, el)
+        } else if (el instanceof File) {
+          const fileName = "relativePath" in el
+            ? removePrefix(el.relativePath as string, "/")
+            : removePrefix(el.webkitRelativePath as string, "/")
+            || el.name
+          formData.append(key, el, fileName)
+        } else {
+          formData.append(key, el)
+        }
+      }
+
+      if (isArray(value)) {
+        for (let el of value) {
+          setValue(el)
+        }
+      } else {
+        setValue(value)
+      }
+    }
+
     if (body && Object.keys(body).length > 0) {
       for (let key of Object.keys(body)) {
-        const value = body[key];
-        if (value) {
-          formData.set(key, value)
-        }
+        appendFormData(key, body[key])
       }
     }
 
@@ -590,7 +616,7 @@ export type RequestParam<T = any> = {
 
 export type FileRequestParam<T = any> = Omit<RequestParam<T>, "body" | "headers" | "onAbortController"> & {
 
-  body: Record<string, string | Blob | undefined | null>
+  body: Record<string, string | Blob | string[] | Blob[] | undefined | null>
 
   headers?: Record<string, string>
 

@@ -1,10 +1,10 @@
 import {Cell, Column, Row, Table} from "@tanstack/react-table";
-import {FileX} from "lucide-react";
+import {Download, FileX, FolderOpen} from "lucide-react";
 import {
   DataTableRowActions,
   DataTableRowActionsOptions
 } from "@/components/custom-ui/data-table/data-table-row-actions.tsx";
-import {FileOutput} from "@/constant/api/static-resources/schema";
+import {FileOutput, FileTypeEnum} from "@/constant/api/static-resources/schema";
 
 export interface RowContext {
   cell: Cell<FileOutput, any>
@@ -20,6 +20,18 @@ export interface RowActionsEvent {
    * @param ctx
    */
   onDelete?: (ctx: RowContext) => void
+
+  /**
+   * 下载事件
+   * @param ctx
+   */
+  onDownload?: (ctx: RowContext) => void
+
+  /**
+   * 打开文件夹
+   * @param ctx
+   */
+  onOpenDir?: (ctx: RowContext) => void
 
 }
 
@@ -39,6 +51,8 @@ const RowActions = (props: RowActionsProps) => {
     cell,
     table,
     onDelete,
+    onOpenDir,
+    onDownload
   } = props;
 
   const ctx: RowContext = {row, column, cell, table}
@@ -51,6 +65,28 @@ const RowActions = (props: RowActionsProps) => {
       onClick: () => onDelete?.(ctx)
     },
   ]
+
+  const type = row.original.type;
+
+  if (type === FileTypeEnum.DIR) {
+    options.push(
+      {
+        key: "views",
+        label: "打开文件夹",
+        icon: FolderOpen,
+        onClick: () => onOpenDir?.(ctx)
+      }
+    )
+  } else {
+    options.push(
+      {
+        key: "download",
+        label: "下载文件",
+        icon: Download,
+        onClick: () => onDownload?.(ctx)
+      }
+    )
+  }
 
   return (
     <DataTableRowActions row={row} options={options}/>

@@ -37,9 +37,10 @@ class AutoRefreshTLSScheduled(
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
     fun refreshTls() = mono {
         if (!ApplicationContextHolder.available()) return@mono
+        val tlsPo = tlsService.findTlsPo() ?: return@mono
 
         // 获取当前证书的过期时间
-        val expirationTime = tlsService.getTlsExpiredTime()
+        val expirationTime = tlsService.getTlsExpiredTime(tlsPo)
         if (expirationTime == null) {
             if (log.isWarnEnabled) {
                 log.warn("无法获取当前证书过期时间忽略证书自动更新！")

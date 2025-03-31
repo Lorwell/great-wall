@@ -36,7 +36,7 @@ interface TlsService {
     /**
      * 获取证书过期时间
      */
-    suspend fun getTlsExpiredTime(): LocalDateTime?
+    suspend fun getTlsExpiredTime(tlsPo: TlsPo): LocalDateTime?
 
     /**
      * 在指定路径生成 zip 文件

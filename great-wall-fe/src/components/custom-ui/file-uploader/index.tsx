@@ -1,8 +1,8 @@
 import React, {useCallback} from "react"
 import {Cross2Icon, FileTextIcon, UploadIcon} from "@radix-ui/react-icons"
-import Dropzone, {type DropzoneProps, type FileRejection,} from "react-dropzone"
+import Dropzone, {type DropzoneProps, type FileRejection, FileWithPath,} from "react-dropzone"
 import {toast} from "sonner"
-import {cn, formatBytes} from "@/lib/utils.ts"
+import {cn, formatBytes, removePrefix} from "@/lib/utils.ts"
 import {useControllableState} from "@/components/hooks/use-controllable-state.ts"
 import {Button} from "@/components/ui/button.tsx"
 import {Progress} from "@/components/ui/progress.tsx"
@@ -97,9 +97,7 @@ export function FileUploader<T>(props: FileUploaderProps<T>) {
     onValueChange,
     onUpload,
     fileUploadStatusMap,
-    accept = {
-      "image/*": [],
-    },
+    accept,
     acceptPlaceholder,
     maxSize = 1024 * 1024 * 2,
     maxFileCount,
@@ -164,17 +162,13 @@ export function FileUploader<T>(props: FileUploaderProps<T>) {
         )
 
       const updatedFiles = files ? [...files, ...newFiles] : newFiles
-
       setFiles(updatedFiles)
 
       if (rejectedFiles.length > 0) {
         handlerError(rejectedFiles)
       }
 
-      if (
-        onUpload &&
-        updatedFiles.length > 0 && (maxFileCount && updatedFiles.length <= maxFileCount)
-      ) {
+      if (onUpload && updatedFiles.length > 0 && (maxFileCount && updatedFiles.length <= maxFileCount)) {
         toast.promise(onUpload(updatedFiles), {
           loading: `文件上传中...`,
           success: () => {
@@ -254,11 +248,11 @@ export function FileUploader<T>(props: FileUploaderProps<T>) {
                 </div>
                 <div className="flex flex-col gap-px">
                   <p className="font-medium text-muted-foreground">
-                    将文件拖放到此处，或单击以选择文件
+                    将文件或文件夹拖放到此处，或单击以选择文件
                   </p>
                   <p className="text-sm text-muted-foreground/70">
                     {
-                      maxFileCount !== Infinity && (
+                      maxFileCount && maxFileCount !== Infinity && (
                         `最多可以上传 ${maxFileCount} 个文件，`
                       )
                     }
@@ -291,7 +285,7 @@ export function FileUploader<T>(props: FileUploaderProps<T>) {
 }
 
 interface FileCardProps<T> {
-  file: File
+  file: File | FileWithPath
   onRemove: () => void
   fileUploadStatus?: FileUploadStatus<T>
 }
@@ -310,7 +304,12 @@ function FileCard<T>({file, fileUploadStatus, onRemove}: FileCardProps<T>) {
             }
           )}>
             <p className={"line-clamp-1 text-sm font-medium"}>
-              {file.name}
+              {
+                "relativePath" in file
+                  ? removePrefix(file.relativePath as string, "/")
+                  : removePrefix(file.webkitRelativePath as string, "/")
+                  || file.name
+              }
             </p>
             <p className="text-xs">
               {formatBytes(file.size)}

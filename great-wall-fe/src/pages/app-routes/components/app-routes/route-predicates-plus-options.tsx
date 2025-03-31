@@ -29,8 +29,8 @@ function RoutePredicatesPlusOptions(props: RoutePredicatesPlusOptionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"} disabled={disabled}>
-          <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
+        <Button variant={"outline"} size={"icon"} className={"border-none"} disabled={disabled}>
+          <CirclePlus className={cn("cursor-pointer size-5")}/>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[150px]">

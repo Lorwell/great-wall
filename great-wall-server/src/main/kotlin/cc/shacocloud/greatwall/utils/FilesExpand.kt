@@ -72,6 +72,10 @@ fun Path.relativePath(mainPath: Path): String {
  * 递归删除所有文件
  */
 fun Path.deleteAll() {
+    if (!exists()) {
+        return
+    }
+
     if (isDirectory()) {
         Files.walk(this)
             .sorted(Comparator.reverseOrder())

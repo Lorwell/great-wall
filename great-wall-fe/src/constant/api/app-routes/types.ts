@@ -21,6 +21,11 @@ export enum RoutePredicateOperatorEnum {
 
 }
 
+export enum RouteTargetEnum {
+  Urls = "Urls",
+  StaticResources = "StaticResources"
+}
+
 export enum PredicateTypeEnum {
 
   /**

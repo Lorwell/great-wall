@@ -84,9 +84,6 @@ export const FileUploaderDialog = forwardRef<FileUploaderDialogInstance, FileUpl
             onValueChange={setFiles}
             fileUploadStatusMap={fileUploadStatusMap}
             disabled={isUploading}
-            accept={{
-              "*/*": [],
-            }}
             multiple
             maxSize={1024 * 1024 * 1024}
           />

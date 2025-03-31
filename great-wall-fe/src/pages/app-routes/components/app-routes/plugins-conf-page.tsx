@@ -130,7 +130,7 @@ export default function PluginsConfPage(props: PluginsConfPageProps) {
           {
             !preview && (
               <Button type="submit" className={"mt-6"}>
-                保存
+                下一步
               </Button>
             )
           }

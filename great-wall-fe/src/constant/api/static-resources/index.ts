@@ -16,7 +16,7 @@ import {deleteJsonRequest, getRequest, postJsonRequest, putJsonRequest} from "@/
  */
 export function staticResourcesList(input?: StaticResourcesListInput): Promise<StaticResourcesOutputRecord> {
   return postJsonRequest(`/api/static-resources/list`, {
-    body: input,
+    body: input || {current: -1},
     resultSchema: staticResourcesOutputRecordSchema
   });
 }

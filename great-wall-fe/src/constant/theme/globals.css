@@ -86,8 +86,3 @@ https://tellay-shadcn-ui-themes.vercel.app/
         @apply bg-background text-foreground;
     }
 }
-
-.lucide * {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
