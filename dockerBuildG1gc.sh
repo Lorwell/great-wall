@@ -6,6 +6,3 @@ docker build --build-arg g1gc="-Pgl.enable=true" --build-arg greatWallMaxMemory=
 # 上传
 docker tag great-wall:"$version" moailaozi/great-wall:"$version"
 docker push moailaozi/great-wall:"$version"
-
-# 删除上传成功
-docker rmi moailaozi/great-wall:"$version"

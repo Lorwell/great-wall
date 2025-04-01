@@ -9,7 +9,3 @@ docker push moailaozi/great-wall:"$version"
 
 docker tag great-wall:"$version" moailaozi/great-wall:latest
 docker push moailaozi/great-wall:latest
-
-# 删除上传成功
-docker rmi moailaozi/great-wall:latest
-docker rmi moailaozi/great-wall:"$version"

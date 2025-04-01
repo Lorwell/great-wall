@@ -1,9 +1,9 @@
 services:
   great-wall:
-    image: moailaozi/great-wall:2.29
+    image: moailaozi/great-wall:2.30
     container_name: great-wall
     environment:
-      ADMIN_PASSWORD: moYgwfjHQD8RbQqG
+      ADMIN_PASSWORD: admin账号的密钥
     volumes:
       - /data/great-wall/data:/workspace/data
     network_mode: host
