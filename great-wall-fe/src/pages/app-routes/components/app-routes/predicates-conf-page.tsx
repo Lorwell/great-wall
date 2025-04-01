@@ -1,6 +1,6 @@
 import {useEffect} from "react";
 import {useLayoutOutletContext} from "@/pages/app-routes/components/app-routes/layout.tsx";
-import {Control, FieldPath, FieldValues, useFieldArray, useForm, UseFormReturn} from "react-hook-form";
+import {Control, FieldPath, FieldValues, useFieldArray, useForm, UseFormReturn, useWatch} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {
   Form,
@@ -25,8 +25,12 @@ import MethodPredicate from "@/pages/app-routes/components/app-routes/predicates
 import KVPredicate from "@/pages/app-routes/components/app-routes/predicates/kv-predicate.tsx";
 import PathsPredicate from "@/pages/app-routes/components/app-routes/predicates/paths-predicate.tsx";
 import RemoteAddrPredicate from "@/pages/app-routes/components/app-routes/predicates/remote-addr-predicate.tsx";
-import {predicatesFormSchema, PredicatesFormValues} from "@/constant/api/app-routes/schema.ts";
-import {useRecoilState} from "recoil";
+import {
+  predicatesFormSchema,
+  PredicatesFormValues,
+  TargetConfigSchemaValues
+} from "@/constant/api/app-routes/schema.ts";
+import {useRecoilState, useRecoilValue} from "recoil";
 import {appRoutesDataOptionsState} from "@/pages/app-routes/components/app-routes/store.ts";
 import DurationInput from "@/components/custom-ui/duration-input.tsx";
 import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
@@ -93,7 +97,10 @@ function PredicatesConfPage(props: PredicatesConfPageProps) {
     outletContext.nextPage()
   }
 
-  const targetConfigType = form.watch("targetConfig.type");
+  const targetConfigType = useWatch({
+    control: form.control,
+    name: "targetConfig.type",
+  })
 
   return (
     <Form {...form}>
@@ -285,10 +292,46 @@ function RouteTargetConfigTypeSelect(
     preview
   }: { type: RouteTargetEnum, form: UseFormReturn<PredicatesFormValues, any, any>, preview: boolean }) {
 
+  const appRoutesDataOptions = useRecoilValue(appRoutesDataOptionsState);
+
   function handleChange(value: RouteTargetEnum) {
     if (type !== value) {
-      // @ts-ignore
-      form.setValue("targetConfig", {type: value})
+
+      const sourceTargetConfig = appRoutesDataOptions.predicates?.targetConfig;
+      const sourceType = sourceTargetConfig?.type;
+
+      let targetConfig: Partial<TargetConfigSchemaValues>
+      switch (value) {
+        case RouteTargetEnum.Urls:
+          targetConfig = {
+            type: RouteTargetEnum.Urls,
+            connectTimeout: "PT3S",
+            urls: [{
+              url: "",
+              weight: 1
+            }]
+          }
+          break;
+        case RouteTargetEnum.StaticResources:
+          targetConfig = {
+            type: RouteTargetEnum.StaticResources,
+            id: undefined,
+            index: "index.html",
+            tryfile404: "index.html"
+          }
+          break;
+        default:
+          throw new Error(`未知的额类型：${value}`)
+      }
+
+      form.setValue("targetConfig",
+        // @ts-ignore
+        {...targetConfig, ...(sourceType === value ? sourceTargetConfig : {})},
+        {
+          shouldValidate: true
+        }
+      )
+
     }
   }
 
@@ -303,7 +346,7 @@ function RouteTargetConfigTypeSelect(
         disabled={preview}
       >
         <SelectTrigger
-          className={"w-fit gap-2"}
+          className={"w-fit gap-2 m-1"}
         >
           <>
             <ChevronsUpDown className={"size-4"}/>
@@ -447,8 +490,7 @@ function RouteStaticResourcesTargetConfigCard(
           <RouteTargetConfigTypeSelect type={RouteTargetEnum.StaticResources} form={form} preview={preview}/>
         </CardTitle>
         <CardDescription>
-          路由条件匹配成功，将把请求转发到以下目标服务上 <br/>
-          每个 URL 都会设置一个权重值，权重计算方式为：当前权重值 / 所有权重值之和 = 当前 URL 的权重的百分比
+          路由条件匹配成功，将把请求路径映射为指定的静态资源路径，读取文件内容并且返回<br/>
         </CardDescription>
       </CardHeader>
       <CardContent className={"flex flex-col space-y-2"}>
