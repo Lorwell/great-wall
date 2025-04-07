@@ -1,4 +1,4 @@
-version=2.30
+version=2.31
 
 bootJarVersion="$version"_bootJar
 defaultVersion="$version"

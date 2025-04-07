@@ -16,6 +16,7 @@ import org.springframework.http.MediaTypeFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.server.ServerWebExchange
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.nio.file.Files
@@ -71,10 +72,22 @@ class FileHandlingGlobalFilter : GlobalFilter, Ordered {
         val response = exchange.response
         val resource = FileSystemResource(fullPath)
 
-        response.headers.contentType = MediaTypeFactory.getMediaType(resource)
+        val headers = response.headers
+        headers.contentType = MediaTypeFactory.getMediaType(resource)
             .orElse(MediaType.APPLICATION_OCTET_STREAM)
 
-        return response.writeWith(DataBufferUtils.read(resource, DefaultDataBufferFactory(true), 4096))
+        return DataBufferUtils.read(resource, DefaultDataBufferFactory(true), 4096)
+            .collectList()
+            .flatMap { buffers ->
+                if (buffers.isEmpty()) {
+                    headers.contentLength = 0
+                    response.setComplete()
+                } else {
+                    headers.contentLength = buffers.sumOf { it.readableByteCount().toLong() }
+                    response.writeWith(Flux.fromIterable(buffers))
+                        .doOnError { buffers.forEach(DataBufferUtils::release) }
+                }
+            }
             .then(chain.filter(exchange))
     }
 
