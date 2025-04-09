@@ -1,6 +1,6 @@
 services:
   great-wall:
-    image: moailaozi/great-wall:2.30
+    image: moailaozi/great-wall:2.31
     container_name: great-wall
     environment:
       ADMIN_PASSWORD: admin账号的密钥
