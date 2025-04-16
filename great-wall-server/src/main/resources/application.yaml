@@ -91,5 +91,5 @@ logging:
     # 忽略只读告警
     "io.r2dbc.h2.H2Connection": error
     "cc.shacocloud.greatwall.controller.advice.RestfulResponseSpecification": info
-    "org.springframework.cloud.gateway.handler": debug
+#    "org.springframework.cloud.gateway.handler": debug
 #    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug
