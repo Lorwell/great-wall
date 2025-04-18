@@ -17,6 +17,7 @@ import java.util.*
 @SpringBootApplication
 class GreatWallApplication
 
+
 fun main(args: Array<String>) {
     try {
         // 设置默认时区
@@ -27,7 +28,7 @@ fun main(args: Array<String>) {
         System.setProperty(ReactorNetty.POOL_LEASING_STRATEGY, "lifo")
 
         val application = SpringApplication(GreatWallApplication::class.java)
-
+        application.setBanner(GreatWallBanner())
         // 自定义应用上下文工厂
         application.setApplicationContextFactory(CustomApplicationContextFactory())
         application.run(*args)

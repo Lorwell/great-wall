@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.config.web
 
-import cc.shacocloud.greatwall.controller.advice.DefaultExceptionHandler
+import cc.shacocloud.greatwall.GreatWallVersion
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.MergedAnnotations
@@ -88,9 +88,12 @@ class MainServerErrorHandler(
                  <title>${code}${reasonPhrase}</title>
              </head>
              <body>
-             <div style="text-align:center"><h1>$code${reasonPhrase}</h1></div>
+             <div style="text-align:center"><h1>${code}${reasonPhrase}</h1></div>
              <hr>
-             <div style="text-align:center">${appName}</div>
+             <div style="text-align:center; font-size: 16px;">
+             $appName
+             <span style="margin-left: 4px; font-size: 12px;">v${GreatWallVersion.version}</span>
+             </div>
              </body>
              </html>
              """.trimIndent()

@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "cc.shacocloud"
-version = "lasted"
+version = "2.32"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -98,6 +98,14 @@ kotlin {
     }
 }
 
+tasks.processResources {
+    filesMatching("application-greatwall.yaml") {
+        filteringCharset = "UTF-8"
+        expand(
+            "version" to project.version
+        )
+    }
+}
 
 tasks.withType<Test> {
     useJUnitPlatform()

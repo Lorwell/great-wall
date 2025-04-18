@@ -13,7 +13,10 @@ server:
 
 spring:
   application:
-    name: ${APP_NAME:great-wall}
+    name: ${APP_NAME:Great Wall}
+  profiles:
+    include:
+      - greatwall
   messages:
     basename: i18n/message
     encoding: UTF-8
@@ -75,6 +78,7 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/
+
 
 site:
   tls:

@@ -2,7 +2,7 @@ FROM ccr.ccs.tencentyun.com/shaco_work/jre:21_ubuntu22
 
 # 复制构建时镜像的构建结果
 WORKDIR /workspace
-COPY "great-wall-server/build/libs/great-wall-server-lasted.jar" /workspace/app.jar
+COPY great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
 
 EXPOSE 8080
 
