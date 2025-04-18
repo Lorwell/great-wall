@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -23,6 +23,7 @@ log_error() {
 # 构建前端
 build_frontend() {
   log_success "开始构建前端..."
+  source ~/.nvm/nvm.sh && nvm install || { log_error "加载 nvm 失败"; exit 1; }
   cd great-wall-fe || { log_error "进入前端目录失败"; exit 1; }
   pnpm i || { log_error "前端依赖安装失败"; exit 1; }
   pnpm run build || { log_error "前端构建失败"; exit 1; }
@@ -33,6 +34,7 @@ build_frontend() {
 # 构建后端
 build_backend() {
   log_success "开始构建后端..."
+  source ~/.sdkman/bin/sdkman-init.sh && sdk env || { echo "加载 SDKMAN! 失败"; exit 1; }
   ./gradlew clean bootJar -x test --no-daemon || { log_error "后端构建失败"; exit 1; }
   log_success "后端构建完成"
 }
@@ -40,13 +42,15 @@ build_backend() {
 # Docker构建
 build_docker() {
   log_success "开始Docker构建..."
-  docker buildx bake -f docker-bake.hcl || { log_error "Docker构建失败"; exit 1; }
+#  docker buildx bake -f docker-bake.hcl great-wall-bootJar --push || { log_error "Docker构建 great-wall-bootJar 失败"; exit 1; }
+  docker buildx bake -f docker-bake.hcl great-wall --push || { log_error "Docker构建 great-wall 失败"; exit 1; }
+  docker buildx bake -f docker-bake.hcl great-wall-g1gc --push || { log_error "Docker构建 great-wall-g1gc 失败"; exit 1; }
   log_success "Docker构建完成"
 }
 
 main() {
-  build_frontend
-  build_backend
+#  build_frontend
+#  build_backend
   build_docker
 
   log_success "========== 全部构建成功 =========="

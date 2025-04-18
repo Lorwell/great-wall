@@ -3,7 +3,7 @@ group "default" {
 }
 
 variable "IMAGE_REGISTRY" {
-  default = "docker.io"
+  default = "docker-repo.lingya.tech"
 }
 
 variable "IMAGE_TAG" {

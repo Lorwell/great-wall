@@ -37,6 +37,23 @@ docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great
 
 项目基于 gradle，可以使用 `gradle clean nativeCompile` 命令进行本地化编译
 
+### 快速启动
+
+```shell
+# 准备初始环境
+nvm install
+sdk env install
+
+# 当前终端设置为指定版本
+sdk env
+
+# 编译前端项目
+cd great-wall-fe &&  pnpm i && pnpm run build
+
+# 编译后端项目
+./gradlew clean bootJar -x test --no-daemon
+```
+
 ### 服务配置
 
 当前服务支持的环境变量配置一览

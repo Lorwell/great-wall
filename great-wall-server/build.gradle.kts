@@ -7,10 +7,10 @@ plugins {
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.graalvm.buildtools.native") version "0.10.6"
-    kotlin("jvm") version "2.0.0"
-    kotlin("kapt") version "2.0.0"
-    kotlin("plugin.spring") version "2.0.0"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("jvm") version "2.1.20"
+    kotlin("kapt") version "2.1.20"
+    kotlin("plugin.spring") version "2.1.20"
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 group = "cc.shacocloud"
@@ -70,7 +70,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("io.netty:netty-tcnative-boringssl-static:2.0.70.Final")
