@@ -2,9 +2,9 @@ name: CI Build and Deploy
 
 on:
   push:
-    branches: [ master ]
+    branches: [ develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ develop ]
 
 env:
   IMAGE_TAG: ${{ github.sha }}
