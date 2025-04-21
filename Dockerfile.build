@@ -6,19 +6,20 @@ COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
 SHELL ["/bin/bash", "-c"]
-RUN curl -s "https://get.sdkman.io" | bash \
+RUN curl --retry 3 -s "https://get.sdkman.io" | bash \
         && source "$HOME/.sdkman/bin/sdkman-init.sh" \
         && sdk env install \
         && sdk env \
         && java --version
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
-        && export NVM_DIR="$HOME/.nvm" \
-        && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-        && nvm install --latest-npm \
-        && node --version
+    && export NVM_DIR="$HOME/.nvm" \
+    && echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
 
-RUN corepack enable \
-    && corepack prepare pnpm@latest --activate \
-    && pnpm --version
-
+# 安装Node.js（使用source重新加载环境）
+RUN source ~/.bashrc \
+    && nvm install \
+    && corepack enable \
+    && node --version \
+    && npm --version
