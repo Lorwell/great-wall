@@ -15,18 +15,11 @@ RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && java --version
 
 RUN export NVM_DIR="/root/.nvm" \
-    && curl -o- https://ghproxy.com/https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
-    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-    && echo "当前架构: $(uname -m)" \
+    && curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
+    && source ~/.bashrc \
     && NODE_VERSION=$(cat .nvmrc | tr -d 'v') \
     && echo "尝试安装 Node $NODE_VERSION..." \
     && nvm install $NODE_VERSION --latest-npm --verbose \
-    && echo "二进制文件位置验证:" \
-    && ls -l "$NVM_DIR/versions/node/v$NODE_VERSION/bin" \
-    && echo "创建全局链接..." \
-    && ln -sf "$NVM_DIR/versions/node/v$NODE_VERSION/bin/node" /usr/local/bin/ \
-    && ln -sf "$NVM_DIR/versions/node/v$NODE_VERSION/bin/npm" /usr/local/bin/ \
-    && echo "环境路径: $PATH" \
     && corepack enable \
     && node --version \
     && npm --version \
