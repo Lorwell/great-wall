@@ -18,7 +18,7 @@ RUN curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/inst
     && [ -s "~/.nvm/nvm.sh" ] && \. "~/.nvm/nvm.sh" \
     && NODE_VERSION=$(cat .nvmrc | tr -d 'v') \
     && echo "尝试安装 Node $NODE_VERSION..." \
-    && ~/.nvm/nvm.sh install $NODE_VERSION --latest-npm --verbose \
+    && nvm.sh install $NODE_VERSION --latest-npm --verbose \
     && corepack enable \
     && node --version \
     && npm --version \
