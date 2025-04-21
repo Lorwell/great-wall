@@ -19,7 +19,7 @@ RUN export NVM_DIR="/root/.nvm" \
     && source ~/.bashrc \
     && NODE_VERSION=$(cat .nvmrc | tr -d 'v') \
     && echo "尝试安装 Node $NODE_VERSION..." \
-    && nvm install $NODE_VERSION --latest-npm --verbose \
+    && /root/.nvm/nvm install $NODE_VERSION --latest-npm --verbose \
     && corepack enable \
     && node --version \
     && npm --version \
