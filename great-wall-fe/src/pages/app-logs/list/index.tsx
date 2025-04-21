@@ -1,10 +1,10 @@
-import {DataTable} from "@/components/data-table/data-table.tsx";
+import {DataTable} from "@/components/custom-ui/data-table/data-table.tsx";
 import {columns} from "@/pages/app-logs/list/columns.tsx";
 import {RowContext} from "@/pages/app-logs/list/row-actions.tsx";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {logsList} from "@/constant/api/app-logs";
 import {useNavigate} from "react-router-dom";
-import {downloadFile} from "@/utils/Utils.ts";
+import {downloadFile} from "@/lib/utils.ts";
 
 /**
  * 日志管理
@@ -37,14 +37,24 @@ export default function LogList() {
       <DataTable data={data?.records || []}
                  loading={loading}
                  searchColumnId={"name"}
-                 manual={false}
                  columns={columns({
                    event: {
                      onView: handleView,
                      onDownload: handleDownload,
                    }
                  })}
-                 plusOptions={[]}
+                 defaultSorting={[{id: "lastUpdateTime", desc: true}]}
+                 filterOptions={[
+                   {
+                     type: "Enum",
+                     columnId: "type",
+                     label: "类型",
+                     options: [
+                       {label: "系统日志", value: "ROOT"},
+                       {label: "访问日志", value: "ACCESS"},
+                     ]
+                   }
+                 ]}
       />
     </div>
   )

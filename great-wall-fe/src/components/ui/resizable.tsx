@@ -1,7 +1,7 @@
 import * as React from "react";
 import {GripVertical} from "lucide-react"
 import * as ResizablePrimitive from "react-resizable-panels"
-import {cn} from "@/utils/shadcnUtils"
+import {cn} from "@/lib/shadcnUtils"
 
 const ResizablePanelGroup = ({
                                className,

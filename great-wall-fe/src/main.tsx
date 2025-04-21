@@ -8,7 +8,7 @@ import '@/constant/theme/globals.css'
 ReactDOM.createRoot(document.getElementById('root')!)
   .render(
     <RecoilRoot>
-      <BrowserRouter>
+      <BrowserRouter future={{v7_startTransition: true, v7_relativeSplatPath: true}}>
         <App/>
       </BrowserRouter>
     </RecoilRoot>

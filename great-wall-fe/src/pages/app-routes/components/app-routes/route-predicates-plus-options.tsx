@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu.tsx";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {PredicateTypeEnum} from "@/constant/api/app-routes/types.ts";
 import {PredicatesSchemaValues} from "@/constant/api/app-routes/schema.ts";
@@ -29,8 +29,8 @@ function RoutePredicatesPlusOptions(props: RoutePredicatesPlusOptionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"} disabled={disabled}>
-          <CirclePlus className={cn("cursor-pointer h-5 w-5")}/>
+        <Button variant={"outline"} size={"icon"} className={"border-none"} disabled={disabled}>
+          <CirclePlus className={cn("cursor-pointer size-5")}/>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[150px]">

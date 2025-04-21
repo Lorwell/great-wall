@@ -3,7 +3,7 @@ import './App.less'
 import {Navigate, Outlet, Route, Routes, useLocation, useNavigate} from "react-router-dom"
 import {lazy, Suspense, useEffect} from "react";
 import {useAsyncEffect} from "ahooks";
-import {isBlank, removePrefix, removeSuffix} from "@/utils/Utils.ts";
+import {isBlank, removePrefix, removeSuffix} from "@/lib/utils.ts";
 import Error404 from "@/pages/Error404.tsx";
 import SuspenseFallback from "@/pages/SuspenseFallback.tsx";
 import {Toaster} from "@/components/ui/sonner.tsx";
@@ -23,6 +23,9 @@ const Tls = lazy(() => import("@/pages/tls"));
 const CustomTls = lazy(() => import("@/pages/tls/custom/config.tsx"));
 const OsfipinTls = lazy(() => import("@/pages/tls/osfipin/config.tsx"));
 const Settings = lazy(() => import("@/pages/settings"));
+const StaticResourcesList = lazy(() => import("@/pages/static-resources/list"));
+const StaticResourcesFiles = lazy(() => import("@/pages/static-resources/files"));
+const StaticResourcesConfig = lazy(() => import("@/pages/static-resources/config"));
 
 const App = () => {
 
@@ -36,7 +39,7 @@ const App = () => {
           {/* 应用登录守卫 */}
           <Route path="" element={<LoginStatusGuard/>}>
             <Route path="manage" element={<AppFrame/>}>
-              <Route path="" element={<Navigate to={"app-routes"}/>}/>
+              <Route index element={<Navigate to={"app-routes"}/>}/>
               {/* 路由配置 */}
               <Route path="app-routes" element={<EmptyRoute base={"/manage/app-routes"} to={"list"}/>}>
                 <Route path="list" element={<AppRouteList/>}/>
@@ -46,6 +49,13 @@ const App = () => {
                 <Route path=":id" element={<UpdateAppRoutes/>}>
                   {configAppRoutesRoutes()}
                 </Route>
+              </Route>
+              {/* 静态资源 */}
+              <Route path="static-resources">
+                <Route index element={<StaticResourcesList/>}/>
+                <Route path=":id/files" element={<StaticResourcesFiles/>}/>
+                <Route path="add" element={<StaticResourcesConfig/>}/>
+                <Route path=":id/update" element={<StaticResourcesConfig/>}/>
               </Route>
               {/* 监控指标 */}
               <Route path="monitor-metrics" element={<MonitorMetrics/>}>
@@ -59,7 +69,7 @@ const App = () => {
               </Route>
               {/* 证书管理 */}
               <Route path="tls">
-                <Route path="" element={<Tls/>}/>
+                <Route index element={<Tls/>}/>
                 <Route path="custom" element={<CustomTls/>}/>
                 <Route path="osfipin" element={<OsfipinTls/>}/>
               </Route>
@@ -70,7 +80,7 @@ const App = () => {
           </Route>
         </Routes>
       </Suspense>
-      <Toaster/>
+      <Toaster position={"top-center"} duration={3000}/>
     </ThemeProvider>
   )
 }

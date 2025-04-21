@@ -21,6 +21,11 @@ export enum RoutePredicateOperatorEnum {
 
 }
 
+export enum RouteTargetEnum {
+  Urls = "Urls",
+  StaticResources = "StaticResources"
+}
+
 export enum PredicateTypeEnum {
 
   /**
@@ -138,8 +143,4 @@ export type AppRouteListOutput = AppRouteOutput
 
 export interface AppRouteListInput extends BaseListInputSchemaValues {
 
-  /**
-   * 状态匹配
-   */
-  status?: AppRouteStatusEnum
 }

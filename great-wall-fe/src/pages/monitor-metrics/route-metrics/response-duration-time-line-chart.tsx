@@ -8,7 +8,7 @@ import {AudioWaveform} from "lucide-react";
 import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
 import {useState} from "react";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 
 const chartConfig = {
   avgValue: {

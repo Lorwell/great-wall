@@ -1,0 +1,12 @@
+# 前端
+/great-wall-fe/node_modules
+# 后端
+/great-wall-server/data
+
+# 其他
+/.idea
+/.git
+/.kotlin
+/data
+/assets
+/docs

@@ -4,6 +4,7 @@ import {
   PredicateTypeEnum,
   RouteFilterEnum,
   RoutePredicateOperatorEnum,
+  RouteTargetEnum,
   WindowUnitEnum
 } from "@/constant/api/app-routes/types.ts";
 import {baseOutputSchema, getPageRecordSchema, nameValueSchema, valueSchema} from "@/constant/api/schema.ts";
@@ -109,11 +110,29 @@ export const urlsSchema = z.object({
 })
 export type UrlsSchemaValues = z.infer<typeof urlsSchema>
 
-export const targetConfigSchema = z.object({
+
+// ----------------- 目标地址
+
+export const routeUrlsTargetConfigSchema = z.object({
+  type: z.enum([RouteTargetEnum.Urls]),
   connectTimeout: z.string({required_error: "不可以为空"}),
   responseTimeout: z.string().optional(),
   urls: z.array(urlsSchema),
 })
+export type RouteUrlsTargetConfigSchemaValues = z.infer<typeof routeUrlsTargetConfigSchema>
+
+export const routeStaticResourcesTargetConfigSchema = z.object({
+  type: z.enum([RouteTargetEnum.StaticResources]),
+  id: z.number({required_error: "不可以为空"}),
+  index: z.string({required_error: "不可以为空"}),
+  tryfile404: z.string().optional().nullable()
+})
+export type RouteStaticResourcesTargetConfigSchemaValues = z.infer<typeof routeStaticResourcesTargetConfigSchema>
+
+export const targetConfigSchema = z.union([
+  routeUrlsTargetConfigSchema,
+  routeStaticResourcesTargetConfigSchema
+])
 export type TargetConfigSchemaValues = z.infer<typeof targetConfigSchema>
 
 export const predicates = z.array(predicatesOperatorSchema);
@@ -242,3 +261,9 @@ export type AppRouteOutputValues = z.infer<typeof appRouteOutputSchema>
 
 export const appRoutePageRecordsSchema = getPageRecordSchema(appRouteOutputSchema)
 export type AppRoutePageRecordsValues = z.infer<typeof appRoutePageRecordsSchema>
+
+export const batchDeleteAppRouteSchema = z.object({
+  ids: z.array(z.number())
+})
+
+export type BatchDeleteAppRouteValues = z.infer<typeof batchDeleteAppRouteSchema>

@@ -1,7 +1,7 @@
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/components/ui/resizable"
 import {TooltipProvider} from "@/components/ui/tooltip.tsx";
 import {useState} from "react";
-import {cn} from "@/utils/shadcnUtils.ts";
+import {cn} from "@/lib/shadcnUtils.ts";
 import {Outlet} from "react-router-dom";
 import {Nav} from "@/components/nav.tsx";
 import {navConfig} from "@/pages/navConfig.ts";

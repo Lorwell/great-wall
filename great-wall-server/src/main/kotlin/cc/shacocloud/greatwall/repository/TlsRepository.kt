@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
  */
 @Repository
 @Transactional
-interface TlsRepository : R2dbcRepository<TlsPo, Long> {
+interface TlsRepository : R2dbcRepository<TlsPo> {
 
     /**
      * 根据指定 key 查询

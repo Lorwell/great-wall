@@ -13,7 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import {percentageFormat} from "@/utils/Utils.ts";
+import {percentageFormat} from "@/lib/utils.ts";
 import {cpuLineMetrics} from "@/constant/api/monitor-metrics/system-metrics";
 
 const chartConfig = {

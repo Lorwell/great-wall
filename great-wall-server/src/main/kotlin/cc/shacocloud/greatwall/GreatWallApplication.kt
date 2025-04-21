@@ -17,19 +17,28 @@ import java.util.*
 @SpringBootApplication
 class GreatWallApplication
 
+
 fun main(args: Array<String>) {
-    // 设置默认时区
-    val timeZoneId = System.getProperty("TIME_ZONE_ID", System.getenv("TIME_ZONE_ID")) ?: "Asia/Shanghai"
-    TimeZone.setDefault(TimeZone.getTimeZone(timeZoneId))
+    try {
+        // 设置默认时区
+        val timeZoneId = System.getProperty("TIME_ZONE_ID", System.getenv("TIME_ZONE_ID")) ?: "Asia/Shanghai"
+        TimeZone.setDefault(TimeZone.getTimeZone(timeZoneId))
 
-    // 设置 netty 链接策略，
-    System.setProperty(ReactorNetty.POOL_LEASING_STRATEGY, "lifo")
+        // 设置 netty 链接策略，
+        System.setProperty(ReactorNetty.POOL_LEASING_STRATEGY, "lifo")
 
-    val application = SpringApplication(GreatWallApplication::class.java)
+        val application = SpringApplication(GreatWallApplication::class.java)
+        application.setBanner(GreatWallBanner())
+        // 自定义应用上下文工厂
+        application.setApplicationContextFactory(CustomApplicationContextFactory())
+        application.run(*args)
 
-    // 自定义应用上下文工厂
-    application.setApplicationContextFactory(CustomApplicationContextFactory())
-    application.run(*args)
-
-    println("Great Wall 启动成功")
+        println("Great Wall 启动成功")
+    } catch (e: Exception) {
+        if (e is SpringApplication.AbandonedRunException) {
+            throw e
+        }
+        System.err.println("Great Wall 启动失败！")
+        e.printStackTrace(System.err)
+    }
 }

@@ -7,8 +7,8 @@ import OsfipinDetails from "@/pages/tls/osfipin/details.tsx";
 import FormHoverDescription from "@/components/custom-ui/form-hover-description.tsx";
 import {Button} from "@/components/ui/button";
 import {Download, Eraser} from "lucide-react";
-import {downloadFile} from "@/utils/Utils.ts";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import {downloadFile} from "@/lib/utils.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {tlsDelete} from "@/constant/api/app-tls";
 
 export interface DetailsProps {
@@ -44,9 +44,7 @@ export default function Details({data, onRefresh}: DetailsProps) {
 
   return (
     <div className="w-[95%] border rounded p-8 pb-4 ml-[2%]">
-
       <div className="flex flex-col gap-8">
-
         <div className={"flex flex-row justify-between items-center"}>
           <div className={"text-xl font-bold"}>证书详情</div>
           <div className={"flex flex-row items-center gap-2"}>

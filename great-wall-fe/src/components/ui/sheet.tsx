@@ -3,7 +3,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
-import { cn } from "@/utils/shadcnUtils"
+import { cn } from "@/lib/shadcnUtils"
 
 const Sheet = SheetPrimitive.Root
 

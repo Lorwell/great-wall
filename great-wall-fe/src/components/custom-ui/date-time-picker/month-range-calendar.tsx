@@ -1,0 +1,354 @@
+import * as React from "react";
+import {ChevronLeft, ChevronRight} from "lucide-react";
+import {Button, buttonVariants} from "@/components/ui/button";
+import {cn} from "@/lib/utils";
+import {DateRange} from "react-day-picker"
+import {useState} from "react";
+
+const addMonths = (input: Date, months: number) => {
+  const date = new Date(input);
+  date.setDate(1);
+  date.setMonth(date.getMonth() + months);
+  date.setDate(Math.min(input.getDate(), getDaysInMonth(date.getFullYear(), date.getMonth() + 1)));
+  return date;
+};
+const getDaysInMonth = (year: number, month: number) => new Date(year, month, 0).getDate();
+
+type Month = {
+  number: number;
+  name: string;
+  yearOffset: number;
+};
+
+const MONTHS: Month[][] = [
+  [
+    {number: 0, name: "一月", yearOffset: 0},
+    {number: 1, name: "二月", yearOffset: 0},
+    {number: 2, name: "三月", yearOffset: 0},
+    {number: 3, name: "四月", yearOffset: 0},
+    {number: 0, name: "一月", yearOffset: 1},
+    {number: 1, name: "二月", yearOffset: 1},
+    {number: 2, name: "三月", yearOffset: 1},
+    {number: 3, name: "四月", yearOffset: 1},
+  ],
+  [
+    {number: 4, name: "五月", yearOffset: 0},
+    {number: 5, name: "六月", yearOffset: 0},
+    {number: 6, name: "七月", yearOffset: 0},
+    {number: 7, name: "八月", yearOffset: 0},
+    {number: 4, name: "五月", yearOffset: 1},
+    {number: 5, name: "六月", yearOffset: 1},
+    {number: 6, name: "七月", yearOffset: 1},
+    {number: 7, name: "八月", yearOffset: 1},
+  ],
+  [
+    {number: 8, name: "九月", yearOffset: 0},
+    {number: 9, name: "十月", yearOffset: 0},
+    {number: 10, name: "十一月", yearOffset: 0},
+    {number: 11, name: "十二月", yearOffset: 0},
+    {number: 8, name: "九月", yearOffset: 1},
+    {number: 9, name: "十月", yearOffset: 1},
+    {number: 10, name: "十一月", yearOffset: 1},
+    {number: 11, name: "十二月", yearOffset: 1},
+  ],
+];
+
+type QuickSelector = {
+  label: string;
+  startMonth: Date;
+  endMonth: Date;
+  variant?: ButtonVariant;
+  onClick?: (selector: QuickSelector) => void;
+};
+
+const QUICK_SELECTORS: QuickSelector[] = [
+  {label: "过去 3 个月", startMonth: new Date(addMonths(new Date(), -3)), endMonth: new Date()},
+  {label: "过去 6 个月", startMonth: new Date(addMonths(new Date(), -6)), endMonth: new Date()},
+  {label: "过去 9 个月", startMonth: new Date(addMonths(new Date(), -9)), endMonth: new Date()},
+  {label: "未来 3 个月", startMonth: new Date(), endMonth: new Date(addMonths(new Date(), 3))},
+  {label: "未来 6 个月", startMonth: new Date(), endMonth: new Date(addMonths(new Date(), 6))},
+  {label: "未来 9 个月", startMonth: new Date(), endMonth: new Date(addMonths(new Date(), 9))},
+
+];
+
+type MonthRangeCalProps = {
+  selectedMonthRange?: DateRange;
+  onStartMonthSelect?: (date: Date) => void;
+  onMonthRangeSelect?: ({from, to}: DateRange) => void;
+  onYearForward?: () => void;
+  onYearBackward?: () => void;
+  callbacks?: {
+    yearLabel?: (year: number) => string;
+    monthLabel?: (month: Month) => string;
+  };
+  variant?: {
+    calendar?: {
+      main?: ButtonVariant;
+      selected?: ButtonVariant;
+    };
+    chevrons?: ButtonVariant;
+  };
+  minDate?: Date;
+  maxDate?: Date;
+  quickSelectors?: QuickSelector[];
+  showQuickSelectors?: boolean;
+};
+
+type ButtonVariant = "default" | "outline" | "ghost" | "link" | "destructive" | "secondary" | null | undefined;
+
+/**
+ * 月份范围选择器
+ * @constructor
+ */
+function MonthRangeCalendar(
+  {
+    onMonthRangeSelect,
+    onStartMonthSelect,
+    callbacks,
+    selectedMonthRange,
+    onYearBackward,
+    onYearForward,
+    variant,
+    minDate,
+    maxDate,
+    quickSelectors,
+    showQuickSelectors,
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement> & MonthRangeCalProps) {
+
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    if (selectedMonthRange) {
+      return selectedMonthRange
+    } else {
+      const date = new Date();
+      return {
+        from: date,
+        to: new Date(date.getFullYear() + 1, date.getMonth()),
+      }
+    }
+  })
+
+  return (
+    <div className={cn("min-w-[400px] p-3", className)} {...props}>
+      <div className="flex flex-col gap-4">
+        <div className="w-full">
+          <MonthRangeCal
+            selectedMonthRange={dateRange}
+            onMonthRangeSelect={setDateRange}
+            onStartMonthSelect={onStartMonthSelect}
+            callbacks={callbacks}
+            onYearBackward={onYearBackward}
+            onYearForward={onYearForward}
+            variant={variant}
+            minDate={minDate}
+            maxDate={maxDate}
+            quickSelectors={quickSelectors}
+            showQuickSelectors={showQuickSelectors}
+          />
+        </div>
+        <div className={"flex flex-row justify-end"}>
+          <Button
+            className={"w-24"}
+            onClick={() => {
+              dateRange && onMonthRangeSelect?.(dateRange)
+            }}
+          >
+            确定
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MonthRangeCal(
+  {
+    selectedMonthRange,
+    onMonthRangeSelect,
+    onStartMonthSelect,
+    callbacks,
+    variant,
+    minDate,
+    maxDate,
+    quickSelectors = QUICK_SELECTORS,
+    showQuickSelectors = true,
+    onYearBackward,
+    onYearForward,
+  }: MonthRangeCalProps) {
+  const [startYear, setStartYear] = React.useState<number>(selectedMonthRange?.from?.getFullYear() ?? new Date().getFullYear());
+  const [startMonth, setStartMonth] = React.useState<number>(selectedMonthRange?.from?.getMonth() ?? new Date().getMonth());
+  const [endYear, setEndYear] = React.useState<number>(selectedMonthRange?.to?.getFullYear() ?? new Date().getFullYear() + 1);
+  const [endMonth, setEndMonth] = React.useState<number>(selectedMonthRange?.to?.getMonth() ?? new Date().getMonth());
+  const [rangePending, setRangePending] = React.useState<boolean>(false);
+  const [endLocked, setEndLocked] = React.useState<boolean>(true);
+  const [menuYear, setMenuYear] = React.useState<number>(startYear);
+
+  if (minDate && maxDate && minDate > maxDate) minDate = maxDate;
+
+  return (
+    <div className="flex gap-4">
+      <div className="min-w-[400px] space-y-4">
+        <div className="flex justify-evenly pt-1 relative items-center">
+          <div
+            className="text-sm font-medium">{callbacks?.yearLabel ? callbacks?.yearLabel(menuYear) : menuYear}</div>
+          <div className="space-x-1 flex items-center">
+            <button
+              onClick={() => {
+                setMenuYear(menuYear - 1);
+                if (onYearBackward) onYearBackward();
+              }}
+              className={cn(buttonVariants({variant: variant?.chevrons ?? "outline"}), "inline-flex items-center justify-center h-7 w-7 p-0 absolute left-1")}
+            >
+              <ChevronLeft className="opacity-50 h-4 w-4"/>
+            </button>
+            <button
+              onClick={() => {
+                setMenuYear(menuYear + 1);
+                if (onYearForward) onYearForward();
+              }}
+              className={cn(buttonVariants({variant: variant?.chevrons ?? "outline"}), "inline-flex items-center justify-center h-7 w-7 p-0 absolute right-1")}
+            >
+              <ChevronRight className="opacity-50 h-4 w-4"/>
+            </button>
+          </div>
+          <div
+            className="text-sm font-medium">{callbacks?.yearLabel ? callbacks?.yearLabel(menuYear + 1) : menuYear + 1}</div>
+        </div>
+        <table className="w-full border-collapse space-y-1">
+          <tbody>
+          {MONTHS.map((monthRow, a) => {
+            return (
+              <tr key={"row-" + a} className="flex w-full mt-2">
+                {monthRow.map((m, i) => {
+                  return (
+                    <td
+                      key={m.number + "-" + m.yearOffset}
+                      className={cn(
+                        cn(
+                          cn(
+                            cn(
+                              "h-10 w-1/4 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                              (menuYear + m.yearOffset > startYear || (menuYear + m.yearOffset == startYear && m.number > startMonth)) &&
+                              (menuYear + m.yearOffset < endYear || (menuYear + m.yearOffset == endYear && m.number < endMonth)) &&
+                              (rangePending || endLocked)
+                                ? "text-accent-foreground bg-accent"
+                                : ""
+                            ),
+                            menuYear + m.yearOffset == startYear && m.number == startMonth && (rangePending || endLocked)
+                              ? "text-accent-foreground bg-accent rounded-l-md"
+                              : ""
+                          ),
+                          menuYear + m.yearOffset == endYear &&
+                          m.number == endMonth &&
+                          (rangePending || endLocked) &&
+                          menuYear + m.yearOffset >= startYear &&
+                          m.number >= startMonth
+                            ? "text-accent-foreground bg-accent rounded-r-md"
+                            : ""
+                        ),
+                        i == 3 ? "mr-2" : i == 4 ? "ml-2" : ""
+                      )}
+                      onMouseEnter={() => {
+                        if (rangePending && !endLocked) {
+                          setEndYear(menuYear + m.yearOffset);
+                          setEndMonth(m.number);
+                        }
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          if (rangePending) {
+                            if (menuYear + m.yearOffset < startYear || (menuYear + m.yearOffset == startYear && m.number < startMonth)) {
+                              setRangePending(true);
+                              setEndLocked(false);
+                              setStartMonth(m.number);
+                              setStartYear(menuYear + m.yearOffset);
+                              setEndYear(menuYear + m.yearOffset);
+                              setEndMonth(m.number);
+                              if (onStartMonthSelect) onStartMonthSelect(new Date(menuYear + m.yearOffset, m.number));
+                            } else {
+                              setRangePending(false);
+                              setEndLocked(true);
+                              // Event fire data selected
+
+                              if (onMonthRangeSelect)
+                                onMonthRangeSelect({
+                                  from: new Date(startYear, startMonth),
+                                  to: new Date(menuYear + m.yearOffset, m.number)
+                                });
+                            }
+                          } else {
+                            setRangePending(true);
+                            setEndLocked(false);
+                            setStartMonth(m.number);
+                            setStartYear(menuYear + m.yearOffset);
+                            setEndYear(menuYear + m.yearOffset);
+                            setEndMonth(m.number);
+                            if (onStartMonthSelect) onStartMonthSelect(new Date(menuYear + m.yearOffset, m.number));
+                          }
+                        }}
+                        disabled={
+                          (maxDate
+                            ? menuYear + m.yearOffset > maxDate?.getFullYear() || (menuYear + m.yearOffset == maxDate?.getFullYear() && m.number > maxDate.getMonth())
+                            : false) ||
+                          (minDate
+                            ? menuYear + m.yearOffset < minDate?.getFullYear() || (menuYear + m.yearOffset == minDate?.getFullYear() && m.number < minDate.getMonth())
+                            : false)
+                        }
+                        className={cn(
+                          buttonVariants({
+                            variant:
+                              (startMonth == m.number && menuYear + m.yearOffset == startYear) ||
+                              (endMonth == m.number && menuYear + m.yearOffset == endYear && !rangePending)
+                                ? variant?.calendar?.selected ?? "default"
+                                : variant?.calendar?.main ?? "ghost",
+                          }),
+                          "h-full w-full p-0 font-normal aria-selected:opacity-100"
+                        )}
+                      >
+                        {callbacks?.monthLabel ? callbacks.monthLabel(m) : m.name}
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+          </tbody>
+        </table>
+      </div>
+
+      {showQuickSelectors ? (
+        <div className="flex flex-col gap-1 justify-center">
+          {quickSelectors.map((s) => {
+            return (
+              <Button
+                className={"w-24"}
+                onClick={() => {
+                  setStartYear(s.startMonth.getFullYear());
+                  setStartMonth(s.startMonth.getMonth());
+                  setEndYear(s.endMonth.getFullYear());
+                  setEndMonth(s.endMonth.getMonth());
+                  setRangePending(false);
+                  setEndLocked(true);
+                  if (onMonthRangeSelect) onMonthRangeSelect({from: s.startMonth, to: s.endMonth});
+                  if (s.onClick) s.onClick(s);
+                }}
+                key={s.label}
+                variant={s.variant ?? "outline"}
+              >
+                {s.label}
+              </Button>
+            );
+          })}
+
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+MonthRangeCalendar.displayName = "MonthRangeCalendar";
+
+export {MonthRangeCalendar};

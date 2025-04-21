@@ -5,9 +5,9 @@ import {Input} from "@/components/ui/input.tsx";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {loginFormSchema, LoginFormValues} from "@/constant/api/login/schema.ts";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {login} from "@/constant/api/login";
-import useFromFieldErrorSpecification from "@/components/hooks/useFromFieldErrorSpecification.ts";
+import useFromFieldErrorSpecification from "@/components/hooks/use-from-field-error-specification.ts";
 import {useNavigate} from "react-router-dom";
 
 

@@ -5,6 +5,7 @@ import cc.shacocloud.greatwall.model.event.RefreshTlsEvent
 import cc.shacocloud.greatwall.model.mo.TlsBundleMo
 import cc.shacocloud.greatwall.service.TlsService
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
+import cc.shacocloud.greatwall.utils.days
 import cc.shacocloud.greatwall.utils.hours
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
@@ -36,15 +37,36 @@ class AutoRefreshTLSScheduled(
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelayString = "PT2S")
     fun refreshTls() = mono {
         if (!ApplicationContextHolder.available()) return@mono
+        val tlsPo = tlsService.findTlsPo() ?: return@mono
 
         // 获取当前证书的过期时间
-        val currentExpirationTime = tlsService.getTlsExpiredTime()
+        val expirationTime = tlsService.getTlsExpiredTime(tlsPo)
+        if (expirationTime == null) {
+            if (log.isWarnEnabled) {
+                log.warn("无法获取当前证书过期时间忽略证书自动更新！")
+            }
+            return@mono
+        }
 
-        // 证书到期前一段时间更新证书
-        val updateTime = LocalDateTime.now() - 12.hours
-        if (currentExpirationTime != null && currentExpirationTime <= updateTime) {
+        val currentTime = LocalDateTime.now()
+
+        // 敏感期，满足即刷新
+        val sensitivePeriod = expirationTime - 24.hours
+        if (sensitivePeriod <= currentTime) {
             tlsService.refresh()
             refreshTlsBundle()
+            return@mono
+        }
+
+        // 正常更新时间，每天的 2点-5点更新
+        val updatedPeriod = expirationTime - 3.days
+        if (updatedPeriod <= currentTime) {
+            val hour = currentTime.hour
+            if (hour in 2..5) {
+                tlsService.refresh()
+                refreshTlsBundle()
+                return@mono
+            }
         }
     }
 

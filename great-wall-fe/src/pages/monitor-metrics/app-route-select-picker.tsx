@@ -1,4 +1,4 @@
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {appRouteList} from "@/constant/api/app-routes";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {useControllableValue} from "ahooks";
@@ -24,7 +24,7 @@ export default function AppRouteSelectPicker(props: AppRouteSelectPickerProps) {
 
   const {
     data,
-  } = useApiRequest(appRouteList);
+  } = useApiRequest(() => appRouteList({current: -1}));
 
   return (
     <Select value={`${value}`}

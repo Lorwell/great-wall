@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+https://tellay-shadcn-ui-themes.vercel.app/
+*/
+
 @layer base {
     :root {
         --background: 0 0% 100%;

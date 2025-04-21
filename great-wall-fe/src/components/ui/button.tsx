@@ -1,13 +1,15 @@
-import * as React from "react"
-import {SyntheticEvent, useState} from "react"
-import {Slot} from "@radix-ui/react-slot"
-import {cva, type VariantProps} from "class-variance-authority"
-import {Loader2} from 'lucide-react';
-import {cn} from "@/utils/shadcnUtils"
-import {isNull} from "@/utils/Utils.ts";
+import * as React from "react";
+import {ButtonHTMLAttributes, SyntheticEvent, useState} from "react";
+import {Slot, Slottable} from "@radix-ui/react-slot";
+import {cva, type VariantProps} from "class-variance-authority";
+import {cn} from "@/lib/utils";
+import {Loader2} from "lucide-react";
 
+export const buttonVariantsBaseClass = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium select-none ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+
+// https://enhanced-button.vercel.app/
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring  disabled:pointer-events-none disabled:opacity-50",
+  buttonVariantsBaseClass,
   {
     variants: {
       variant: {
@@ -20,12 +22,16 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        unstyled: "",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10 border-none",
+        icon: "h-10 w-10",
+        "sm-icon": "h-8 w-8",
+        "xs-icon": "h-4 w-4",
+        unstyled: "",
       },
     },
     defaultVariants: {
@@ -33,80 +39,106 @@ const buttonVariants = cva(
       size: "default",
     },
   }
-)
+);
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-  loading?: boolean
-  onClick?: (event: SyntheticEvent) => void | Promise<void>
+interface IconProps {
+  Icon?: React.ReactNode;
+  iconPlacement?: "left" | "right";
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({
-     className,
-     variant,
-     size,
-     type = "button",
-     asChild = false,
-     loading = false,
-     children,
-     onClick,
-     ...props
-   }, ref) => {
+export type ButtonIconProps = IconProps;
 
-    const [clickLoading, setClickLoading] = useState<boolean>(false);
+export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick" | "type"> &
+  VariantProps<typeof buttonVariants> & ButtonIconProps & {
+  asChild?: boolean;
+  loading?: boolean;
+  onClick?: (e: SyntheticEvent<any>) => Promise<unknown> | unknown
+  stopPropagation?: boolean
+  preventDefault?: boolean
+  type?: "null" | "submit" | "reset" | "button" | undefined;
+  loaderClassName?: string;
+  // 是否开启自动加载动画
+  enableAutoLoading?: boolean;
+}
 
-    async function handleClick(event: SyntheticEvent) {
-      if (isNull(onClick)) return
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  ButtonProps
+>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      Icon,
+      iconPlacement = "right",
+      type = "button",
+      loading = false,
+      disabled,
+      onClick,
+      stopPropagation = false,
+      preventDefault = false,
+      loaderClassName,
+      enableAutoLoading = true,
+      ...props
+    },
+    ref
+  ) => {
+    const [clickLoading, setClickLoading] = useState<boolean>(false)
 
-      setClickLoading(true);
+    async function handleClick(e: SyntheticEvent<any>) {
+      if (stopPropagation) {
+        e.stopPropagation()
+      }
+
+      if (preventDefault) {
+        e.preventDefault()
+      }
 
       try {
-        await onClick!!(event)
+        if (enableAutoLoading) {
+          setClickLoading(true)
+        }
+        await onClick?.(e)
       } finally {
-        setClickLoading(false);
+        if (enableAutoLoading) {
+          setClickLoading(false)
+        }
       }
     }
 
-    const loadingState = loading || clickLoading
-
-    if (asChild) {
-      return (
-        <>
-          {
-            loadingState && (
-              <Loader2 className={cn('h-4 w-4 animate-spin', children && 'mr-2')}/>
-            )
-          }
-          <Slot
-            className={cn(buttonVariants({variant, size, className}))}
-            ref={ref}
-            onClick={handleClick}
-            {...props}
-          >
-            {children}
-          </Slot>
-        </>
-      );
-    }
-
+    const butType = type === "null" ? undefined : type
+    const internalLoading = loading || clickLoading;
+    const internalDisabled = disabled || internalLoading;
+    const Comp = asChild ? Slot : "button";
     return (
-      <button
-        className={cn(buttonVariants({variant, size, className}))}
-        disabled={loadingState}
-        ref={ref}
-        onClick={handleClick}
+      <Comp
         {...props}
+        className={cn(buttonVariants({variant, size, className}))}
+        ref={ref}
+        type={butType}
+        onClick={handleClick}
+        disabled={internalDisabled}
       >
-        {loadingState && <Loader2 className={cn('h-4 w-4 animate-spin', children && 'mr-2')}/>}
-        {children}
-      </button>
+        {Icon && iconPlacement === "left" && (
+          <div className="mr-1">
+            {internalLoading ? (<Loader2 className={cn("h-4 w-4 animate-spin", loaderClassName)}/>) : Icon}
+          </div>
+        )}
+        {(internalLoading && !Icon) && (<Loader2 className={cn("mr-1 h-4 w-4 animate-spin", loaderClassName)}/>)}
+        <Slottable>
+          {props.children}
+        </Slottable>
+        {Icon && iconPlacement === "right" && (
+          <div className="ml-1">
+            {internalLoading ? (<Loader2 className={cn("h-4 w-4 animate-spin", loaderClassName)}/>) : Icon}
+          </div>
+        )}
+      </Comp>
     );
   }
-)
+);
+Button.displayName = "Button";
 
-Button.displayName = "Button"
-
-export {Button, buttonVariants}
+export {Button, buttonVariants};

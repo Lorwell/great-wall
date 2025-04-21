@@ -3,7 +3,7 @@ import {Clock11} from "lucide-react";
 import {useApiRequestMetrics} from "@/pages/monitor-metrics/context.ts";
 import {responseTrafficSumMetrics} from "@/constant/api/monitor-metrics/route-metrics";
 import {Spinner} from "@/components/custom-ui/spinner.tsx";
-import {byteSizeToUnitStr} from "@/utils/Utils.ts";
+import {byteSizeToUnitStr} from "@/lib/utils.ts";
 
 /**
  * 响应流量指标

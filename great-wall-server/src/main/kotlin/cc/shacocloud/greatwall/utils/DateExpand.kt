@@ -1,6 +1,7 @@
 package cc.shacocloud.greatwall.utils
 
 import java.time.*
+import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -10,11 +11,6 @@ import java.util.*
 val zoneOffset: ZoneOffset by lazy {
     ZoneId.systemDefault().rules.getOffset(Instant.now())
 }
-
-/**
- * 系统时区 0 偏移，一般用于时间已经是当前时区的转换
- */
-val zone0Offset: ZoneOffset = ZoneOffset.ofTotalSeconds(0)
 
 inline val Int.nanos: Duration get() = toDuration(ChronoUnit.NANOS)
 inline val Int.micros: Duration get() = toDuration(ChronoUnit.MICROS)
@@ -67,6 +63,15 @@ fun Long.toLocalDateTimeByEpochSecond(
 }
 
 /**
+ * 将 1970-01-01T00:00:00Z 纪元开始的毫秒数转为 [LocalDateTime]
+ */
+fun Long.toLocalDateTimeByEpochMilli(
+    offset: ZoneOffset = zoneOffset,
+): LocalDateTime {
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), offset)
+}
+
+/**
  * 转为 [LocalDateTime]
  */
 fun Instant.toLocalDateTime(): LocalDateTime {
@@ -112,4 +117,29 @@ fun Pair<LocalDateTime, LocalDateTime>.includedDays(abs: Boolean = true): Long {
         (to - from).toDays()
     }
 
+}
+
+/**
+ * openssl 时间格式话
+ */
+fun String.opensslDateFormat(): LocalDateTime {
+    val chunk = split(" ")
+
+    val month = Month.entries.find {
+        it.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) == chunk[0]
+    }
+
+    val timeChunk = chunk[2].split(":")
+    val dateTime = LocalDateTime.of(
+        chunk[3].toInt(),
+        month!!,
+        chunk[1].toInt(),
+        timeChunk[0].toInt(),
+        timeChunk[1].toInt(),
+        timeChunk[2].toInt()
+    )
+
+    // 转为当前时区的时间
+    val offset = TimeZone.getTimeZone(chunk[4]).toZoneId().rules.getOffset(Instant.now())
+    return dateTime.minusSeconds(offset.totalSeconds.toLong()).plusSeconds(zoneOffset.totalSeconds.toLong())
 }

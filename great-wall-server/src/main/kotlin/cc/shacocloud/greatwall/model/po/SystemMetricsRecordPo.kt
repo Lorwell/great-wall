@@ -123,9 +123,8 @@ data class SystemMetricsRecordPo(
     /**
      * gc 信息
      */
-    val gcInfos: List<GCInfoMo>,
+    val gcInfos: List<GCInfoMo>
 
-
-    ) : BaseMonitorMetricsPo(Type.SYSTEM)
+) : BaseMonitorMetricsPo(Type.SYSTEM)
 
 

@@ -7,13 +7,21 @@ server:
     io-select-count: ${MAIN_SERVER_IO_SELECT_COUNT:1}
     io-work-count: ${MAIN_SERVER_IO_WORK_COUNT:0}
   http2:
-    enabled: ${HTTP_2_ENABLED:true}
+    enabled: ${HTTP_2_ENABLED:false}
   ssl:
     enabled: false
 
 spring:
   application:
-    name: ${APP_NAME:great-wall}
+    name: ${APP_NAME:Great Wall}
+  profiles:
+    include:
+      - greatwall
+  messages:
+    basename: i18n/message
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    use-code-as-default-message: true
   jackson:
     # 解决 jackson @JsonFormat 序列化时差
     time-zone: GMT+8
@@ -28,6 +36,8 @@ spring:
       enabled: ${VIRTUAL_THREAD:false}
   cloud:
     gateway:
+      # 开启过滤器缓存
+      route-filter-cache-enabled: true
       httpclient:
         ssl:
           # 是否信任所有证书
@@ -44,7 +54,6 @@ spring:
           max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:PT1S}
           max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
           eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
-
       predicate:
         host:
           # host 匹配不导入端口
@@ -70,12 +79,13 @@ spring:
     resources:
       static-locations: classpath:/static/
 
+
 site:
   tls:
     provider:
       # 基于来此加密的tls证书提供着
       osfipin:
-        base-url: https://api.osfipin.com/letsencrypt/api
+        base-url: https://api.xwamp.com/
   auth:
     admin:
       password: ${ADMIN_PASSWORD:123456789}
@@ -84,4 +94,6 @@ logging:
   level:
     # 忽略只读告警
     "io.r2dbc.h2.H2Connection": error
+    "cc.shacocloud.greatwall.controller.advice.RestfulResponseSpecification": info
+#    "org.springframework.cloud.gateway.handler": debug
 #    "org.springframework.r2dbc.core.DefaultDatabaseClient": debug

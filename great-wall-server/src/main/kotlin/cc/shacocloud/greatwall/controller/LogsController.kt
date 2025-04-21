@@ -1,7 +1,7 @@
 package cc.shacocloud.greatwall.controller
 
 import cc.shacocloud.greatwall.controller.interceptor.UserAuth
-import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
+import cc.shacocloud.greatwall.model.constant.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.output.LogListOutput
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.core.io.buffer.DefaultDataBufferFactory

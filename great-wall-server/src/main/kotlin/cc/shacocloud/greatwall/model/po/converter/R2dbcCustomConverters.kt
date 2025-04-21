@@ -1,12 +1,15 @@
 package cc.shacocloud.greatwall.model.po.converter
 
 import cc.shacocloud.greatwall.utils.json.Json
+import cc.shacocloud.greatwall.utils.toEpochMilli
+import cc.shacocloud.greatwall.utils.toLocalDateTimeByEpochMilli
 import com.fasterxml.jackson.core.type.TypeReference
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.convert.ReadingConverter
 import org.springframework.data.convert.WritingConverter
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -90,5 +93,26 @@ class DateToLongConverter : Converter<Date, Long> {
 class LongToDateConverter : Converter<Long, Date> {
     override fun convert(source: Long): Date {
         return Date(source)
+    }
+}
+
+/**
+ * [LocalDateTime] 转 [Long]
+ */
+@WritingConverter
+class LocalDateTimeToLongConverter : Converter<LocalDateTime, Long> {
+    override fun convert(source: LocalDateTime): Long {
+        return source.toEpochMilli()
+    }
+}
+
+
+/**
+ * [Long] 转 [LocalDateTime]
+ */
+@ReadingConverter
+class LongToLocalDateTimeConverter : Converter<Long, LocalDateTime> {
+    override fun convert(source: Long): LocalDateTime {
+        return source.toLocalDateTimeByEpochMilli()
     }
 }

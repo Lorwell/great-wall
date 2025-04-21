@@ -3,6 +3,7 @@ package cc.shacocloud.greatwall.service
 import cc.shacocloud.greatwall.model.constant.AppRouteStatusEnum
 import cc.shacocloud.greatwall.model.dto.input.AppRouteInput
 import cc.shacocloud.greatwall.model.dto.input.AppRouteListInput
+import cc.shacocloud.greatwall.model.dto.input.BatchDeleteInput
 import cc.shacocloud.greatwall.model.po.AppRoutePo
 import org.springframework.data.domain.Page
 
@@ -41,5 +42,15 @@ interface AppRouteService {
      * 设置应用路由状态
      */
     suspend fun setStatus(appRoutePo: AppRoutePo, status: AppRouteStatusEnum): AppRoutePo
+
+    /**
+     * 删除应用路由
+     */
+    suspend fun delete(appRoutePo: AppRoutePo)
+
+    /**
+     * 批量删除
+     */
+    suspend fun batchDelete(input: BatchDeleteInput)
 
 }

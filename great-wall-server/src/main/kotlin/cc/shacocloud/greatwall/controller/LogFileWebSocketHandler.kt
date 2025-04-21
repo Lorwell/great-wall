@@ -1,17 +1,19 @@
 package cc.shacocloud.greatwall.controller
 
-import cc.shacocloud.greatwall.config.web.RequestMappingHandlerInterceptorAdapter
 import cc.shacocloud.greatwall.config.web.websocket.WebsocketMapping
 import cc.shacocloud.greatwall.controller.advice.DefaultExceptionHandler
 import cc.shacocloud.greatwall.controller.exception.ForbiddenException
 import cc.shacocloud.greatwall.controller.exception.UnauthorizedException
 import cc.shacocloud.greatwall.controller.interceptor.AuthenticationInterceptor
 import cc.shacocloud.greatwall.controller.interceptor.UserAuthRoleEnum
-import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
+import cc.shacocloud.greatwall.model.constant.LogTypeEnum
 import cc.shacocloud.greatwall.model.dto.input.LogFileMsgInput
 import cc.shacocloud.greatwall.model.dto.output.LogFileMsgutput
 import cc.shacocloud.greatwall.service.SessionService
-import cc.shacocloud.greatwall.utils.*
+import cc.shacocloud.greatwall.utils.TaskTimer
+import cc.shacocloud.greatwall.utils.minus
+import cc.shacocloud.greatwall.utils.seconds
+import cc.shacocloud.greatwall.utils.toEpochMilli
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -72,7 +74,7 @@ class LogFileWebSocketHandler(
         // 心跳检查超时次数
         const val HEARTBEAT_CHECK_TIMEOUT_NUMBER: Int = 3
 
-        private val log: Logger = LoggerFactory.getLogger(RequestMappingHandlerInterceptorAdapter::class.java)
+        private val log: Logger = LoggerFactory.getLogger(LogFileWebSocketHandler::class.java)
     }
 
     private val logger = LoggerFactory.getLogger(LogFileWebSocketHandler::class.java)
@@ -313,7 +315,7 @@ class LogFileWebSocketHandler(
 
     data class HeartbeatObj(
         val checkTaskId: String,
-        val timeoutTaskId: String
+        val timeoutTaskId: String,
     )
 
     data class PathVariable(

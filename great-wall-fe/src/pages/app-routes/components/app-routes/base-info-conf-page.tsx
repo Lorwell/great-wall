@@ -138,7 +138,7 @@ function BaseInfoConfPage(props: BaseInfoConfPageProps) {
             />
             {
               !preview && (
-                <Button type="submit">保存</Button>
+                <Button type="submit">下一步</Button>
               )
             }
           </form>

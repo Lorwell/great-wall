@@ -1,6 +1,6 @@
 package cc.shacocloud.greatwall.model.dto.output
 
-import cc.shacocloud.greatwall.model.dto.convert.LogTypeEnum
+import cc.shacocloud.greatwall.model.constant.LogTypeEnum
 import java.nio.file.Path
 import kotlin.io.path.fileSize
 import kotlin.io.path.getLastModifiedTime

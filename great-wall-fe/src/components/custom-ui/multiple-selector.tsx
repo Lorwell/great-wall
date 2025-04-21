@@ -2,7 +2,7 @@ import * as React from 'react';
 import {forwardRef, useEffect} from 'react';
 import {Command as CommandPrimitive, useCommandState} from 'cmdk';
 import {X} from 'lucide-react';
-import {cn} from '@/utils/shadcnUtils';
+import {cn} from '@/lib/shadcnUtils';
 import {Badge} from '@/components/ui/badge';
 import {Command, CommandGroup, CommandItem, CommandList} from '@/components/ui/command';
 import {Button} from "@/components/ui/button.tsx";

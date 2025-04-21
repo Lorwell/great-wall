@@ -5,10 +5,10 @@ import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui
 import {Button} from "@/components/ui/button.tsx";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {settingsDetails, settingsUpdate} from "@/constant/api/settings";
 import LoadingBlock from "@/components/custom-ui/loading-block.tsx";
-import useFromFieldErrorSpecification from "@/components/hooks/useFromFieldErrorSpecification.ts";
+import useFromFieldErrorSpecification from "@/components/hooks/use-from-field-error-specification.ts";
 import {toast} from "sonner";
 
 /**

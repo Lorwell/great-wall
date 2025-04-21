@@ -5,6 +5,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.io.path.exists
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 
 
@@ -13,7 +16,11 @@ import kotlin.io.path.name
  */
 fun File.createOfNotExist(): File {
     if (!exists()) {
-        parentFile?.let { it.mkdirs() }
+        this.parentFile?.let {
+            if (!it.exists()) {
+                it.mkdirs()
+            }
+        }
         createNewFile()
     }
 
@@ -25,7 +32,11 @@ fun File.createOfNotExist(): File {
  */
 fun Path.createOfNotExist(): Path {
     if (!Files.exists(this)) {
-        Files.createDirectories(this.parent)
+        this.parent?.let {
+            if (!it.exists()) {
+                Files.createDirectories(it)
+            }
+        }
         Files.createFile(this)
     }
 
@@ -33,13 +44,46 @@ fun Path.createOfNotExist(): Path {
 }
 
 /**
+ * 如果文件夹不存在则创建
+ */
+fun Path.createDirOfNotExist(): Path {
+    if (!Files.exists(this)) {
+        this.parent?.let {
+            if (!it.exists()) {
+                Files.createDirectories(it)
+            }
+        }
+        Files.createDirectory(this)
+    }
+
+    return this
+}
+
+/**
+ * 获取相对路径
+ */
+fun Path.relativePath(mainPath: Path): String {
+    return invariantSeparatorsPathString
+        .removePrefix(mainPath.invariantSeparatorsPathString)
+        .removePrefix("/")
+}
+
+/**
  * 递归删除所有文件
  */
 fun Path.deleteAll() {
-    Files.walk(this)
-        .sorted(Comparator.reverseOrder())
-        .map(Path::toFile)
-        .forEach(File::delete);
+    if (!exists()) {
+        return
+    }
+
+    if (isDirectory()) {
+        Files.walk(this)
+            .sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete)
+    } else {
+        Files.delete(this)
+    }
 }
 
 /**

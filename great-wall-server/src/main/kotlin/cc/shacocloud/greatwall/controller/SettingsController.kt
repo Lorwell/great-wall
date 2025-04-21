@@ -6,6 +6,7 @@ import cc.shacocloud.greatwall.model.event.SettingsUpdateEvent
 import cc.shacocloud.greatwall.service.SettingsService
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
 import cc.shacocloud.greatwall.utils.converter.convertToBean
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*
 @Validated
 @RestController
 @RequestMapping("/api/settings")
+@Transactional(rollbackFor = [Exception::class])
 class SettingsController(
     val settingsService: SettingsService
 ) {

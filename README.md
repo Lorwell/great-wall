@@ -1,6 +1,6 @@
 # Great Wall
 
-> 基于 springboot3 + kotlin + graalvm21 构建的人云网关
+> 基于 springboot3 + kotlin + graalvm21 构建的网关服务，方便个人使用，如果是企业建议使用 openresty 
 
 ## 说明
 
@@ -12,29 +12,24 @@
 * 支持自定义证书 和 [来此加密](https://letsencrypt.osfipin.com/) 证书自动续签
 * 使用 graalvm 本地化构建，资源占有率极低，内存稳定在 200MB 以下
 
-### 局限
-
-目前网关存储使用内存数据 `h2` 的本地文件模式，如果在`k8s`中使用请使用有状态服务并且将容器目录 `/workspace/data` 挂载出来，使用 `h2` 的缺陷也很明显，就是不支持集群模式，在后续的迭代中将使用其他中间件存储以支持网关的集群模式。
-
 ## 使用
 
 使用以下任意一种方式启动服务后，打开浏览器输入 [http://127.0.0.1:8080](http://127.0.0.1:8080)，默认管理员账号为 `admin` 默认密码为 `123456789`，**建议生产中通过环境变量 `ADMIN_PASSWORD` 修改管理员密码**
 
-### docker
+### dcker
 
-本项目每个版本都构建了基于 graalvm 的本地镜像放置在 `ccr.ccs.tencentyun.com/shaco_work/great-wall`上，因受到限制，正在寻找国内的公开镜像库，暂时保存在 [腾讯云](https://console.cloud.tencent.com/tcr/publicimage/tag?rid=1&reponame=shaco_work%2Fgreat-wall)，建议使用 `2.0` 之后的版本
+以下镜像版本可能非最新版本，最新版本请参考：https://hub.docker.com/r/moailaozi/great-wall/tags
 
 ```bash
-// 使用 serial gc(串行垃圾回收器)，适合小内存应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.14
+// java -jar 方式运行
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:2.28_bootJar
 
-// 使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencentyun.com/shaco_work/great-wall:2.14_g1gc
+// 本地化镜像运行，使用 serial gc(串行垃圾回收器)，适合小内存应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:2.28
+
+// 本地化镜像运行，使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:2.28_g1gc
 ```
-
-### 本地编译
-
-项目基于 gradle，可以使用 `gradle clean nativeCompile` 命令进行本地化编译
 
 ### 服务配置
 
@@ -57,12 +52,37 @@ docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall ccr.ccs.tencent
 | HTTPCLIENT_CONNECT_TIMEOUT                | 客户端请求超时时间，单位毫秒，默认值 3000                    |
 | HTTP_2_ENABLED                            | 是否启用Http2，默认值为 true 开启                            |
 
+## 二次开发
+
+linux，mac电脑直接运行，如果是windows电脑建议在 wsl 中运行，如果不想在 wsl 中执行，则请事先配置好环境，node 18+，pnpm  8+，graal jdk 21+
+
+```shell
+# 安装初始环境
+nvm install
+sdk env install
+
+# 初始化环境
+nvm install
+sdk env
+
+# 编译前端项目
+cd great-wall-fe &&  pnpm i && pnpm run build
+
+# 编译后端项目
+./gradlew clean bootJar -x test --no-daemon
+```
+
+
+
 ## 规划
 
 - [x] 路由支持插件配置
-- [ ] 防火墙相关功能
+- [x] 支持监控
+- [x] 支持静态资源映射
+- [ ] 路由配置支持路由组概念
+- [ ] 支持 ddns 功能
+- [ ] 支持 waf 防火墙规则
 - [ ] 支持一些服务发现插件，进行动态刷新路由
-- [ ] 支持集群模式
 
 ## 系统截图
 

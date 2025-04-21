@@ -4,17 +4,17 @@ import java.nio.file.Files
 
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.2.5"
-    id("io.spring.dependency-management") version "1.1.5"
-    id("org.graalvm.buildtools.native") version "0.10.2"
-    kotlin("jvm") version "2.0.0"
-    kotlin("kapt") version "2.0.0"
-    kotlin("plugin.spring") version "2.0.0"
-    kotlin("plugin.serialization") version "2.0.0"
+    id("org.springframework.boot") version "3.4.4"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("org.graalvm.buildtools.native") version "0.10.6"
+    kotlin("jvm") version "2.1.20"
+    kotlin("kapt") version "2.1.20"
+    kotlin("plugin.spring") version "2.1.20"
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 group = "cc.shacocloud"
-version = "2.14"
+version = "2.32"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -52,7 +52,7 @@ repositories {
     google()
 }
 
-extra["springCloudVersion"] = "2023.0.1"
+extra["springCloudVersion"] = "2024.0.1"
 
 dependencyManagement {
     imports {
@@ -70,9 +70,10 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+    implementation("io.netty:netty-tcnative-boringssl-static:2.0.70.Final")
     implementation("org.springframework.boot:spring-boot-starter-json")
 
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
@@ -97,6 +98,15 @@ kotlin {
     }
 }
 
+// 绑定版本号
+tasks.processResources {
+    filesMatching("application-greatwall.yaml") {
+        filteringCharset = "UTF-8"
+        expand(
+            "version" to project.version
+        )
+    }
+}
 
 tasks.withType<Test> {
     useJUnitPlatform()
@@ -146,32 +156,13 @@ task("buildFe") {
             return@doFirst
         }
 
-        // 执行构建命令
-        val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()
-        logFile.deleteOnExit()
-        val process = ProcessBuilder()
-            .directory(feDir)
-            .command("pnpm", "run", "build")
-            .redirectErrorStream(true)
-            .redirectOutput(ProcessBuilder.Redirect.to(logFile))
-            .start()
-
         println()
         println("开始构建前端项目...")
         println()
 
-        // 打印日志
-        printProcessLogFile(logFile, process)
-
-        val exitCode = process.waitFor()
-
-        println()
-        println("构建前端项目结束，退出状态码：${exitCode}")
-        println()
-
-        if (exitCode != 0) {
-            throw RuntimeException("构建前端项目失败，退出状态码为：${exitCode}！")
-        }
+        // 执行构建命令
+        execCommand(feDir, "pnpm i".split(" "))
+        execCommand(feDir, "pnpm run build".split(" "))
     }
 }
 
@@ -197,6 +188,31 @@ task("copyFeBuildResultToBe") {
 
 
 // ---------------  函数 ------------
+
+fun execCommand(
+    directory: File,
+    command: List<String>
+) {
+    println()
+    println("执行命令 ${command.joinToString(" ")}")
+
+    val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()
+    logFile.deleteOnExit()
+    val process = ProcessBuilder()
+        .directory(directory)
+        .command(command)
+        .redirectErrorStream(true)
+        .redirectOutput(ProcessBuilder.Redirect.to(logFile))
+        .start()
+
+    // 打印日志
+    printProcessLogFile(logFile, process)
+
+    val exitCode = process.waitFor()
+    if (exitCode != 0) {
+        throw RuntimeException("执行命令 ${command.joinToString(" ")} 失败，退出状态码为：${exitCode}！")
+    }
+}
 
 // 打印进程日志文件
 fun printProcessLogFile(

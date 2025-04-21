@@ -3,7 +3,7 @@ import {
   CountMetricsValues,
   DurationLineMetricsRecordValues,
   QpsLineMetricsRecordValues,
-  TopQpsLineMetricsRecordValues
+  TrafficLineMetricsRecordValues
 } from "@/constant/api/monitor-metrics/route-metrics/schema.ts";
 import {LineMetricsInput} from "@/constant/api/monitor-metrics/types.ts";
 
@@ -15,12 +15,7 @@ export interface RouteLineMetricsInput extends LineMetricsInput {
   appRouteId: number | undefined | null
 }
 
-export interface TopRouteLineMetricsInput extends RouteLineMetricsInput {
-
-  top: number
-}
-
 export type CountMetricsOutput = CountMetricsValues
 export type QpsLineMetricsRecordOutput = QpsLineMetricsRecordValues
 export type DurationLineMetricsRecordOutput = DurationLineMetricsRecordValues
-export type TopQpsLineMetricsRecordOutput = TopQpsLineMetricsRecordValues
+export type TrafficLineMetricsRecordOutput = TrafficLineMetricsRecordValues

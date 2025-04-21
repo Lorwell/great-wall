@@ -354,7 +354,6 @@ class SlideWindowRequestRateLimiterGatewayFilterFactory(
              * 增加一次计数
              */
             fun increment() {
-                require(!close.get()) { "当前 bucket 已经被关闭！" }
                 count.increment()
                 total.increment()
             }

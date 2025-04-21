@@ -3,23 +3,15 @@ package cc.shacocloud.greatwall.service.scheduled
 import cc.shacocloud.greatwall.model.mo.GCInfoMo
 import cc.shacocloud.greatwall.model.po.SystemMetricsRecordPo
 import cc.shacocloud.greatwall.service.CompositionMonitorMetricsService
-import cc.shacocloud.greatwall.utils.toLocalDateTime
 import com.sun.management.OperatingSystemMXBean
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.DisposableBean
-import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryType
-import java.time.Instant
 import java.time.LocalDateTime
-import java.util.concurrent.Executors
 
 /**
  * 系统指标调度器
@@ -28,7 +20,7 @@ import java.util.concurrent.Executors
 @Service
 class SystemMetricsScheduled(
     private val monitorMetricsService: CompositionMonitorMetricsService,
-) : DisposableBean {
+) {
 
     companion object {
 
@@ -47,65 +39,13 @@ class SystemMetricsScheduled(
         }
     }
 
-    private val dispatcher = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
-
-    @EventListener(ApplicationReadyEvent::class)
-    fun init() {
-
-        val runnable = Runnable {
-
-            try {
-                delayStartOfSecond()
-            } catch (e: Exception) {
-                if (log.isErrorEnabled) {
-                    log.error("系统指标定时调度发生例外!", e)
-                }
-            }
-
-            while (true) {
-                try {
-                    val timeUnit = Instant.now().toLocalDateTime()
-
-                    @OptIn(DelicateCoroutinesApi::class)
-                    GlobalScope.launch(dispatcher) {
-                        metrics(timeUnit)
-                    }
-
-                    delayStartOfSecond()
-                } catch (e: Exception) {
-
-                    if (e is InterruptedException) {
-                        if (log.isWarnEnabled) {
-                            log.warn("系统指标定时调度收到中断信息！")
-                        }
-                        break
-                    }
-
-                    if (log.isErrorEnabled) {
-                        log.error("系统指标定时调度发生例外！", e)
-                    }
-                }
-            }
-        }
-
-        val thread = Thread(runnable, "SystemMetricsScheduled")
-        thread.isDaemon = true
-        thread.start()
-    }
-
-    /**
-     * 延迟到秒的开始
-     */
-    fun delayStartOfSecond() {
-        val milliStr = System.currentTimeMillis().toString()
-        val milli = milliStr.substring(milliStr.length - 3).toLong()
-        Thread.sleep((1000 - milli) + 1)
-    }
-
     /**
      * 统计指标
      */
-    suspend fun metrics(timeUnit: LocalDateTime) {
+    @Scheduled(cron = "0/15 * * * * *")
+    fun metrics() = mono {
+        val timeUnit = LocalDateTime.now()
+
         // 堆内存相关
         val memoryMXBean = ManagementFactory.getMemoryMXBean()
         val heapMemoryUsage = memoryMXBean.heapMemoryUsage
@@ -173,10 +113,6 @@ class SystemMetricsScheduled(
         )
 
         monitorMetricsService.addMetricsRecord(systemMetricsRecordPo)
-    }
-
-    override fun destroy() {
-        dispatcher.close()
     }
 
 }

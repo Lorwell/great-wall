@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="false">
 
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{40} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
     <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>./data/logs/root/%d{yyyy-MM-dd}-%i.log</fileNamePattern>
@@ -59,5 +66,9 @@
     <root level="INFO">
         <appender-ref ref="ASYNC_FILE"/>
     </root>
+
+    <logger name="cc.shacocloud.greatwall" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
 
 </configuration>

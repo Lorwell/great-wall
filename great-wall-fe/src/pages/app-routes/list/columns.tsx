@@ -1,12 +1,13 @@
 import {ColumnDef} from "@tanstack/react-table";
-import {columnCell, dataTableCheckboxColumn} from "@/components/data-table/data-table-column.tsx";
+import {columnCell, dataTableCheckboxColumn} from "@/components/custom-ui/data-table/data-table-column.tsx";
 import dayjs from "dayjs";
 import {Badge} from "@/components/ui/badge";
-import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
 import RowActions, {RowActionsEvent} from "@/pages/app-routes/list/row-actions.tsx";
-import {AppRouteListOutput} from "@/constant/api/app-routes/types.ts";
+import {AppRouteListOutput, AppRouteStatusEnum} from "@/constant/api/app-routes/types.ts";
 import {TargetConfigSchemaValues} from "@/constant/api/app-routes/schema.ts";
-import PredicatesColumn from "@/pages/app-routes/list/PredicatesColumn.tsx";
+import {PredicatesColumn} from "@/pages/app-routes/list/predicates-column.tsx";
+import {TargetConfigColumn} from "@/pages/app-routes/list/target-config-column.tsx";
+import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card"
 
 export interface ColumnsProps {
 
@@ -26,14 +27,31 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
         label: "名称",
         size: 120,
         enableSorting: false,
-        cell: ({getValue}) => getValue()
+        cell: ({getValue, row}) => {
+          const value = getValue<string>()
+          const describe = row.original.describe;
+
+          return (
+            <HoverCard>
+              <HoverCardTrigger>
+                {value}
+              </HoverCardTrigger>
+              <HoverCardContent>
+                <div className={"text-base font-bold mb-2"}>应用描述：</div>
+                <div className={"text-sm"}>
+                  {describe || "暂无"}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          )
+        }
       }
     ),
     columnCell(
       {
         columnId: "predicates",
         label: "路由条件",
-        size: 80,
+        size: 250,
         enableSorting: false,
         cell: ({getValue}) => {
           const value = getValue()
@@ -47,29 +65,12 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "targetConfig",
         label: "目标地址",
-        size: 200,
+        size: 250,
         enableSorting: false,
         cell: ({getValue}) => {
-          const {urls} = getValue<TargetConfigSchemaValues>();
-
+          const value = getValue<TargetConfigSchemaValues>();
           return (
-            <div className={"w-full flex gap-1"}>
-              <div className={"truncate"} style={{width: "calc(100% - 25px)"}}>
-                {urls.map(it => it.url).join(", ")}
-              </div>
-              <HoverCard>
-                <HoverCardTrigger>
-                  <Badge variant={"secondary"} className={"cursor-pointer"}>{urls.length}</Badge>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <div className={"flex flex-col gap-1"}>
-                    {urls.map((it, index) => (
-                      <span key={index}>{it.url}{"  -  权重："}{it.weight}</span>
-                    ))}
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
-            </div>
+            <TargetConfigColumn targetConfig={value}/>
           )
         }
       }
@@ -78,7 +79,7 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "priority",
         label: "优先级",
-        size: 100,
+        size: 120,
         cell: ({getValue}) => (
           <div className={"p-4"}>
             {getValue()}
@@ -90,15 +91,29 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "status",
         label: "状态",
-        size: 80,
-        cell: ({getValue}) => getValue()
+        size: 100,
+        cell: ({getValue}) => {
+          const value = getValue() as AppRouteStatusEnum;
+          if (AppRouteStatusEnum.ONLINE === value) {
+            return (
+              <Badge>在线</Badge>
+            )
+          } else if (AppRouteStatusEnum.OFFLINE === value) {
+            return (
+              <Badge variant={"secondary"}>下线</Badge>
+            )
+          }
+          return (
+            <Badge variant={"secondary"}>未知</Badge>
+          )
+        }
       }
     ),
     columnCell(
       {
         columnId: "createTime",
         label: "创建时间",
-        size: 150,
+        size: 200,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),
@@ -106,13 +121,13 @@ export const columns = ({event}: ColumnsProps): ColumnDef<AppRouteListOutput>[] 
       {
         columnId: "lastUpdateTime",
         label: "最后修改时间",
-        size: 150,
+        size: 200,
         cell: ({getValue}) => dayjs(getValue()).format("YYYY-MM-DD HH:mm:ss")
       }
     ),
     {
       id: "_actions",
-      size: 50,
+      size: 80,
       cell: ({cell, column, row, table}) => (
         <RowActions {...event}
                     row={row}

@@ -1,6 +1,6 @@
 import {AppRoutesContext} from "@/pages/app-routes/components/app-routes/schema.ts";
 import {useNavigate, useParams} from "react-router-dom";
-import useApiRequest from "@/components/hooks/useApiRequest.ts";
+import useApiRequest from "@/components/hooks/use-api-request.ts";
 import {appRouteDetails, updateAppRoute} from "@/constant/api/app-routes";
 import {AppRoutesConfValues} from "@/constant/api/app-routes/schema.ts";
 import {toast} from "sonner";
@@ -20,22 +20,23 @@ export default function UpdateAppRoutes() {
   const setAppRoutesDataOptions = useSetRecoilState(appRoutesDataOptionsState);
 
   // 加载数据
-  const {loading} = useApiRequest(
-    async () => {
-      const data = await appRouteDetails(Number(id));
-      setAppRoutesDataOptions({
-        baseInfo: {
-          name: data.name,
-          describe: data.describe,
-          priority: data.priority,
-          status: data.status,
-        },
-        predicates: {
-          targetConfig: data.targetConfig,
-          predicates: data.predicates
-        },
-        filters: data.filters
-      })
+  const {loading} = useApiRequest(() => appRouteDetails(Number(id)),
+    {
+      onSuccess: (data) => {
+        setAppRoutesDataOptions({
+          baseInfo: {
+            name: data.name,
+            describe: data.describe,
+            priority: data.priority,
+            status: data.status,
+          },
+          predicates: {
+            targetConfig: data.targetConfig,
+            predicates: data.predicates
+          },
+          filters: data.filters
+        })
+      }
     });
 
   const {runAsync: updateAppRouteRun} = useApiRequest(updateAppRoute, {manual: true});

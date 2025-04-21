@@ -13,7 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import {byteSizeToUnitStr} from "@/utils/Utils.ts";
+import {byteSizeToUnitStr} from "@/lib/utils.ts";
 import {MemoryLineRecordOutput, SystemLineMetricsInput} from "@/constant/api/monitor-metrics/system-metrics/types.ts";
 import {ReactNode} from "react";
 

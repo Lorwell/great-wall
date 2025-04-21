@@ -5,7 +5,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {RouteFilterEnum} from "@/constant/api/app-routes/types.ts";
 import {useEffect} from "react";
 import FilterCard from "@/pages/app-routes/components/app-routes/filter/filter-card.tsx";
-import {Fingerprint} from "lucide-react";
+import {RouteOff} from "lucide-react";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form.tsx";
 import {Input} from "@/components/ui/input.tsx";
 
@@ -50,7 +50,7 @@ export default function TokenBucketRequestRateLimiter(props: RoutesProps<TokenBu
   return (
     <FilterCard {...rest}
                 title={"令牌桶限流"}
-                icon={<Fingerprint className={"w-6 h-6"}/>}
+                icon={<RouteOff className={"w-6 h-6"}/>}
                 category={"流量控制"}
                 description={<Description/>}
                 onSubmit={async () => {

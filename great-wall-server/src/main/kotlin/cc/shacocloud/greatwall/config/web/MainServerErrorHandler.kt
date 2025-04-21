@@ -1,5 +1,8 @@
 package cc.shacocloud.greatwall.config.web
 
+import cc.shacocloud.greatwall.GreatWallVersion
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.MergedAnnotations
 import org.springframework.core.env.Environment
 import org.springframework.core.io.buffer.DataBufferUtils
@@ -33,6 +36,8 @@ class MainServerErrorHandler(
 
     companion object {
         val dataBufferFactory = DefaultDataBufferFactory()
+
+        private val log: Logger = LoggerFactory.getLogger(MainServerErrorHandler::class.java)
     }
 
     private val appName = environment.getRequiredProperty("spring.application.name")
@@ -41,6 +46,10 @@ class MainServerErrorHandler(
      * 处理异常
      */
     override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> {
+        if (log.isDebugEnabled) {
+            log.debug("网关异常：{}", ex.message, ex)
+        }
+
         val status = determineHttpStatus(ex)
         return handleErrorStatus(exchange, status)
     }
@@ -53,7 +62,7 @@ class MainServerErrorHandler(
         val response = exchange.response
 
         // 设置响应状态码
-        response.setStatusCode(status)
+        response.statusCode = status
 
         if (supportHtml(request)) {
             return renderHTML(response, status)
@@ -79,9 +88,12 @@ class MainServerErrorHandler(
                  <title>${code}${reasonPhrase}</title>
              </head>
              <body>
-             <div style="text-align:center"><h1>$code${reasonPhrase}</h1></div>
+             <div style="text-align:center"><h1>${code}${reasonPhrase}</h1></div>
              <hr>
-             <div style="text-align:center">${appName}</div>
+             <div style="text-align:center; font-size: 16px;">
+             $appName
+             <span style="margin-left: 4px; font-size: 12px;">v${GreatWallVersion.version}</span>
+             </div>
              </body>
              </html>
              """.trimIndent()

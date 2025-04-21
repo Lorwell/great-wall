@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS settings
 -- 插入系统配置默认值
 MERGE INTO settings t
     USING (SELECT 'redirectHttps'                                AS settings_name,
-                  'true'                                         AS settings_value,
+                  'false'                                        AS settings_value,
                   (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as current_timestamp_millis) s
 ON (t.settings_name = s.settings_name)
 WHEN MATCHED THEN
@@ -62,4 +62,15 @@ CREATE TABLE IF NOT EXISTS system_gc_type
 (
     id        INT PRIMARY KEY AUTO_INCREMENT,
     type_name VARCHAR(255) NOT NULL unique
+);
+
+
+CREATE TABLE IF NOT EXISTS static_resources
+(
+    id               BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name             VARCHAR(50) NOT NULL,
+    describe         VARCHAR(150),
+    unique_id        VARCHAR(50) NOT NULL unique,
+    create_time      BIGINT      NOT NULL,
+    last_update_time BIGINT      NOT NULL
 );
