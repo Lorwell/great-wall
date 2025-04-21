@@ -8,23 +8,24 @@ COPY .sdkmanrc /base_build/
 # 设置 Shell 环境
 SHELL ["/bin/bash", "-c"]
 
-# 安装 SDKMAN 和 Java（优化版）
 RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     # 从.sdkmanrc读取版本
     && sdk install java $(cat .sdkmanrc | grep java= | cut -d'=' -f2) \
     && java --version
 
-# 安装 NVM 和 Node.js（稳定版）
-RUN curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
     && export NVM_DIR="/root/.nvm" \
-    # 直接加载nvm脚本 \
+    && echo "NVM 安装目录: $NVM_DIR" \
     && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-    # 从.nvmrc读取版本
-    && NODE_VERSION=$(cat .nvmrc) \
-    && nvm install $NODE_VERSION \
-    && ln -s "$NVM_DIR/versions/node/v$NODE_VERSION/bin/node" /usr/local/bin/ \
-    && ln -s "$NVM_DIR/versions/node/v$NODE_VERSION/bin/npm" /usr/local/bin/ \
+    && echo "可用的 Node 版本:" && nvm ls-remote | tail -n 5 \  # 显示最近版本
+    && NODE_VERSION=$(cat .nvmrc | sed 's/v//g') \  # 处理版本号格式
+    && echo "正在安装 Node $NODE_VERSION" \
+    && nvm install $NODE_VERSION --latest-npm \
+    && echo "安装完成，校验二进制文件:" \
+    && ls -l "$NVM_DIR/versions/node/v$NODE_VERSION/bin" \
+    && ln -sf "$NVM_DIR/versions/node/v$NODE_VERSION/bin/node" /usr/local/bin/ \
+    && ln -sf "$NVM_DIR/versions/node/v$NODE_VERSION/bin/npm" /usr/local/bin/ \
     && corepack enable \
     && node --version \
     && npm --version \
