@@ -5,19 +5,19 @@ WORKDIR /base_build
 COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
-RUN curl -s "https://get.sdkman.io" | bash; \
-              source "$HOME/.sdkman/bin/sdkman-init.sh"; \
-              sdk env install; \
-              sdk env; \
-              java --version; \
+RUN curl -s "https://get.sdkman.io" | bash \
+    && source "$HOME/.sdkman/bin/sdkman-init.sh" \
+    && sdk env install \
+    && sdk env \
+    && java --version \
 
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash; \
-              export NVM_DIR="$HOME/.nvm"; \
-              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; \
-              nvm install; \
-              node --version
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
+    && export NVM_DIR="$HOME/.nvm" \
+    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+    && nvm install \
+    && node --version
 
-RUN corepack enable; \
-    corepack prepare pnpm@latest --activate; \
-    pnpm --version
+RUN corepack enable \
+    && corepack prepare pnpm@latest --activate \
+    && pnpm --version
 
