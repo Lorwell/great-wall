@@ -1,33 +1,26 @@
 # 注意：该镜像为构建服务的基础镜像，并不是服务镜像
-FROM moailaozi/jre:graalvm21_ubuntu22.build
+FROM ubuntu:latest
 
-WORKDIR /base_build
+SHELL ["/bin/bash", "-c"]
+
 COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
-# 设置 Shell 环境
-SHELL ["/bin/bash", "-c"]
+RUN apt update && apt install curl -y
 
+# 安装 sdk
 RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     # 从.sdkmanrc读取版本
-    && sdk install java $(cat .sdkmanrc | grep java= | cut -d'=' -f2) \
+    && sdk install java $(cat /base_build/.sdkmanrc | grep java= | cut -d'=' -f2) \
     && java --version
 
-ENV NVM_DIR /usr/local/nvm
-RUN mkdir -p $NVM_DIR \
-    && curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
-    && . "$NVM_DIR/nvm.sh" \
-    && NODE_VERSION=$(cat .nvmrc | tr -d 'v') \
-    && echo "尝试安装 Node $NODE_VERSION..." \
-    && nvm install $NODE_VERSION \
-
-# 安装最新版 pnpm
-RUN curl -fsSL https://get.pnpm.io/install.sh | sh - \
-    && . ~/.bashrc \
-    && pnpm add -g pnpm@latest
-
-# 验证
-RUN node --version \
+# 安装 nvm
+ENV NVM_DIR=/root/.nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+RUN source $NVM_DIR/nvm.sh  \
+    && nvm install $(cat /base_build/.nvmrc | tr -d 'v') \
+    && corepack enable \
+    && node --version \
     && npm --version \
     && pnpm --version
