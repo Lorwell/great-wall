@@ -18,8 +18,8 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | b
     && export NVM_DIR="/root/.nvm" \
     && echo "NVM 安装目录: $NVM_DIR" \
     && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-    && echo "可用的 Node 版本:" && nvm ls-remote | tail -n 5 \  # 显示最近版本
-    && NODE_VERSION=$(cat .nvmrc | sed 's/v//g') \  # 处理版本号格式
+    && echo "可用的 Node 版本:" && nvm ls-remote | tail -n 5 \
+    && NODE_VERSION=$(cat .nvmrc | sed 's/v//g') \
     && echo "正在安装 Node $NODE_VERSION" \
     && nvm install $NODE_VERSION --latest-npm \
     && echo "安装完成，校验二进制文件:" \
