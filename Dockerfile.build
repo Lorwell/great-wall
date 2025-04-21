@@ -1,3 +1,5 @@
+SHELL ["/bin/bash", "-c"]
+
 # 注意：该镜像为构建服务的基础镜像，并不是服务镜像
 FROM moailaozi/jre:graalvm21_ubuntu22.build
 
@@ -6,7 +8,7 @@ COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
 RUN curl -s "https://get.sdkman.io" | bash \
-    && . "$HOME/.sdkman/bin/sdkman-init.sh" \
+    && source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk env install \
     && sdk env \
     && java --version \
