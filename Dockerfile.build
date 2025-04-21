@@ -7,7 +7,6 @@ COPY .sdkmanrc /base_build/
 
 SHELL ["/bin/bash", "-c"]
 RUN bash -c curl -s "https://get.sdkman.io" | bash \
-    && source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk env install \
     && sdk env \
     && java --version \
