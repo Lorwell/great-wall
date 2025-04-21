@@ -15,12 +15,19 @@ RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && java --version
 
 ENV NVM_DIR /usr/local/nvm
-RUN curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
+RUN mkdir -p $NVM_DIR \
+    && curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
     && . "$NVM_DIR/nvm.sh" \
     && NODE_VERSION=$(cat .nvmrc | tr -d 'v') \
     && echo "尝试安装 Node $NODE_VERSION..." \
     && nvm install $NODE_VERSION \
-    && corepack enable \
-    && node --version \
+
+# 安装最新版 pnpm
+RUN curl -fsSL https://get.pnpm.io/install.sh | sh - \
+    && . ~/.bashrc \
+    && pnpm add -g pnpm@latest
+
+# 验证
+RUN node --version \
     && npm --version \
     && pnpm --version
