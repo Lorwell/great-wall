@@ -14,13 +14,11 @@ RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && sdk install java $(cat .sdkmanrc | grep java= | cut -d'=' -f2) \
     && java --version
 
-RUN export NVM_DIR="/root/.nvm" \
-    && curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
+RUN curl --retry 5 -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
     && source ~/.bashrc \
-    && ls -a /root/.nvm \
     && NODE_VERSION=$(cat .nvmrc | tr -d 'v') \
     && echo "尝试安装 Node $NODE_VERSION..." \
-    && /root/.nvm/nvm.sh install $NODE_VERSION --latest-npm --verbose \
+    && ~/nvm.sh install $NODE_VERSION --latest-npm --verbose \
     && corepack enable \
     && node --version \
     && npm --version \
