@@ -6,15 +6,15 @@ WORKDIR /build
 
 ARG g1gc=""
 
-RUN nvm install; \
-    cd great-wall-fe; \
-    pnpm i; \
-    pnpm run build; \
-    cd ..; \
-    echo "前端构建完成"; \
-    sdk env; \
-    source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc; \
-    echo "后端构建完成"
+RUN nvm install \
+    && cd great-wall-fe \
+    && pnpm i \
+    && pnpm run build \
+    && cd .. \
+    && echo "前端构建完成" \
+    && sdk env \
+    && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
+    && echo "后端构建完成"
 
 # 运行时镜像
 FROM moailaozi/jre:graalvm21_ubuntu22.runtime
