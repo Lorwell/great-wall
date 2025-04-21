@@ -49,6 +49,10 @@ build_docker() {
 }
 
 main() {
+  version=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
+  echo "构建版本：$version"
+  export IMAGE_TAG=$version
+
   build_frontend
   build_backend
   build_docker

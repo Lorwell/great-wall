@@ -98,6 +98,7 @@ kotlin {
     }
 }
 
+// 绑定版本号
 tasks.processResources {
     filesMatching("application-greatwall.yaml") {
         filteringCharset = "UTF-8"

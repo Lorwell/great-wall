@@ -3,11 +3,19 @@ group "default" {
 }
 
 variable "IMAGE_REGISTRY" {
-  default = "docker-repo.lingya.tech"
+  default = "docker.io"
 }
 
 variable "IMAGE_TAG" {
-  default = "2.32"
+  default = "latest"
+}
+
+dynamic "variable" {
+  for_each = try(env("IMAGE_TAG"), "") != "" ? [1] : []
+  content {
+    name = "IMAGE_TAG"
+    value = env("IMAGE_TAG")
+  }
 }
 
 target "great-wall-bootJar" {
@@ -21,7 +29,7 @@ target "great-wall" {
   context = "."
   dockerfile = "Dockerfile.native"
   platforms = ["linux/amd64", "linux/arm64"]
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}","${IMAGE_REGISTRY}/moailaozi/great-wall:latest"]
 }
 
 target "great-wall-g1gc" {
