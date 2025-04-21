@@ -1,13 +1,16 @@
 name: CI Build and Deploy
 
-on:
-  push:
-    branches: [ develop ]
-  pull_request:
-    branches: [ develop ]
+on: workflow_dispatch
+
+#on:
+#  push:
+#    branches: [ develop ]
+#  pull_request:
+#    branches: [ develop ]
 
 env:
   IMAGE_TAG: ${{ github.sha }}
+  GITHUB_CI: -DGITHUB_CI=true
 
 jobs:
   build:
@@ -16,55 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl git unzip zip
-
-      - name: Install NVM and Node.js
-        run: |
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm install
-          node --version
-
-      - name: Install pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-          pnpm --version
-
-      - name: Install SDKMAN! and JDK
-        run: |
-          curl -s "https://get.sdkman.io" | bash
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install java 21-graalce  # 使用 GraalVM JDK 21
-          sdk use java 21-graalce
-          java --version
-
       - name: Extract version from build.gradle.kts
         id: version
         run: |
           echo "version=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)" >> $GITHUB_ENV
           echo "IMAGE_TAG=$version" >> $GITHUB_ENV
-
-      - name: Build frontend
-        run: |
-          echo "::group::Building frontend"
-          source "$NVM_DIR/nvm.sh"
-          cd great-wall-fe
-          pnpm install
-          pnpm run build
-          cd ..
-          echo "::endgroup::"
-
-      - name: Build backend
-        run: |
-          echo "::group::Building backend"
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          ./gradlew clean bootJar -x test --no-daemon
-          echo "::endgroup::"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2

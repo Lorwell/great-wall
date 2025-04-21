@@ -1,0 +1,14 @@
+group "default" {
+  targets = ["build-base-image"]
+}
+
+variable "IMAGE_REGISTRY" {
+  default = "docker.io/moailaozi"
+}
+
+target "build-base-image" {
+  context = "."
+  dockerfile = "Dockerfile.build"
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["${IMAGE_REGISTRY}/great-wall:build_base_image"]
+}

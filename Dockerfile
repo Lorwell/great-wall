@@ -1,8 +1,24 @@
-FROM ccr.ccs.tencentyun.com/shaco_work/jre:21_ubuntu22
+FROM moailaozi/great-wall:build_base_image as builder
+
+# 复制项目所有代码
+COPY . /build
+WORKDIR /build
+
+RUN nvm install; \
+    cd great-wall-fe; \
+    pnpm i; \
+    pnpm run build; \
+    cd ..; \
+    echo "前端构建完成"; \
+    sdk env; \
+    ./gradlew clean bootJar -x test --no-daemon; \
+    echo "后端构建完成"
+
+FROM moailaozi/jre:21_ubuntu22
 
 # 复制构建时镜像的构建结果
 WORKDIR /workspace
-COPY great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
+COPY --from=builder great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
 
 EXPOSE 8080
 

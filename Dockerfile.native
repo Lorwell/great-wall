@@ -1,4 +1,4 @@
-FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.build
+FROM moailaozi/great-wall:build_base_image as builder
 
 # 复制项目所有代码
 COPY . /build
@@ -6,21 +6,24 @@ WORKDIR /build
 
 ARG g1gc=""
 
-# 执行编译
-# 多环境编译下会导致gradle 锁冲突，顾这里注释
-#RUN --mount=type=cache,target=/root/.gradle \
-#    bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc"
-RUN bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc"
-
+RUN nvm install; \
+    cd great-wall-fe; \
+    pnpm i; \
+    pnpm run build; \
+    cd ..; \
+    echo "前端构建完成"; \
+    sdk env; \
+    source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc; \
+    echo "后端构建完成"
 
 # 运行时镜像
-FROM ccr.ccs.tencentyun.com/shaco_work/jre:graalvm21_ubuntu22.runtime
-
-WORKDIR /workspace
-COPY --from=0 "/build/great-wall-server/build/native/nativeCompile/great-wall-server" /workspace/app
+FROM moailaozi/jre:graalvm21_ubuntu22.runtime
 
 # 安装 openssl
 RUN apt-get update && apt-get install -y openssl
+
+WORKDIR /workspace
+COPY --from=builder "/build/great-wall-server/build/native/nativeCompile/great-wall-server" /workspace/app
 
 EXPOSE 443
 EXPOSE 80

@@ -27,26 +27,33 @@ configurations {
 }
 
 repositories {
-    // 改为阿里云的镜像地址
-    maven {
-        isAllowInsecureProtocol = true
-        setUrl("https://maven.aliyun.com/repository/central")
-    }
-    maven {
-        isAllowInsecureProtocol = true
-        setUrl("https://maven.aliyun.com/repository/jcenter")
-    }
-    maven {
-        isAllowInsecureProtocol = true
-        setUrl("https://maven.aliyun.com/repository/google")
-    }
-    maven {
-        isAllowInsecureProtocol = true
-        setUrl("https://maven.aliyun.com/repository/public")
-    }
-    maven {
-        isAllowInsecureProtocol = true
-        setUrl("https://jitpack.io")
+    // 是否为 github ci 环境
+    val githubCiEnable = providers.environmentVariable("GITHUB_CI")
+        .getOrElse("false")
+        .toBoolean()
+
+    if (!githubCiEnable) {
+        // 改为阿里云的镜像地址
+        maven {
+            isAllowInsecureProtocol = true
+            setUrl("https://maven.aliyun.com/repository/central")
+        }
+        maven {
+            isAllowInsecureProtocol = true
+            setUrl("https://maven.aliyun.com/repository/jcenter")
+        }
+        maven {
+            isAllowInsecureProtocol = true
+            setUrl("https://maven.aliyun.com/repository/google")
+        }
+        maven {
+            isAllowInsecureProtocol = true
+            setUrl("https://maven.aliyun.com/repository/public")
+        }
+        maven {
+            isAllowInsecureProtocol = true
+            setUrl("https://jitpack.io")
+        }
     }
     mavenCentral()
     google()
