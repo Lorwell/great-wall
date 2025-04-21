@@ -6,7 +6,7 @@ COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
 RUN curl -s "https://get.sdkman.io" | bash \
-    && source "$HOME/.sdkman/bin/sdkman-init.sh" \
+    && . "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk env install \
     && sdk env \
     && java --version \
