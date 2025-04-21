@@ -7,6 +7,7 @@ WORKDIR /build
 ARG g1gc=""
 
 # 执行编译
+# 多环境编译下会导致gradle 锁冲突，顾这里注释
 #RUN --mount=type=cache,target=/root/.gradle \
 #    bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc"
 RUN bash -c "source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc"
