@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-c"]
 COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
-RUN apt update && apt install -y curl unzip zip
+RUN apt update && apt-get install -y curl unzip zip wget tar less vim dos2unix
 
 # 安装 sdk
 RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
