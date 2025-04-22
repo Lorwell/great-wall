@@ -1,5 +1,7 @@
 FROM moailaozi/great-wall:build_base_image AS builder
 
+RUN apt update && apt-get install -y curl unzip zip wget tar less vim dos2unix
+
 SHELL ["/bin/bash", "-c"]
 
 # 复制项目所有代码
