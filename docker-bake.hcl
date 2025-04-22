@@ -7,19 +7,11 @@ variable "IMAGE_REGISTRY" {
 }
 
 variable "IMAGE_TAG" {
-  default = "latest"
+    default = null
 }
 
 variable "GITHUB_CI" {
   default = "-DGITHUB_CI=false"
-}
-
-dynamic "variable" {
-  for_each = try(env("IMAGE_TAG"), "") != "" ? [1] : []
-  content {
-    name = "IMAGE_TAG"
-    value = env("IMAGE_TAG")
-  }
 }
 
 dynamic "variable" {
@@ -28,6 +20,14 @@ dynamic "variable" {
      name = "GITHUB_CI"
      value = env("GITHUB_CI")
    }
+}
+
+dynamic "assert" {
+  for_each = var.IMAGE_TAG == null ? [1] : []
+  content {
+    condition     = false
+    error_message = "IMAGE_TAG 必须设置（通过 --set IMAGE_TAG=xxx 或环境变量）"
+  }
 }
 
 target "great-wall-bootJar" {

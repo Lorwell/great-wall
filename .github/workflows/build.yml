@@ -39,7 +39,8 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          echo "::group::Building Docker images"
+          echo "::group::Building Docker images, IMAGE_TAG: $IMAGE_TAG"
+          
           docker buildx bake -f docker-bake.hcl great-wall-bootJar --push
           docker buildx bake -f docker-bake.hcl great-wall --push
           docker buildx bake -f docker-bake.hcl great-wall-g1gc --push
