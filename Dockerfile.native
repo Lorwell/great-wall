@@ -17,9 +17,8 @@ RUN cd great-wall-fe \
     && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && echo "前端构建完成"
-
-RUN source "/root/.sdkman/bin/sdkman-init.sh" \
+    && echo "前端构建完成" \
+    && source "/root/.sdkman/bin/sdkman-init.sh" \
     && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
     && echo "后端构建完成"
 
