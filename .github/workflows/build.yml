@@ -54,6 +54,3 @@ jobs:
           push: true
           targets: ${{ matrix.target }}
           platforms: ${{ matrix.platform }}
-
-      - name: Success message
-        run: echo "::notice::========== 全部构建成功 =========="
