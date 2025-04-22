@@ -19,7 +19,17 @@ variable "GITHUB_CI" {
   default = "-DGITHUB_CI=false"
 }
 
+variable "CACHE_DIR" {
+  default = "./.buildx-cache"
+}
+
+target "default" {
+  cache-from = ["type=local,src=${CACHE_DIR}"]
+  cache-to = ["type=local,dest=${CACHE_DIR}-new,mode=max"]
+}
+
 target "great-wall-bootJar" {
+  inherits = ["default"]
   context = "."
   dockerfile = "Dockerfile"
   platforms = ["linux/amd64", "linux/arm64"]
@@ -27,11 +37,10 @@ target "great-wall-bootJar" {
       GITHUB_CI = "${GITHUB_CI}"
   }
   tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_bootJar", "${IMAGE_REGISTRY}/moailaozi/great-wall:bootJar"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
 }
 
 target "great-wall" {
+  inherits = ["default"]
   context = "."
   dockerfile = "Dockerfile.native"
   platforms = ["linux/amd64", "linux/arm64"]
@@ -39,11 +48,10 @@ target "great-wall" {
       GITHUB_CI = "${GITHUB_CI}"
   }
   tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}", "${IMAGE_REGISTRY}/moailaozi/great-wall:latest"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
 }
 
 target "great-wall-g1gc" {
+  inherits = ["default"]
   context = "."
   dockerfile = "Dockerfile.native"
   platforms = ["linux/amd64", "linux/arm64"]
@@ -53,6 +61,4 @@ target "great-wall-g1gc" {
      greatWallMaxMemory = "1g"
   }
   tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_g1gc", "${IMAGE_REGISTRY}/moailaozi/great-wall:g1gc"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
 }

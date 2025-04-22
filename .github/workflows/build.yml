@@ -48,8 +48,8 @@ jobs:
           targets: great-wall-bootJar,great-wall,great-wall-g1gc
           set: |
             *.tags=your-docker-hub-username/your-image:${IMAGE_TAG}
-            *.cache-from=type=local,src=/tmp/.buildx-cache
-            *.cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max
+            *.cache-from=type=local,src=${{ github.workspace }}/.buildx-cache
+            *.cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache-new,mode=max
 
       - name: Update Cache Storage
         run: |
