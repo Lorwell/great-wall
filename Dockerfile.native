@@ -1,10 +1,5 @@
 FROM moailaozi/great-wall:build_base_image AS builder
 
-RUN apt update && apt-get install -y curl unzip zip wget tar less vim dos2unix
-
-# 安装 graalvm 需要的依赖
-RUN apt-get install -y build-essential libz-dev zlib1g-dev
-
 SHELL ["/bin/bash", "-c"]
 
 # 复制项目所有代码
@@ -13,13 +8,16 @@ WORKDIR /build
 
 ARG g1gc=""
 
-RUN cd great-wall-fe \
+RUN apt update  \
+    # 安装 graalvm 需要的依赖
+    && apt-get install -y build-essential libz-dev zlib1g-dev \
+    && cd great-wall-fe \
     && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && echo "前端构建完成"
-
-RUN source "/root/.sdkman/bin/sdkman-init.sh" \
+    && echo "前端构建完成" \
+    && cd .. \
+    && source "/root/.sdkman/bin/sdkman-init.sh" \
     && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
     && echo "后端构建完成"
 

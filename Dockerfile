@@ -10,10 +10,9 @@ RUN cd great-wall-fe \
     && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && echo "前端构建完成"
-
-RUN source "/root/.sdkman/bin/sdkman-init.sh" \
-    && ./gradlew clean bootJar -x test --no-daemon \
+    && echo "前端构建完成"  \
+    && source "/root/.sdkman/bin/sdkman-init.sh" \
+    && /build/gradlew clean bootJar -x test \
     && echo "后端构建完成"
 
 FROM moailaozi/jre:21_ubuntu22
