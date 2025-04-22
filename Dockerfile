@@ -4,13 +4,11 @@ FROM moailaozi/great-wall:build_base_image AS builder
 COPY . /build
 WORKDIR /build
 
-RUN nvm install \
-    && cd great-wall-fe \
+RUN cd great-wall-fe \
     && pnpm i \
     && pnpm run build \
     && cd .. \
     && echo "前端构建完成" \
-    && sdk env \
     && ./gradlew clean bootJar -x test --no-daemon \
     && echo "后端构建完成"
 
