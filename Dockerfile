@@ -13,7 +13,7 @@ RUN cd /build/great-wall-fe \
     && echo "前端构建完成"  \
     && cd /build \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
-    && ./gradlew clean bootJar -x test \
+    && ./gradlew clean bootJar -x test --no-daemon \
     && echo "后端构建完成"
 
 FROM moailaozi/jre:21_ubuntu22

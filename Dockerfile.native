@@ -19,7 +19,7 @@ RUN apt update  \
     && echo "前端构建完成" \
     && cd /build \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
-    && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
+    && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test --no-daemon $g1gc \
     && echo "后端构建完成"
 
 
