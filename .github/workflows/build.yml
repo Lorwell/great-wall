@@ -45,14 +45,6 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Restore target-specific cache
-        uses: actions/cache@v3
-        with:
-          path: ./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}
-          key: ${{ runner.os }}-buildx-${{ matrix.target }}-${{ matrix.cache_key }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ matrix.target }}-${{ matrix.cache_key }}-
-
       - name: Build and push Docker images
         uses: docker/bake-action@v4
         env:
@@ -62,14 +54,6 @@ jobs:
           push: true
           targets: ${{ matrix.target }}
           platforms: ${{ matrix.platform }}
-          set: |
-            *.cache-from=type=local,src=./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}
-            *.cache-to=type=local,dest=./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}-new,mode=max
-
-      - name: Update cache
-        run: |
-          rm -rf ./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}
-          mv ./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}-new ./.buildx-cache/${{ matrix.target }}
 
       - name: Success message
         run: echo "::notice::========== 全部构建成功 =========="
