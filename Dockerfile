@@ -6,13 +6,14 @@ SHELL ["/bin/bash", "-c"]
 COPY . /build
 WORKDIR /build
 
-RUN cd great-wall-fe \
+RUN cd /build/great-wall-fe \
     && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
     && echo "前端构建完成"  \
+    && cd /build \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
-    && /build/gradlew clean bootJar -x test \
+    && ./gradlew clean bootJar -x test \
     && echo "后端构建完成"
 
 FROM moailaozi/jre:21_ubuntu22

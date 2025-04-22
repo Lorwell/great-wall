@@ -12,12 +12,12 @@ RUN apt update  \
     && apt-get install -y curl unzip zip wget tar less vim dos2unix \
     # 安装 graalvm 需要的依赖
     && apt-get install -y build-essential libz-dev zlib1g-dev \
-    && cd great-wall-fe \
+    && cd /build/great-wall-fe \
     && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
     && echo "前端构建完成" \
-    && cd .. \
+    && cd /build \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
     && echo "后端构建完成"
