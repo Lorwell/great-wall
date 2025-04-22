@@ -20,12 +20,14 @@ dynamic "variable" {
     name = "IMAGE_TAG"
     value = env("IMAGE_TAG")
   }
+}
 
-  for_each = try(env("GITHUB_CI"), "") != "" ? [1] : []
-  content {
-    name = "GITHUB_CI"
-    value = env("GITHUB_CI")
-  }
+dynamic "variable" {
+   for_each = try(env("GITHUB_CI"), "") != "" ? [1] : []
+   content {
+     name = "GITHUB_CI"
+     value = env("GITHUB_CI")
+   }
 }
 
 target "great-wall-bootJar" {
