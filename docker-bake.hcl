@@ -7,27 +7,16 @@ variable "IMAGE_REGISTRY" {
 }
 
 variable "IMAGE_TAG" {
-    default = null
+   default = ""
+
+  validation {
+    condition = IMAGE_TAG != ""
+    error_message = "IMAGE_TAG 必须设置环境变量"
+  }
 }
 
 variable "GITHUB_CI" {
   default = "-DGITHUB_CI=false"
-}
-
-dynamic "variable" {
-   for_each = try(env("GITHUB_CI"), "") != "" ? [1] : []
-   content {
-     name = "GITHUB_CI"
-     value = env("GITHUB_CI")
-   }
-}
-
-dynamic "assert" {
-  for_each = var.IMAGE_TAG == null ? [1] : []
-  content {
-    condition     = false
-    error_message = "IMAGE_TAG 必须设置（通过 --set IMAGE_TAG=xxx 或环境变量）"
-  }
 }
 
 target "great-wall-bootJar" {
