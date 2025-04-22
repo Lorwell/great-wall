@@ -14,6 +14,15 @@ env:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        target: [ great-wall-bootJar, great-wall, great-wall-g1gc ]
+        platform: [ linux/amd64, linux/arm64 ]
+        include:
+          - platform: linux/amd64
+            cache_key: amd64
+          - platform: linux/arm64
+            cache_key: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +37,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
-#          buildkitd-flags: --debug
+      #          buildkitd-flags: --debug
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -36,13 +45,13 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Restore Build Cache
+      - name: Restore target-specific cache
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: ./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}
+          key: ${{ runner.os }}-buildx-${{ matrix.target }}-${{ matrix.cache_key }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-${{ matrix.target }}-${{ matrix.cache_key }}-
 
       - name: Build and push Docker images
         uses: docker/bake-action@v4
@@ -51,15 +60,16 @@ jobs:
         with:
           files: docker-bake.hcl
           push: true
-          targets: great-wall-bootJar,great-wall,great-wall-g1gc
+          targets: ${{ matrix.target }}
+          platforms: ${{ matrix.platform }}
           set: |
-            *.cache-from=type=local,src=${{ github.workspace }}/.buildx-cache
-            *.cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache-new,mode=max
+            *.cache-from=type=local,src=./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}
+            *.cache-to=type=local,dest=./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}-new,mode=max
 
-      - name: Update Cache Storage
+      - name: Update cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf ./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}
+          mv ./.buildx-cache/${{ matrix.target }}-${{ matrix.cache_key }}-new ./.buildx-cache/${{ matrix.target }}
 
       - name: Success message
         run: echo "::notice::========== 全部构建成功 =========="
