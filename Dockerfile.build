@@ -13,7 +13,8 @@ RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     # 从.sdkmanrc读取版本
     && sdk install java $(cat /base_build/.sdkmanrc | grep java= | cut -d'=' -f2) \
-    && java --version
+    && java --version \
+    && echo 'source /root/.sdkman/bin/sdkman-init.sh' >> /root/.bashrc
 
 # 安装 nvm
 ENV NVM_DIR=/root/.nvm
@@ -23,4 +24,5 @@ RUN source $NVM_DIR/nvm.sh  \
     && corepack enable \
     && node --version \
     && npm --version \
-    && pnpm --version
+    && pnpm --version \
+    && echo 'source $NVM_DIR/nvm.sh' >> /root/.bashrc

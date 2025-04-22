@@ -1,14 +1,18 @@
 FROM moailaozi/great-wall:build_base_image AS builder
 
+SHELL ["/bin/bash", "-c"]
+
 # 复制项目所有代码
 COPY . /build
 WORKDIR /build
 
 RUN cd great-wall-fe \
+    && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && cd .. \
-    && echo "前端构建完成" \
+    && echo "前端构建完成"
+
+RUN source "/root/.sdkman/bin/sdkman-init.sh" \
     && ./gradlew clean bootJar -x test --no-daemon \
     && echo "后端构建完成"
 
