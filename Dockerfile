@@ -20,7 +20,7 @@ FROM moailaozi/jre:21_ubuntu22
 
 # 复制构建时镜像的构建结果
 WORKDIR /workspace
-COPY --from=builder great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
+COPY --from=builder /build/great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
 
 EXPOSE 8080
 
