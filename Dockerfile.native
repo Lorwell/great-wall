@@ -9,12 +9,15 @@ WORKDIR /build
 ARG g1gc=""
 
 RUN cd great-wall-fe \
+    && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && cd .. \
-    && echo "前端构建完成" \
+    && echo "前端构建完成"
+
+RUN source "/root/.sdkman/bin/sdkman-init.sh" \
     && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
     && echo "后端构建完成"
+
 
 # 运行时镜像
 FROM moailaozi/jre:graalvm21_ubuntu22.runtime

@@ -33,7 +33,7 @@ dynamic "variable" {
 target "great-wall-bootJar" {
   context = "."
   dockerfile = "Dockerfile"
-//   platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64", "linux/arm64"]
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
