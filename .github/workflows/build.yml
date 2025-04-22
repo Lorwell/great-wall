@@ -45,7 +45,7 @@ jobs:
         with:
           files: docker-bake.hcl
           push: true
-          targets: [ great-wall-bootJar, great-wall, great-wall-g1gc ]
+          targets: great-wall-bootJar,great-wall,great-wall-g1gc
           set: |
             *.tags=your-docker-hub-username/your-image:${IMAGE_TAG}
             *.cache-from=type=local,src=/tmp/.buildx-cache
