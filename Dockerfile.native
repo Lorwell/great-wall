@@ -2,6 +2,9 @@ FROM moailaozi/great-wall:build_base_image AS builder
 
 RUN apt update && apt-get install -y curl unzip zip wget tar less vim dos2unix
 
+# 安装 graalvm 需要的依赖
+RUN apt-get install -y build-essential libz-dev zlib1g-dev
+
 SHELL ["/bin/bash", "-c"]
 
 # 复制项目所有代码
