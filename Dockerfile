@@ -1,4 +1,4 @@
-FROM moailaozi/great-wall:build_base_image as builder
+FROM moailaozi/great-wall:build_base_image AS builder
 
 # 复制项目所有代码
 COPY . /build
