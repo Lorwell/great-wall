@@ -41,9 +41,9 @@ jobs:
         run: |
           echo "::group::Building Docker images, IMAGE_TAG: $IMAGE_TAG"
           
-          docker buildx bake -f docker-bake.hcl great-wall-bootJar --push
-          docker buildx bake -f docker-bake.hcl great-wall --push
-          docker buildx bake -f docker-bake.hcl great-wall-g1gc --push
+          docker buildx bake -f docker-bake.hcl great-wall-bootJar --push --print
+          docker buildx bake -f docker-bake.hcl great-wall --push --print
+          docker buildx bake -f docker-bake.hcl great-wall-g1gc --push --print
           echo "::endgroup::"
 
       - name: Success message
