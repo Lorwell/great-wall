@@ -17,12 +17,7 @@ jobs:
     strategy:
       matrix:
         target: [ great-wall-bootJar, great-wall, great-wall-g1gc ]
-        platform: [ linux/amd64, linux/arm64 ]
-        include:
-          - platform: linux/amd64
-            cache_key: amd64
-          - platform: linux/arm64
-            cache_key: arm64
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,5 +48,3 @@ jobs:
           files: docker-bake.hcl
           push: true
           targets: ${{ matrix.target }}
-          set: |
-            *.platform=${{ matrix.platform }}

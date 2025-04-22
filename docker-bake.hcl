@@ -22,6 +22,7 @@ variable "GITHUB_CI" {
 target "great-wall-bootJar" {
   context = "."
   dockerfile = "Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
@@ -31,6 +32,7 @@ target "great-wall-bootJar" {
 target "great-wall" {
   context = "."
   dockerfile = "Dockerfile.native"
+  platforms = ["linux/amd64", "linux/arm64"]
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
@@ -40,6 +42,7 @@ target "great-wall" {
 target "great-wall-g1gc" {
   context = "."
   dockerfile = "Dockerfile.native"
+  platforms = ["linux/amd64", "linux/arm64"]
   args = {
      g1gc = "-Pgl.enable=true"
      GITHUB_CI = "${GITHUB_CI}"
