@@ -18,6 +18,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get version from build.gradle.kts
+        id: get_version
+        run: |
+          VERSION=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
+          echo "IMAGE_TAG=${VERSION}" >> $GITHUB_ENV
+          echo "Extracted version: ${VERSION}"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
@@ -40,13 +47,12 @@ jobs:
 
       - name: Build and push Docker images
         uses: docker/bake-action@v4
-        env:
-          IMAGE_TAG: $(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
         with:
           files: docker-bake.hcl
           push: true
           targets: great-wall-bootJar,great-wall,great-wall-g1gc
           set: |
+            args.IMAGE_TAG=${{ env.IMAGE_TAG }}
             *.cache-from=type=local,src=${{ github.workspace }}/.buildx-cache
             *.cache-to=type=local,dest=${{ github.workspace }}/.buildx-cache-new,mode=max
 
