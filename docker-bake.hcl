@@ -27,6 +27,8 @@ target "great-wall-bootJar" {
       GITHUB_CI = "${GITHUB_CI}"
   }
   tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_bootJar", "${IMAGE_REGISTRY}/moailaozi/great-wall:bootJar"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
 }
 
 target "great-wall" {
@@ -37,6 +39,8 @@ target "great-wall" {
       GITHUB_CI = "${GITHUB_CI}"
   }
   tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}", "${IMAGE_REGISTRY}/moailaozi/great-wall:latest"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
 }
 
 target "great-wall-g1gc" {
@@ -49,4 +53,6 @@ target "great-wall-g1gc" {
      greatWallMaxMemory = "1g"
   }
   tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_g1gc", "${IMAGE_REGISTRY}/moailaozi/great-wall:g1gc"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
 }
