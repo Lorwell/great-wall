@@ -26,7 +26,7 @@ target "great-wall-bootJar" {
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_bootJar"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_bootJar", "${IMAGE_REGISTRY}/moailaozi/great-wall:bootJar"]
 }
 
 target "great-wall" {
@@ -36,7 +36,7 @@ target "great-wall" {
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}","${IMAGE_REGISTRY}/moailaozi/great-wall:latest"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}", "${IMAGE_REGISTRY}/moailaozi/great-wall:latest"]
 }
 
 target "great-wall-g1gc" {
@@ -48,5 +48,5 @@ target "great-wall-g1gc" {
      GITHUB_CI = "${GITHUB_CI}"
      greatWallMaxMemory = "1g"
   }
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_g1gc"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_g1gc", "${IMAGE_REGISTRY}/moailaozi/great-wall:g1gc"]
 }
