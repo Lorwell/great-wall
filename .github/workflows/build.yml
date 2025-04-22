@@ -20,7 +20,8 @@ jobs:
 
       - name: Get version from build.gradle.kts
         run: |
-          export IMAGE_TAG=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
+          export VERSION=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Extracted version: ${VERSION}"
 
       - name: Set up Docker Buildx
@@ -45,6 +46,8 @@ jobs:
 
       - name: Build and push Docker images
         uses: docker/bake-action@v4
+        env:
+          IMAGE_TAG: ${{ env.VERSION }}
         with:
           files: docker-bake.hcl
           push: true
