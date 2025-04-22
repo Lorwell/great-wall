@@ -19,12 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract version from build.gradle.kts
-        id: version
-        run: |
-          echo "version=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)" >> $GITHUB_ENV
-          echo "IMAGE_TAG=$version" >> $GITHUB_ENV
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
@@ -39,7 +33,7 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          export IMAGE_TAG=${{ env.IMAGE_TAG }}
+          export IMAGE_TAG=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
           echo "::group::Building Docker images, IMAGE_TAG: $IMAGE_TAG"
           docker buildx bake -f docker-bake.hcl great-wall-bootJar --push --print
           docker buildx bake -f docker-bake.hcl great-wall --push --print
