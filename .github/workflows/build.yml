@@ -35,9 +35,9 @@ jobs:
         run: |
           export IMAGE_TAG=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
           echo "::group::Building Docker images, IMAGE_TAG: $IMAGE_TAG"
-          docker buildx bake -f docker-bake.hcl great-wall-bootJar --push --print
-          docker buildx bake -f docker-bake.hcl great-wall --push --print
-          docker buildx bake -f docker-bake.hcl great-wall-g1gc --push --print
+          docker buildx bake -f docker-bake.hcl great-wall-bootJar --push
+          docker buildx bake -f docker-bake.hcl great-wall --push
+          docker buildx bake -f docker-bake.hcl great-wall-g1gc --push
           echo "::endgroup::"
 
       - name: Success message
