@@ -19,34 +19,35 @@ variable "GITHUB_CI" {
   default = "-DGITHUB_CI=false"
 }
 
+variable "TAG_PLATFORM" {
+  default = ""
+}
+
 target "great-wall-bootJar" {
   context = "."
   dockerfile = "Dockerfile"
-  platforms = ["linux/amd64", "linux/arm64"]
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_bootJar", "${IMAGE_REGISTRY}/moailaozi/great-wall:bootJar"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_bootJar${TAG_PLATFORM}", "${IMAGE_REGISTRY}/moailaozi/great-wall:bootJar${TAG_PLATFORM}"]
 }
 
 target "great-wall" {
   context = "."
   dockerfile = "Dockerfile.native"
-  platforms = ["linux/amd64", "linux/arm64"]
   args = {
       GITHUB_CI = "${GITHUB_CI}"
   }
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}", "${IMAGE_REGISTRY}/moailaozi/great-wall:latest"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}${TAG_PLATFORM}"]
 }
 
 target "great-wall-g1gc" {
   context = "."
   dockerfile = "Dockerfile.native"
-  platforms = ["linux/amd64", "linux/arm64"]
   args = {
      g1gc = "-Pgl.enable=true"
      GITHUB_CI = "${GITHUB_CI}"
      greatWallMaxMemory = "1g"
   }
-  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_g1gc", "${IMAGE_REGISTRY}/moailaozi/great-wall:g1gc"]
+  tags = ["${IMAGE_REGISTRY}/moailaozi/great-wall:${IMAGE_TAG}_g1gc${TAG_PLATFORM}", "${IMAGE_REGISTRY}/moailaozi/great-wall:g1gc${TAG_PLATFORM}"]
 }
