@@ -142,6 +142,7 @@ graalvmNative {
             buildArgs.add("--gc=G1")
         }
 
+        buildArgs.add("-H:+ParallelGC")
         buildArgs.add("-H:+ReportUnsupportedElementsAtRuntime")
         buildArgs.add("--initialize-at-build-time=kotlin.DeprecationLevel")
         // 配合 jni-config.json 解决 javax.naming.directory.InitialDirContext fails on windows
