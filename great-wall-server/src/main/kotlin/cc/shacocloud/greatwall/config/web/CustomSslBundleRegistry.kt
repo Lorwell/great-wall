@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 
 /**
@@ -16,14 +17,15 @@ import java.util.function.Consumer
  */
 @Component
 class CustomSslBundleRegistry(
-    sslBundleRegistrars: ObjectProvider<SslBundleRegistrar>
+    sslBundleRegistrars: ObjectProvider<SslBundleRegistrar>,
 ) : SslBundleRegistry, SslBundles {
-
-    private val registeredBundles: MutableMap<String, RegisteredSslBundle> = ConcurrentHashMap()
 
     companion object {
         private val logger: Log = LogFactory.getLog(CustomSslBundleRegistry::class.java)
     }
+
+    private val registeredBundles: MutableMap<String, RegisteredSslBundle> = ConcurrentHashMap()
+    private val registerHandlers: MutableList<BiConsumer<String, SslBundle>> = CopyOnWriteArrayList()
 
     init {
         sslBundleRegistrars.orderedStream().forEach { registrar ->
@@ -31,10 +33,12 @@ class CustomSslBundleRegistry(
         }
     }
 
-
-    final override fun registerBundle(name: String, bundle: SslBundle) {
+    override fun registerBundle(name: String, bundle: SslBundle) {
         val previous = registeredBundles.putIfAbsent(name, RegisteredSslBundle(name, bundle))
         require(previous == null) { "Cannot replace existing SSL bundle '${name}'" }
+        registerHandlers.forEach { handler: BiConsumer<String, SslBundle> ->
+            handler.accept(name, bundle)
+        }
     }
 
     override fun updateBundle(name: String, updatedBundle: SslBundle) {
@@ -63,6 +67,10 @@ class CustomSslBundleRegistry(
     @Throws(NoSuchSslBundleException::class)
     override fun addBundleUpdateHandler(name: String, updateHandler: Consumer<SslBundle>) {
         getRegistered(name).addUpdateHandler(updateHandler)
+    }
+
+    override fun addBundleRegisterHandler(registerHandler: BiConsumer<String, SslBundle>) {
+        registerHandlers.add(registerHandler);
     }
 
     override fun getBundleNames(): List<String?>? {
