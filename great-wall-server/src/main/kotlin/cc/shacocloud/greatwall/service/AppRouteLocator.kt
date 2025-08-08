@@ -10,8 +10,7 @@ import cc.shacocloud.greatwall.model.mo.RouteUrlsTargetConfig
 import cc.shacocloud.greatwall.model.mo.StaticResourceConfigMo.Companion.toConfigMo
 import cc.shacocloud.greatwall.model.po.AppRoutePo
 import cc.shacocloud.greatwall.utils.ApplicationContextHolder
-import kotlinx.coroutines.channels.ProducerScope
-import kotlinx.coroutines.reactor.flux
+import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent
@@ -24,6 +23,7 @@ import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.support.RouteMetadataUtils
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils
 import org.springframework.core.Ordered
+import org.springframework.core.annotation.AnnotationAwareOrderComparator
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URI
@@ -75,34 +75,38 @@ class AppRouteLocator(
     /**
      * 加载所有数据库中路由
      */
-    override fun getRoutes(): Flux<Route> = flux {
+    override fun getRoutes(): Flux<Route> {
         if (log.isInfoEnabled) {
             log.info("刷新路由...")
         }
 
-        val self = this
-        val appRoutes = appRouteService.findByStatus(AppRouteStatusEnum.ONLINE)
+        return mono {
+            val appRoutes = appRouteService.findByStatus(AppRouteStatusEnum.ONLINE)
+            appRoutes.mapNotNull { appRoute ->
+                val targetConfig = appRoute.targetConfig
 
-        for (appRoute in appRoutes) {
-            val targetConfig = appRoute.targetConfig
+                try {
+                    when (targetConfig) {
+                        is RouteStaticResourcesTargetConfig -> {
+                            staticResourcesRoute(appRoute, targetConfig)
+                        }
 
-            try {
-                when (targetConfig) {
-                    is RouteStaticResourcesTargetConfig -> {
-                        staticResourcesRoute(appRoute, targetConfig, self)
+                        is RouteUrlsTargetConfig -> {
+                            urlsRoute(appRoute, targetConfig)
+                        }
+
+                        else -> null
                     }
-
-                    is RouteUrlsTargetConfig -> {
-                        urlsRoute(appRoute, targetConfig, self)
+                } catch (e: Exception) {
+                    if (log.isErrorEnabled) {
+                        log.error("配置路由 {} 发生例外！", appRoute.id!!, e)
                     }
+                    null
                 }
-            } catch (e: Exception) {
-                if (log.isErrorEnabled) {
-                    log.error("配置路由 {} 发生例外！", appRoute.id!!, e)
-                }
-            }
-
+            }.flatMap { it }
         }
+            .flatMapMany { Flux.fromIterable(it) }
+            .sort(AnnotationAwareOrderComparator.INSTANCE)
     }
 
     /**
@@ -111,8 +115,7 @@ class AppRouteLocator(
     suspend fun staticResourcesRoute(
         appRoute: AppRoutePo,
         targetConfig: RouteStaticResourcesTargetConfig,
-        self: ProducerScope<Route>
-    ) {
+    ): List<Route> {
         val id = appRoute.id!!
         val routeId = "staticResources-${id}"
 
@@ -160,7 +163,7 @@ class AppRouteLocator(
             routeBuilder.addFilter(gatewayFilter)
         }
 
-        self.send(routeBuilder.build())
+        return listOf(routeBuilder.build())
     }
 
     /**
@@ -169,15 +172,14 @@ class AppRouteLocator(
     suspend fun urlsRoute(
         appRoute: AppRoutePo,
         targetConfig: RouteUrlsTargetConfig,
-        self: ProducerScope<Route>
-    ) {
+    ): List<Route> {
         val id = appRoute.id!!
         val routeUrls = targetConfig.urls
         val isSingleton = routeUrls.size == 1
 
         val routeGroupId = "appRoute-${id}"
 
-        for ((index, url) in routeUrls.withIndex()) {
+        return routeUrls.mapIndexedNotNull { index, url ->
             val uri = URI.create(url.url)
 
             val routeId = "${id}-${index}"
@@ -240,7 +242,7 @@ class AppRouteLocator(
                 routeBuilder.addFilter(gatewayFilter)
             }
 
-            self.send(routeBuilder.build())
+            routeBuilder.build()
         }
     }
 

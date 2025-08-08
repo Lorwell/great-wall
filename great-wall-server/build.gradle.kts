@@ -1,20 +1,17 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.io.RandomAccessFile
-import java.nio.file.Files
 
 plugins {
-    id("java")
-    id("org.springframework.boot") version "3.4.4"
+    id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.graalvm.buildtools.native") version "0.10.6"
-    kotlin("jvm") version "2.1.20"
-    kotlin("kapt") version "2.1.20"
-    kotlin("plugin.spring") version "2.1.20"
-    kotlin("plugin.serialization") version "2.1.20"
+    id("org.graalvm.buildtools.native") version "0.11.0"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.serialization") version "1.9.25"
+    kotlin("kapt") version "1.9.25"
 }
 
 group = "cc.shacocloud"
-version = "2.32"
+version = "2.34"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -59,7 +56,7 @@ repositories {
     google()
 }
 
-extra["springCloudVersion"] = "2024.0.1"
+extra["springCloudVersion"] = "2025.0.0"
 
 dependencyManagement {
     imports {
@@ -74,15 +71,23 @@ kotlin {
     sourceSets.test {
         kotlin.srcDir("build/generated/ksp/test/kotlin")
     }
+
+    // 确保 Spring 插件正确配置
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+        jvmTarget = JvmTarget.JVM_21
+        javaParameters = true // 保留参数名
+        allWarningsAsErrors = false
+    }
 }
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
     implementation("io.netty:netty-tcnative-boringssl-static:2.0.70.Final")
     implementation("org.springframework.boot:spring-boot-starter-json")
-
+    
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("io.r2dbc:r2dbc-h2")
 
@@ -98,12 +103,6 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 }
 
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.add("-Xjsr305=strict")
-        jvmTarget = JvmTarget.JVM_21
-    }
-}
 
 // 绑定版本号
 tasks.processResources {
@@ -119,10 +118,21 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-// 处理资源之前先将前端资源复制到指定目录
-tasks.withType<ProcessResources> {
-    // 如果不想在构建时编译前端项目，可以将此行注释，在打包项目时解开注释即可
-    dependsOn("copyFeBuildResultToBe")
+// 强制 processResources 在 copyFeBuildResultToBe 之后执行
+tasks.named("processResources") {
+    mustRunAfter("copyFeBuildResultToBe")
+}
+
+// 打包
+tasks.register("greatWallPackage") {
+    group = "build"
+    dependsOn("copyFeBuildResultToBe", "bootJar")
+}
+
+// 打包
+tasks.register("greatWallNativeCompile") {
+    group = "build"
+    dependsOn("copyFeBuildResultToBe", "nativeCompile")
 }
 
 graalvmNative {
@@ -150,102 +160,40 @@ graalvmNative {
     }
 }
 
+
 // 构建前端项目
-task("buildFe") {
-
-    doFirst {
-        val rootProjectDir = rootProject.projectDir.absoluteFile
-        val feDir = File(rootProjectDir, "great-wall-fe").absoluteFile
-        val distDir = File(feDir, "dist").absoluteFile
-
-        if (distDir.exists()) {
-            println("构建结果已存在，跳过本次构建...")
-            return@doFirst
-        }
-
-        println()
-        println("开始构建前端项目...")
-        println()
-
-        // 执行构建命令
-        execCommand(feDir, "pnpm i".split(" "))
-        execCommand(feDir, "pnpm run build".split(" "))
-    }
+tasks.register<Exec>("preBuildFe") {
+    group = "build"
+    val feDir = File(rootProject.projectDir.absoluteFile, "great-wall-fe").absoluteFile
+    workingDir(feDir)
+    commandLine("pnpm", "i")
 }
+tasks.register<Exec>("buildFe") {
+    group = "build"
+    dependsOn("preBuildFe")
+    val feDir = File(rootProject.projectDir.absoluteFile, "great-wall-fe").absoluteFile
+    workingDir(feDir)
+    commandLine("pnpm", "run", "build")
+}
+// 拷贝前端构建结果
+tasks.register<Copy>("copyFeBuildResultToBe") {
+    group = "build"
+    dependsOn("buildFe")
+    val rootProjectDir = rootProject.projectDir.absoluteFile
 
-// 复制前端构建结果到后端项目中
-task("copyFeBuildResultToBe") {
+    // 前端项目目录
+    val feDir = File(rootProjectDir, "great-wall-fe").absoluteFile
+    val distDir = File(feDir, "dist").absoluteFile
+
+    // 后端项目目录
+    val beDir = File(rootProjectDir, "great-wall-server").absoluteFile
+    val targetDir = File(beDir, "src/main/resources/static").absoluteFile
 
     doFirst {
-        val rootProjectDir = rootProject.projectDir.absoluteFile
-
-        // 前端项目目录
-        val feDir = File(rootProjectDir, "great-wall-fe").absoluteFile
-        val distDir = File(feDir, "dist").absoluteFile
-
-        // 后端项目目录
-        val beDir = File(rootProjectDir, "great-wall-server").absoluteFile
-        val targetDir = File(beDir, "src/main/resources/static").absoluteFile
         targetDir.deleteRecursively()
-
-        // 复制
-        distDir.copyRecursively(targetDir, true)
     }
-}.dependsOn("buildFe")
 
-
-// ---------------  函数 ------------
-
-fun execCommand(
-    directory: File,
-    command: List<String>
-) {
-    println()
-    println("执行命令 ${command.joinToString(" ")}")
-
-    val logFile = Files.createTempFile("great-wall-build-fe", "log").toFile()
-    logFile.deleteOnExit()
-    val process = ProcessBuilder()
-        .directory(directory)
-        .command(command)
-        .redirectErrorStream(true)
-        .redirectOutput(ProcessBuilder.Redirect.to(logFile))
-        .start()
-
-    // 打印日志
-    printProcessLogFile(logFile, process)
-
-    val exitCode = process.waitFor()
-    if (exitCode != 0) {
-        throw RuntimeException("执行命令 ${command.joinToString(" ")} 失败，退出状态码为：${exitCode}！")
-    }
-}
-
-// 打印进程日志文件
-fun printProcessLogFile(
-    logFile: File,
-    process: Process,
-) {
-    RandomAccessFile(logFile, "r").use { accessFile ->
-        while (true) {
-            val line = accessFile.readLine()
-
-            if (line.isNullOrEmpty()) {
-                val filePointer: Long = accessFile.filePointer
-                val length: Long = accessFile.length()
-
-                // 到达尾行
-                if (filePointer >= length) {
-
-                    if (process.isAlive) {
-                        Thread.sleep(1000)
-                    } else {
-                        break
-                    }
-                }
-            } else {
-                println(line)
-            }
-        }
-    }
+    // 复制
+    from(distDir.absolutePath)
+    into(targetDir.absolutePath)
 }

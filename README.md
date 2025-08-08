@@ -22,13 +22,13 @@
 
 ```bash
 // java -jar 方式运行
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:2.28_bootJar
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:bootJar
 
 // 本地化镜像运行，使用 serial gc(串行垃圾回收器)，适合小内存应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:2.28
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:latest
 
 // 本地化镜像运行，使用 g1 gc(G1 垃圾回收器)，适合大内存高吞吐低延迟的应用
-docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:2.28_g1gc
+docker run -d -p 8080:8080 -p 443:443 -p 80:80 --name great-wall moailaozi/great-wall:g1gc
 ```
 
 ### 服务配置

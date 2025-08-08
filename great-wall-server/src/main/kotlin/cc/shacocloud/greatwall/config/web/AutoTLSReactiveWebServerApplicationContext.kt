@@ -23,8 +23,10 @@ import org.springframework.http.server.reactive.HttpHandler
  */
 class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationContext() {
 
-    // 内置的ssl证书名称
-    private val builtSslBundleName = "_built_ssl_bundle"
+    companion object {
+        // 内置的ssl证书名称
+        const val BUILT_SSL_BUNDLE_NAME = "_built_ssl_bundle"
+    }
 
     /**
      * 重启 web 服务
@@ -35,8 +37,8 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
             getWebServerFactory(webServerFactoryBeanName) as MainNettyReactiveWebServerFactory
 
         // 判断该证书配置是否存在，存在设置为 web ssl 证书
-        if (customSslBundleRegistry.existsBundle(builtSslBundleName)) {
-            nettyReactiveWebServerFactory.ssl = Ssl.forBundle(builtSslBundleName)
+        if (customSslBundleRegistry.existsBundle(BUILT_SSL_BUNDLE_NAME)) {
+            nettyReactiveWebServerFactory.ssl = Ssl.forBundle(BUILT_SSL_BUNDLE_NAME)
         }
         // 不存在则关闭 ssl 证书
         else {
@@ -76,7 +78,7 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
     fun deleteSslBundle() {
         // 删除该证书凭证
         val customSslBundleRegistry = getBean(CustomSslBundleRegistry::class.java)
-        customSslBundleRegistry.removeBundle(builtSslBundleName)
+        customSslBundleRegistry.removeBundle(BUILT_SSL_BUNDLE_NAME)
     }
 
     /**
@@ -95,12 +97,12 @@ class AutoTLSReactiveWebServerApplicationContext : ReactiveWebServerApplicationC
         }
 
         // 判断该证书配置是否存在，存在则更新
-        if (customSslBundleRegistry.existsBundle(builtSslBundleName)) {
-            customSslBundleRegistry.updateBundle(builtSslBundleName, sslBundle)
+        if (customSslBundleRegistry.existsBundle(BUILT_SSL_BUNDLE_NAME)) {
+            customSslBundleRegistry.updateBundle(BUILT_SSL_BUNDLE_NAME, sslBundle)
         }
         // 不存在则新增
         else {
-            customSslBundleRegistry.registerBundle(builtSslBundleName, sslBundle)
+            customSslBundleRegistry.registerBundle(BUILT_SSL_BUNDLE_NAME, sslBundle)
         }
 
         return sslBundle

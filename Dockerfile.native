@@ -1,4 +1,6 @@
-FROM moailaozi/great-wall:build_base_image as builder
+FROM moailaozi/great-wall:build_base_image AS builder
+
+SHELL ["/bin/bash", "-c"]
 
 # 复制项目所有代码
 COPY . /build
@@ -6,15 +8,20 @@ WORKDIR /build
 
 ARG g1gc=""
 
-RUN nvm install \
-    && cd great-wall-fe \
+RUN apt update  \
+    && apt-get install -y curl unzip zip wget tar less vim dos2unix \
+    # 安装 graalvm 需要的依赖
+    && apt-get install -y build-essential libz-dev zlib1g-dev \
+    && cd /build/great-wall-fe \
+    && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && cd .. \
     && echo "前端构建完成" \
-    && sdk env \
-    && source /etc/profile && dos2unix /build/gradlew && /build/gradlew nativeCompile -x test $g1gc \
+    && cd /build \
+    && source "/root/.sdkman/bin/sdkman-init.sh" \
+    && source /etc/profile && dos2unix /build/gradlew && /build/gradlew greatWallNativeCompile -x test --no-daemon $g1gc \
     && echo "后端构建完成"
+
 
 # 运行时镜像
 FROM moailaozi/jre:graalvm21_ubuntu22.runtime

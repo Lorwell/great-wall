@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.io.path.isDirectory
 import kotlin.io.path.toPath
 
 /**
@@ -51,6 +52,11 @@ class FileHandlingGlobalFilter : GlobalFilter, Ordered {
 
         val path = route.uri.toPath()
         var fullPath = path.resolve(Paths.get(url.removePrefix("/"))).normalize()
+
+        // 文件目录默认使用索引文件
+        if (fullPath.isDirectory()) {
+            fullPath = fullPath.resolve(index)
+        }
 
         // 安全检查
         if (!fullPath.startsWith(path)) {

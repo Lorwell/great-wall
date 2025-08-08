@@ -1,32 +1,28 @@
 # 注意：该镜像为构建服务的基础镜像，并不是服务镜像
-FROM moailaozi/jre:graalvm21_ubuntu22.build
+FROM ubuntu:latest
 
-WORKDIR /base_build
+SHELL ["/bin/bash", "-c"]
+
 COPY .nvmrc /base_build/
 COPY .sdkmanrc /base_build/
 
-# 设置 Shell 环境
-SHELL ["/bin/bash", "-c"]
+RUN apt update && apt-get install -y curl unzip zip wget tar less vim dos2unix
 
+# 安装 sdk
 RUN curl --retry 5 -s "https://get.sdkman.io" | bash \
     && source "/root/.sdkman/bin/sdkman-init.sh" \
     # 从.sdkmanrc读取版本
-    && sdk install java $(cat .sdkmanrc | grep java= | cut -d'=' -f2) \
-    && java --version
+    && sdk install java $(cat /base_build/.sdkmanrc | grep java= | cut -d'=' -f2) \
+    && java --version \
+    && echo 'source /root/.sdkman/bin/sdkman-init.sh' >> /root/.bashrc
 
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
-    && export NVM_DIR="/root/.nvm" \
-    && echo "NVM 安装目录: $NVM_DIR" \
-    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-    && echo "可用的 Node 版本:" && nvm ls-remote | tail -n 5 \  # 显示最近版本
-    && NODE_VERSION=$(cat .nvmrc | sed 's/v//g') \  # 处理版本号格式
-    && echo "正在安装 Node $NODE_VERSION" \
-    && nvm install $NODE_VERSION --latest-npm \
-    && echo "安装完成，校验二进制文件:" \
-    && ls -l "$NVM_DIR/versions/node/v$NODE_VERSION/bin" \
-    && ln -sf "$NVM_DIR/versions/node/v$NODE_VERSION/bin/node" /usr/local/bin/ \
-    && ln -sf "$NVM_DIR/versions/node/v$NODE_VERSION/bin/npm" /usr/local/bin/ \
+# 安装 nvm
+ENV NVM_DIR=/root/.nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+RUN source $NVM_DIR/nvm.sh  \
+    && nvm install $(cat /base_build/.nvmrc | tr -d 'v') \
     && corepack enable \
     && node --version \
     && npm --version \
-    && pnpm --version
+    && pnpm --version \
+    && echo 'source $NVM_DIR/nvm.sh' >> /root/.bashrc

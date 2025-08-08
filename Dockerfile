@@ -1,24 +1,26 @@
-FROM moailaozi/great-wall:build_base_image as builder
+FROM moailaozi/great-wall:build_base_image AS builder
+
+SHELL ["/bin/bash", "-c"]
 
 # 复制项目所有代码
 COPY . /build
 WORKDIR /build
 
-RUN nvm install \
-    && cd great-wall-fe \
+RUN cd /build/great-wall-fe \
+    && source $NVM_DIR/nvm.sh  \
     && pnpm i \
     && pnpm run build \
-    && cd .. \
-    && echo "前端构建完成" \
-    && sdk env \
-    && ./gradlew clean bootJar -x test --no-daemon \
+    && echo "前端构建完成"  \
+    && cd /build \
+    && source "/root/.sdkman/bin/sdkman-init.sh" \
+    && ./gradlew clean greatWallPackage -x test --no-daemon \
     && echo "后端构建完成"
 
 FROM moailaozi/jre:21_ubuntu22
 
 # 复制构建时镜像的构建结果
 WORKDIR /workspace
-COPY --from=builder great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
+COPY --from=builder /build/great-wall-server/build/libs/great-wall-server-*.jar /workspace/app.jar
 
 EXPOSE 8080
 

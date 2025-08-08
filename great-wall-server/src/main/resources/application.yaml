@@ -7,7 +7,7 @@ server:
     io-select-count: ${MAIN_SERVER_IO_SELECT_COUNT:1}
     io-work-count: ${MAIN_SERVER_IO_WORK_COUNT:0}
   http2:
-    enabled: ${HTTP_2_ENABLED:false}
+    enabled: ${HTTP_2_ENABLED:true}
   ssl:
     enabled: false
 
@@ -36,28 +36,34 @@ spring:
       enabled: ${VIRTUAL_THREAD:false}
   cloud:
     gateway:
-      # 开启过滤器缓存
-      route-filter-cache-enabled: true
-      httpclient:
-        ssl:
-          # 是否信任所有证书
-          use-insecure-trust-manager: ${HTTPCLIENT_SSL_USE_INSECURE_TRUST_MANAGER:false}
-        # 请求链接超时时间
-        connect-timeout: ${HTTPCLIENT_CONNECT_TIMEOUT:3000}
-        websocket:
-          # 设置 ws 最大帧数字节长度
-          max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
-        # 代理请求连接池
-        pool:
-          type: elastic
-          name: great-wall-proxy
-          max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:PT1S}
-          max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
-          eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
-      predicate:
-        host:
-          # host 匹配不导入端口
-          include-port: false
+      server:
+        webflux:
+          # 开启过滤器缓存
+          route-filter-cache-enabled: true
+          httpserver:
+            wiretap: ${HTTPSERVER_WIRETAP:false}
+          httpclient:
+            wiretap: ${HTTPCLIENT_WIRETAP:false}
+            ssl:
+              # 是否信任所有证书
+              use-insecure-trust-manager: ${HTTPCLIENT_SSL_USE_INSECURE_TRUST_MANAGER:false}
+            # 请求链接超时时间
+            connect-timeout: ${HTTPCLIENT_CONNECT_TIMEOUT:3000}
+            websocket:
+              # 设置 ws 最大帧数字节长度
+              max-frame-payload-length: ${WEBSOCKET_MAX_FRAME_PAYLOAD_LENGTH:6553500}
+            # 代理请求连接池
+            pool:
+              type: elastic
+              name: great-wall-proxy
+              max-idle-time: ${HTTPCLIENT_POOL_MAX_IDLE_TIME:PT1S}
+              max-life-time: ${HTTPCLIENT_POOL_MAX_LIFE_TIME:10H}
+              eviction-interval: ${HTTPCLIENT_POOL_EVICTION_INTERVAL:10S}
+          predicate:
+            host:
+              # host 匹配不导入端口
+              include-port: false
+
   # r2dbc 配置
   r2dbc:
     url: file:${H2_FILE_DIR:./data/db}/db;MODE=MYSQL

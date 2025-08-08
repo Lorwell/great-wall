@@ -9,41 +9,52 @@ on: workflow_dispatch
 #    branches: [ develop ]
 
 env:
-  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_REGISTRY: docker.io
   GITHUB_CI: -DGITHUB_CI=true
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        target: [ great-wall-bootJar, great-wall, great-wall-g1gc ]
+        platform: [ linux/amd64 ]
+    #        arm64 构建特别的慢，github actions 超时也没有完成顾这里注释
+    #        platform: [ linux/amd64, linux/arm64 ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract version from build.gradle.kts
-        id: version
+      - name: Get version from build.gradle.kts
         run: |
-          echo "version=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)" >> $GITHUB_ENV
-          echo "IMAGE_TAG=$version" >> $GITHUB_ENV
+          export VERSION=$(grep -Eo 'version\s*=\s*"[^"]+"' ./great-wall-server/build.gradle.kts | cut -d'"' -f2)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Extracted version: ${VERSION}"
+
+      - name: Format platform
+        run: |
+          export PLATFORM=$(echo "${{ matrix.platform }}" | tr '/' '-')
+          echo "PLATFORM=${PLATFORM}" >> $GITHUB_ENV
+          echo "Extracted paltform: ${PLATFORM}"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
-          install: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Build and push Docker images
-        run: |
-          echo "::group::Building Docker images"
-          docker buildx bake -f docker-bake.hcl great-wall-bootJar --push
-          docker buildx bake -f docker-bake.hcl great-wall --push
-          docker buildx bake -f docker-bake.hcl great-wall-g1gc --push
-          echo "::endgroup::"
-
-      - name: Success message
-        run: echo "::notice::========== 全部构建成功 =========="
+        uses: docker/bake-action@v6
+        env:
+          IMAGE_TAG: ${{ env.VERSION }}
+        with:
+          files: docker-bake.hcl
+          push: true
+          targets: ${{ matrix.target }}
+          set: |
+            *.platform=${{ matrix.platform }}
