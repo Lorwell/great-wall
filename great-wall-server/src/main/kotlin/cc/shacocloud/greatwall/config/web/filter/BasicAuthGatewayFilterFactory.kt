@@ -44,7 +44,7 @@ class BasicAuthGatewayFilterFactory : AbstractGatewayFilterFactory<BasicAuthGate
 
             // 如果未设置账号密码
             if (config.username == DEFAULT_VALUE) {
-                response.setStatusCode(HttpStatus.FORBIDDEN)
+                response.statusCode = HttpStatus.FORBIDDEN
                 return response.setComplete()
             }
 
@@ -62,7 +62,7 @@ class BasicAuthGatewayFilterFactory : AbstractGatewayFilterFactory<BasicAuthGate
             }
 
             // 认证失败
-            response.setStatusCode(HttpStatus.UNAUTHORIZED)
+            response.statusCode = HttpStatus.UNAUTHORIZED
             response.headers[HttpHeaders.WWW_AUTHENTICATE] = "Basic realm=great-wall, charset=\"UTF-8\""
             return response.setComplete()
         }

@@ -84,10 +84,10 @@ kotlin {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
     implementation("io.netty:netty-tcnative-boringssl-static:2.0.70.Final")
     implementation("org.springframework.boot:spring-boot-starter-json")
-
+    
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("io.r2dbc:r2dbc-h2")
 
